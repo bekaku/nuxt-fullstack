@@ -1,17 +1,17 @@
 <script setup lang="ts">
 import { useInfiniteScroll } from "@vueuse/core";
 
-const {
-  distance = 10, // distance in pixels from bottom to trigger the load
-  isFetching,
-  hasMore,
-} = defineProps<{
+const props = withDefaults(
+  defineProps<{
   isFetching?: boolean;
   hasMore?: boolean;
   distance?: number;
   scrollClass?: string;
-}>();
-
+  }>(),
+  {
+    distance: 10, // distance in pixels from bottom to trigger the load
+  },
+);
 const emit = defineEmits<{
   (e: "load-more"): void;
 }>();
@@ -19,11 +19,11 @@ if (typeof window !== "undefined") {
   useInfiniteScroll(
     document,
     () => {
-      if (!isFetching && hasMore) {
+      if (!props.isFetching && props.hasMore) {
         emit("load-more");
       }
     },
-    { distance: distance },
+    { distance: props.distance },
   );
 }
 </script>

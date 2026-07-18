@@ -1,18 +1,7 @@
 <script setup lang="ts">
 import type { ButtonProps, ModalProps } from "@nuxt/ui";
 
-const {
-  autoClose = true,
-  dismissible = true,
-  closeIcon = "lucide:x",
-  overlay = true,
-  modal = true,
-  scrollable = true,
-  fullscreen = false,
-  close = {
-    class: "rounded-full",
-  },
-} = defineProps<{
+const props = withDefaults(defineProps<{
   autoClose?: boolean;
   close?: boolean | ButtonProps;
   description?: string;
@@ -24,7 +13,19 @@ const {
   scrollable?: boolean;
   title?: string;
   ui?: ModalProps["ui"];
-}>();
+}>(), {
+  autoClose : true,
+  dismissible : true,
+  closeIcon : "lucide:x",
+  overlay : true,
+  modal : true,
+  scrollable : true,
+  fullscreen : false,
+  close : () => ({
+    class: "rounded-full",
+  })
+})
+
 const modelValue = defineModel<boolean>({ default: false });
 </script>
 <template>

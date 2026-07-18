@@ -6,9 +6,7 @@ defineProps<{
   anchor?: any;
   self?: any;
 }>();
-const colorMode = useColorMode();
-const { locale, onSwitchLocale, availableLocales, currentLangugeName } =
-  useLang();
+const { locale, onSwitchLocale, currentLangugeName } = useLang();
 const onChangeLanguge = (iso: string) => {
   onSwitchLocale(iso as ILanguge);
 };

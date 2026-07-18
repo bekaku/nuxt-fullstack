@@ -8,6 +8,11 @@ export const useApi = () => {
   const localeCookie = useCookie('locale');
   const toast = useToast()
 
+  const { refreshTokenDays } = useConfiguration()
+  const ttlDays = Number(refreshTokenDays) || 7;
+  const loggedInCookie = useCookie('is_logged_in', {
+    maxAge: 60 * 60 * 24 * ttlDays
+  });
   const getBaseHeaders = () => {
     return {
       // 'X-User-ID': currentUserId.value + '',
@@ -33,6 +38,13 @@ export const useApi = () => {
         options.headers.set(key, value);
       }
 
+      options.credentials = options.credentials || 'include';
+  if (import.meta.server && options.credentials === 'include') {
+        const reqHeaders = useRequestHeaders(['cookie']);
+        if (reqHeaders.cookie) {
+          options.headers.set('cookie', reqHeaders.cookie);
+        }
+      }
     },
     async onResponse({ request, response, options }) {
       if (isDevMode() && !isServer()) {
@@ -101,13 +113,23 @@ export const useApi = () => {
       if (error.response?.status === 401) {
 
         if (!refreshPromise) {
+          const refreshHeaders = new Headers(getBaseHeaders());
+          if (import.meta.server) {
+            const reqHeaders = useRequestHeaders(['cookie']);
+            if (reqHeaders.cookie) {
+              refreshHeaders.set('cookie', reqHeaders.cookie);
+            }
+          }
           refreshPromise = $fetch<RefreshTokenResponse>('/api/auth/refresh', {
             baseURL: apiBase as string,
             method: 'POST',
-            headers: getBaseHeaders(),
+            headers: refreshHeaders,
+            credentials: 'include',
           }).then(async (res) => {
+            loggedInCookie.value = 'true';
             return res;
           }).catch(async (err) => {
+            loggedInCookie.value = null;
             await handleLogout();
             throw err;
           }).finally(() => {

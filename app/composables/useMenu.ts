@@ -12,7 +12,6 @@ export const useMenu = () => {
         label: t("nav.dashboard"),
         icon: "lucide:home",
         to: "/",
-        permissions: ['login'],
       },
       {
         label: t("nav.developers"),

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { SparkLineChartProps } from '~/types/chart';
+import type { ChartMode, ChartThemePalete, GridPadding, IChartSeries, Strokestyle } from '~/types/chart';
 
 const {
   chartId = 'chart-radar-id',
@@ -22,7 +22,24 @@ const {
   type = 'area',
   strokestyle = 'straight',
   dark = false
-} = defineProps<SparkLineChartProps>()
+} = defineProps<{
+  chartId?: string
+  height?: string
+  width?: string
+  labelunit?: string
+  mode?: ChartMode
+  palette?: ChartThemePalete
+  series: IChartSeries[]
+  colors?: string[]
+  tooltipEnable?: boolean
+  categories: string[]
+  gridPadding?: GridPadding
+  strokeWidth?: number
+  strokestyle?: Strokestyle
+  opacity?: number
+  dark?: boolean
+  type?: 'area' | 'line' | 'bar'
+}>()
 const chartSeries = ref(series)
 const options = ref<any>()
 const { isDark } = useTheme()

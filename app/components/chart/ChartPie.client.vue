@@ -1,5 +1,6 @@
 <script lang="ts" setup>
-import type { PieCharProps } from '~/types/chart';
+import type { ChartMode, ChartPosition, ChartThemePalete, Strokestyle } from '~/types/chart';
+
 const {
   chartId = 'chart-pie-id',
   height = 'auto',
@@ -17,7 +18,26 @@ const {
   strokestyle = 'smooth',
   strokeWidth = 1,
   dark = false
-} = defineProps<PieCharProps>()
+} = defineProps<{
+  chartId?: string
+  height?: string
+  width?: string
+  labelunit?: string
+  showLegend?: boolean
+  legendUseSeriesColors?: boolean
+  legendPosition?: ChartPosition
+  type?: 'pie' | 'donut'
+  mode?: ChartMode
+  palette?: ChartThemePalete
+  series: number[]
+  colors?: string[]
+  dark?: boolean
+  showDataLabels?: boolean
+  labelRotate?: number
+  categories: string[]
+  strokestyle?: Strokestyle
+  strokeWidth?: number
+}>()
 
 const { isDark } = useTheme()
 const chartSeries = ref(series)

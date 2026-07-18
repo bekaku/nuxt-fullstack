@@ -7,9 +7,7 @@ const { createFavorite, deleteFavorite } = useFavoriteMenuApi();
 const route = useRoute();
 const toast = useToast();
 const { t } = useLang();
-const appStore = useAppStore();
-const { addFavoriteMenus } = appStore;
-const { appNavigations, favoriteMenus } = storeToRefs(appStore);
+const { appNavigations, favoriteMenus, addFavoriteMenus } = useAuth();
 const { getFavoriteNavigations, findByUrl, getFaveroteIndex, isFaveroteExist } =
   useMenu();
 const open = ref(false);

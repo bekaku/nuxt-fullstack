@@ -24,8 +24,8 @@ const schema = z.object({
 type Schema = z.output<typeof schema>;
 const remember = ref(false);
 const state = reactive<Partial<Schema>>({
-  email: "admin@mydomain.com",
-  password: "P@ssw0rd",
+  email: "admin@example.com",
+  password: "Admin@12345",
 });
 
 const showPassword = ref(false);
@@ -37,7 +37,7 @@ const onSubmit = async (event: FormSubmitEvent<Schema>) => {
     emailOrUsername: state.email,
     password: state.password,
   });
-  if (response && response.authenticationToken) {
+  if (response) {
     await sendBroradcastChanelReload();
     redirectTimeout.value = setTimeout(() => {
       window.location.replace(

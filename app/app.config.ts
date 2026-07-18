@@ -32,5 +32,20 @@ export default defineAppConfig({
         body: 'p-4! sm:p-4!',
       }
     },
+    link: {
+      variants: {
+        active: {
+          true: 'text-primary',
+          false: 'text-primary'
+        },
+      },
+      compoundVariants: [
+        {
+          class: [
+            'hover:text-primary',
+          ]
+        }
+      ]
+    }
   }
 })

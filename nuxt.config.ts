@@ -35,14 +35,13 @@ export default defineNuxtConfig({
         '@capacitor/device',
         '@internationalized/date',
         '@tanstack/table-core',
-        '@unovis/vue',
+        'clsx',
         'date-fns',
         'date-fns/locale',
-        'zod',
         'dompurify',
-        'clsx',
         'tailwind-merge',
-        'vue3-apexcharts'
+        'vue3-apexcharts',
+        'zod',
       ]
     }
   },
@@ -169,6 +168,7 @@ export default defineNuxtConfig({
       currentUserKeyName: '_current_user',
       jwtAges: 7,//days
       jwtAgesSecond: 604800,//7 days = 7 * 24 * 60 * 60 = 604800 seconds
+      refreshTokenDays: 7,
     }
   },
   routeRules: {

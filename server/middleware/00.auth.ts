@@ -24,6 +24,17 @@ export default defineEventHandler((event) => {
   if (!path.startsWith('/api/')) {return}
 
   const token = getCookie(event, 'access_token')
+
+  // case provided to mobile app too use header token
+  // if (!token) {
+  //   // Retrieve the 'Authorization' header value (H3 is automatically case-sensitive, but it's okay to check for accuracy).
+  //   const authHeader = getHeader(event, 'authorization');
+  //   // Check if there is a header that starts with the word 'Bearer'.
+  //   if (authHeader && authHeader.startsWith('Bearer ')) {
+  //     // Remove the word 'Bearer' (7 letters) to leave only JWT.
+  //     token = authHeader.substring(7);
+  //   }
+  // }
   if (!token) { return } // anonymous — Let the destination route decide for itself.
 
   try {

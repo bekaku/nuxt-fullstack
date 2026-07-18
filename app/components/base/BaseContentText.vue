@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import type { TextEllipsisProps } from "~/types/props";
 
 const emit = defineEmits<{
   "on-change": [v: boolean];
@@ -7,7 +6,19 @@ const emit = defineEmits<{
 
 const { t } = useLang();
 // Define props with default values to match your required usage
-const props = withDefaults(defineProps<TextEllipsisProps>(), {
+const props = withDefaults(defineProps<{
+  content?: string;
+  rows?: number | string;
+  expandText?: string;
+  collapseText?: string;
+  charsPerLine?: number | string;
+  showMore?: boolean;
+  class?: string;
+  textClass?: string;
+  lineHeight?: string;
+  isEscapeHtml?: boolean;
+  urlify?: boolean;
+}>(), {
   rows: -1,
   charsPerLine: 55,
   showMore: false,

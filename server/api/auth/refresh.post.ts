@@ -67,7 +67,14 @@ export default defineEventHandler(async (event): Promise<AppUser> => {
   })
 
   const config = useRuntimeConfig()
-  setCookie(event, 'access_token', newAccessToken, COOKIE_BASE)
+  const ttlString = String(config.accessTokenTtl || '15m')
+  const minutes = Number(ttlString.replace(/[^0-9]/g, '')) || 15
+
+  // setCookie(event, 'access_token', newAccessToken, COOKIE_BASE)
+  setCookie(event, 'access_token', newAccessToken, {
+    ...COOKIE_BASE,
+    maxAge: minutes * 60
+  })
   setCookie(event, 'refresh_token', newRefreshToken, {
     ...COOKIE_BASE,
     maxAge: Number(config.refreshTokenTtlDays ?? 7) * 24 * 60 * 60,

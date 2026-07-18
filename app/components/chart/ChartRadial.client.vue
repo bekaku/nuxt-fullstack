@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import type { RadialChartProps } from '~/types/chart'
+import type { ChartMode, ChartPosition, ChartThemePalete, GridPadding } from '~/types/chart';
+
 const {
   chartId = 'chart-radial-id',
   height = 'auto',
@@ -38,7 +39,41 @@ const {
   fillType = 'gradient',
   valUnit,
   dark = false
-} = defineProps<RadialChartProps>()
+} = defineProps<{
+  chartId?: string
+  height?: string
+  width?: string
+  showLegend?: boolean
+  legendUseSeriesColors?: boolean
+  legendOffsetX?: number
+  legendOffsetY?: number
+  legendFloating?: boolean
+  showDataLabels?: boolean
+  showDataLabelsName?: boolean
+  showDataLabelsValue?: boolean
+  dataLabelsSize?: string
+  dataValueSize?: string
+  dataLabelsValueOfsetY?: number
+  legendPosition?: ChartPosition
+  labelunit?: string
+  stokeLineCap?: 'round' | 'square' | 'butt'
+  fillType?: 'fill' | 'gradient'
+  endAngle?: number
+  startAngle?: number
+  mode?: ChartMode
+  palette?: ChartThemePalete
+  series: number[]
+  colors?: string[]
+  categories: string[]
+  gridPadding?: GridPadding
+  semi?: boolean
+  hollowBg?: boolean
+  hollowSize?: string
+  valUnit?: string
+  trackBackgroud?: string
+  trackBackgroudDark?: string
+  dark?: boolean
+}>()
 const chartSeries = ref(series)
 const options = ref<any>()
 const { isDark } = useTheme()

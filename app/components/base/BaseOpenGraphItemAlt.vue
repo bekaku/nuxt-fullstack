@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { OgMeta } from "~/types/common";
-import type { OgProps } from "~/types/props";
 import { catchUrlFromText } from "~/utils/appUtil";
 
 const {
@@ -11,7 +10,16 @@ const {
   imageSize = "125px",
   imageMaxHeight = "250px",
   content,
-} = defineProps<OgProps>();
+} = defineProps<{
+  item?: OgMeta;
+  content?: string;
+  short?: boolean;
+  showBg?: boolean;
+  textLines?: number;
+  descriptionLines?: number;
+  imageSize?: string;
+  imageMaxHeight?: string;
+}>();
 const opengraphItem = ref<OgMeta>();
 const showOg = ref(false);
 onMounted(async () => {

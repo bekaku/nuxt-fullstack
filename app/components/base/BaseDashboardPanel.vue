@@ -1,15 +1,23 @@
 <script setup lang="ts">
 import type { DropdownMenuItem, DashboardPanelProps } from "@nuxt/ui";
+const props = withDefaults(
+  defineProps<{
+    title?: string;
+    id: string;
+    minSize?: number;
+    maxSize?: number;
+    defaultSize?: number;
+    resizable?: boolean;
+    ui?: DashboardPanelProps["ui"];
+  }>(),
+  {
+    resizable: false,
+    ui: () => ({
+      root: "gap-1",
+    }),
+  },
+);
 
-const { resizable = false, ui = { right: "gap-1" } } = defineProps<{
-  title?: string;
-  id: string;
-  minSize?: number;
-  maxSize?: number;
-  defaultSize?: number;
-  resizable?: boolean;
-  ui?: DashboardPanelProps["ui"];
-}>();
 const { isNotificationsSlideoverOpen } = useDashboard();
 
 const items = [

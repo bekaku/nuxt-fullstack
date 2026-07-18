@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { AreaChartProps } from "~/types/chart";
+import type { ChartMode, ChartPosition, ChartThemePalete, IChartSeries, Strokestyle } from '~/types/chart';
 
 const {
   chartId = "chartId",
@@ -33,7 +33,40 @@ const {
   zoom = false,
   horizontal = false,
   opacity = 1,
-} = defineProps<AreaChartProps>();
+} = defineProps<{
+  chartId?: string
+  height?: string
+  width?: string
+  labelunit?: string
+  showLegend?: boolean
+  legendUseSeriesColors?: boolean
+  legendPosition?: ChartPosition
+  type?: 'area' | 'bar' | 'line'
+  mode?: ChartMode
+  palette?: ChartThemePalete
+  series?: IChartSeries[]
+  colors?: string[]
+  dark?: boolean
+  showDataLabels?: boolean
+  labelRotate?: number
+  yaxisShow?: boolean
+  yaxisTickamount?: number
+  xaxisTickamount?: number
+  xaxisDecimalsInFloat?: number
+  yaxisDecimalsInFloat?: number
+  categories: string[]
+  strokestyle?: Strokestyle
+  strokeWidth?: number
+  sparkline?: boolean
+  annotationsYaxis?: any[]
+  annotationsXaxis?: any[]
+  minYVal?: number
+  maxYVal?: number
+  showToolbar?: boolean
+  zoom?: boolean
+  horizontal?: boolean
+  opacity?: number
+}>();
 const { isDark } = useTheme();
 const chartSeries = ref(series);
 const options = ref<any>();
@@ -62,6 +95,10 @@ onUnmounted(() => {
 });
 
 onMounted(async () => {
+  console.log("chartArea mounted", series);
+  if (import.meta.server) {
+    return;
+  }
   await chartSetup();
   initial.value = true;
 });
@@ -88,7 +125,7 @@ watch(isDark, (state) => {
   }, 50);
 });
 const chartSetup = () => {
-  if (series.length > 0) {
+  if (series && series.length > 0) {
     options.value = {
       chart: {
         id: chartId,

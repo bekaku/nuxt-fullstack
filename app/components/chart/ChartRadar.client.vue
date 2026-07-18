@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import type {
-  RadarChartProps
-} from "~/types/chart";
+import type { ChartMode, ChartPosition, ChartThemePalete, GridPadding, IChartSeries } from '~/types/chart';
+
 const {
   chartId = "chart-radar-id",
   height = "350",
@@ -30,7 +29,33 @@ const {
   strokeWidth = 2,
   opacity = 0.2,
   dark = false,
-} = defineProps<RadarChartProps>();
+} = defineProps<{
+  chartId?: string;
+  height?: string;
+  width?: string;
+  labelunit?: string;
+  showLegend?: boolean;
+  legendUseSeriesColors?: boolean;
+  legendPosition?: ChartPosition;
+  mode?: ChartMode;
+  palette?: ChartThemePalete;
+  series: IChartSeries[];
+  colors?: string[];
+  showDataLabels?: boolean;
+  labelRotate?: number;
+  categories: string[];
+  yaxisShow?: boolean;
+  yaxisTickamount?: number;
+  xaxisTickamount?: number;
+  gridPadding?: GridPadding;
+  yaxisMax?: number;
+  yaxisMin?: number;
+  markers?: number;
+  strokeWidth?: number;
+  gridColors?: string[];
+  opacity?: number;
+  dark?: boolean;
+}>();
 const chartSeries = ref(series);
 const options = ref<any>();
 const { isDark } = useTheme();

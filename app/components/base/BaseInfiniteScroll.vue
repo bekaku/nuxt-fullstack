@@ -1,23 +1,23 @@
 <script setup lang="ts" generic="T">
 import { useInfiniteScroll } from "@vueuse/core";
 
-const {
-  distance = 10, // distance in pixels from bottom to trigger the load
-  scrollClass = "h-80",
-  isFetching,
-  hasMore,
-  scrollRef = null,
-  direction,
-} = defineProps<{
-  isFetching?: boolean;
-  hasMore?: boolean;
-  distance?: number;
-  scrollClass?: string;
-  scrollRef?: HTMLElement | null;
-  direction?: "top" | "bottom" | "left" | "right" | undefined;
-  items?: T[];
-}>();
 
+const props = withDefaults(
+  defineProps<{
+    isFetching?: boolean;
+    hasMore?: boolean;
+    distance?: number;
+    scrollClass?: string;
+    scrollRef?: HTMLElement | null;
+    direction?: "top" | "bottom" | "left" | "right" | undefined;
+    items?: T[];
+  }>(),
+  {
+    distance: 10, // distance in pixels from bottom to trigger the load
+    scrollClass: "h-80",
+    scrollRef: null,
+  },
+);
 const emit = defineEmits<{
   "load-more": [];
   "scrolling-top": [payload: boolean];
@@ -26,13 +26,13 @@ const emit = defineEmits<{
 const scrollContainerRef = useTemplateRef<any>("scrollContainerRef");
 
 useInfiniteScroll(
-  scrollRef || scrollContainerRef,
+  props.scrollRef || scrollContainerRef,
   () => {
-    if (!isFetching && hasMore) {
+    if (!props.isFetching && props.hasMore) {
       emit("load-more");
     }
   },
-  { distance: distance, direction: direction },
+  { distance: props.distance, direction: props.direction },
 );
 
 const scrollToTop = () => {

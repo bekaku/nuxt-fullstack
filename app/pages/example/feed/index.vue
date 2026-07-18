@@ -257,6 +257,7 @@ const onLoadData = async (): Promise<void> => {
       params: {
         page: page.value,
       },
+      credentials: 'omit'
     });
     data.value.push(...response);
     return;
@@ -276,7 +277,7 @@ const handleFilter = (ev: any) => {
   firstLoad.value = false;
   onLoadData();
 };
-onLoadData();
+ onLoadData();
 </script>
 
 <template>

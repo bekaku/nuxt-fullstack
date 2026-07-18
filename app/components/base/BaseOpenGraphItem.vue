@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { he } from "date-fns/locale";
 import type { OgMeta } from "~/types/common";
-import type { OgProps } from "~/types/props";
 
 const {
   short = false,
@@ -10,7 +9,16 @@ const {
   descriptionLines = 2,
   imageSize = "125px",
   imageMaxHeight = "250px",
-} = defineProps<OgProps>();
+} = defineProps<{
+  item?: OgMeta;
+  content?: string;
+  short?: boolean;
+  showBg?: boolean;
+  textLines?: number;
+  descriptionLines?: number;
+  imageSize?: string;
+  imageMaxHeight?: string;
+}>();
 </script>
 <template>
   <div v-if="item" class="flex flex-col bg-neutral-50 dark:bg-neutral-800">

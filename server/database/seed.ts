@@ -8,7 +8,7 @@ import { drizzle } from 'drizzle-orm/postgres-js'
 import postgres from 'postgres'
 import bcrypt from 'bcryptjs'
 import * as schema from './schema'
-import { nextId } from '#server/utils/snowflake'
+import { nextId } from '../utils/snowflake'
 
 const connectionString = process.env.NUXT_DATABASE_URL
 if (!connectionString) {

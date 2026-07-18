@@ -7,13 +7,12 @@ defineProps<{
 
 const colorMode = useColorMode();
 const { locale, onSwitchLocale } = useLang();
-const { signout } = useAuth();
-const authenStore = useAuthenStore();
+const { signout, loginedAvatar, loginedDisplay } = useAuth();
 const user = ref({
-  name: authenStore.loginedDisplay,
+  name: loginedDisplay,
   avatar: {
-    src: authenStore.loginedAvatar,
-    alt: authenStore.loginedDisplay,
+    src: loginedAvatar,
+    alt: loginedDisplay,
   },
 });
 

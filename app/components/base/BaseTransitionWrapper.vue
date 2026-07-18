@@ -1,34 +1,37 @@
 <script setup lang="ts">
-const {
-  name = 'fade',
-  appear = true,
-  duration = 500,
-  mode='default',
-  transitionTime='0.3s'
-} = defineProps<{
-  name?:
-    | 'fade'
-    | 'slide-left'
-    | 'slide-right'
-    | 'slide-up'
-    | 'slide-down'
-    | 'zoom'
-    | 'bounce'
-  mode?: 'in-out' | 'out-in' | 'default'
-  appear?: boolean
-  duration?: number
-  transitionTime?: string
-}>()
+const props = withDefaults(
+  defineProps<{
+    name?:
+      | "fade"
+      | "slide-left"
+      | "slide-right"
+      | "slide-up"
+      | "slide-down"
+      | "zoom"
+      | "bounce";
+    mode?: "in-out" | "out-in" | "default";
+    appear?: boolean;
+    duration?: number;
+    transitionTime?: string;
+  }>(),
+  {
+    name: "fade",
+    appear: true,
+    duration: 500,
+    mode: "default",
+    transitionTime: "0.3s",
+  },
+);
 const emit = defineEmits<{
-  'on-enter': [e: any]
-  'on-leave': [e: any]
-}>()
+  "on-enter": [e: any];
+  "on-leave": [e: any];
+}>();
 const onEnter = (e: any) => {
-  emit('on-enter', e)
-}
+  emit("on-enter", e);
+};
 const onLeave = (e: any) => {
-  emit('on-leave', e)
-}
+  emit("on-leave", e);
+};
 </script>
 <template>
   <transition

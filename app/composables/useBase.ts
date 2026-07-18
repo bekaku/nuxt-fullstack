@@ -1,29 +1,31 @@
-import type { AppNuxtError, IPageMeta, NavigateToOptions } from "~/types/common";
-import type { RouteLocationRaw } from "vue-router";
 import type { ButtonProps } from '@nuxt/ui';
 import DOMPurify from 'dompurify';
+import type { RouteLocationRaw } from "vue-router";
+import type { AppNuxtError, IPageMeta, NavigateToOptions } from "~/types/common";
 export const useBase = () => {
-  const route = useRoute();
-  const router = useRouter();
-  const { isServer } = useConfiguration();
-  const { t } = useLang();
+
   const confirm = useConfirmDialog()
   const getCurrentPath = (fullPath = true) => {
+      const route = useRoute();
     return fullPath ? route.fullPath : route.path;
   };
   const getPreviousPath = () => {
+    const router = useRouter();
     return router.options.history.state.back;
   };
   const getPageMeta = () => {
+      const route = useRoute();
     return route.meta;
   }
   const getPageMetaByKey = (key: IPageMeta) => {
+      const route = useRoute();
     return route.meta[key];
   }
   const getParam = <T>(field: string): T | undefined => {
     if (!field) {
       return undefined;
     }
+      const route = useRoute();
     return route.params ? (route.params[field] as T) : undefined;
   };
   const getParamNumber = (att: string): number => {
@@ -34,6 +36,7 @@ export const useBase = () => {
     if (!field) {
       return;
     }
+      const route = useRoute();
     return route.query ? (route.query[field] as T) : undefined;
   };
   const getQueryNumber = (att: string): number => {
@@ -47,6 +50,7 @@ export const useBase = () => {
     if (!link) {
       return;
     }
+    const router = useRouter();
     if (!replace) {
       router.push(link);
     } else {
@@ -66,6 +70,7 @@ export const useBase = () => {
     return new Promise((resolve) => resolve(true));
   }
   const onPageBack = () => {
+    const router = useRouter();
     router.back();
   }
 
