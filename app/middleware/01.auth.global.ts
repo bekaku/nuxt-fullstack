@@ -1,31 +1,33 @@
 import { AuthNoFilterPage } from '~/libs/constants';
 export default defineNuxtRouteMiddleware(async (to) => {
-  if (to.name == undefined || (typeof to.name !== 'string')) return
-  const baseRouteName = to?.name?.replace(/___[a-z]{2}$/, '');
-  if (typeof to.name == 'string' && AuthNoFilterPage.includes(baseRouteName)) return
-  // console.log('middleware > auth.global > Pagename: ', to.name, ', path: ', to.path, ',meta: ', to.meta?.layout);
+
+  // 1.Filter routes that do not require authentication.
+  if (typeof to.name !== 'string') return;
+  const baseRouteName = to.name.replace(/___[a-z]{2}$/, '');
+  if (AuthNoFilterPage.includes(baseRouteName)) return;
 
   const { auth, fetchMe } = useAuth();
   const { initialAppNav } = useMenu();
   const loggedInCookie = useCookie('is_logged_in');
-  // Hydrate user state for the first time (both on the SSR side and when refreshing the webpage)
-  if (auth.value === null && loggedInCookie.value === 'true') {
-    await fetchMe()
+
+  // 2. Hydration Logic (Activates only when the state is not loaded)
+  if (!auth.value && loggedInCookie.value === 'true') {
+    await fetchMe();
     if (auth.value) {
       await initialAppNav();
     }
   }
 
-
+  // 3. Prevent users from logging in and then returning to the login page.
   if (auth.value && to.path === '/auth/login') {
     return navigateTo('/');
   }
 
-  if (!auth.value && !loggedInCookie.value && to.path !== '/auth/login') { // if token doesn't exist redirect to log in
-    abortNavigation();
-    const continueQuery = to.fullPath
-      ? `?continue=${!import.meta.server ? encodeURIComponent(to.fullPath) : to.fullPath}`
-      : ''
-    return navigateTo(`/auth/login${continueQuery}`)
+ // 4. Handling Redirects for Protected Pages
+// If there is no cookie, it means you are not actually logged in (checking cookies is the primary method for accuracy).
+  if (!loggedInCookie.value && to.path !== '/auth/login') {
+    // encodeURIComponent here for URL verification.
+    const continueQuery = encodeURIComponent(to.fullPath);
+    return navigateTo(`/auth/login?continue=${continueQuery}`);
   }
 })

@@ -95,7 +95,6 @@ onUnmounted(() => {
 });
 
 onMounted(async () => {
-  console.log("chartArea mounted", series);
   if (import.meta.server) {
     return;
   }
