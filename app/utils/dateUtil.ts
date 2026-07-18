@@ -1,0 +1,144 @@
+export const FORMAT_DATE_YYYY_MM_DD = 'yyyy-MM-dd';
+export const FORMAT_DATE_DD_MM_YY = 'dd/MM/yy'; //25/05/22
+export const FORMAT_DATE_TIME_ALT = 'dd/MM/yyyy HH:mm'; //25/05/2022 17:26
+export const FORMAT_DATE_HH_MM = 'HH:mm'; //17:26
+export const FORMAT_DATE_DD_MM = 'dd/MM'; //25/05
+export const FORMAT_DATE_DD_MM_HH_MM = 'dd/MM HH:mm'; //25/05
+export const addDateByDays = (days: number) => {
+  const date = new Date();
+  date.setDate(date.getDate() + days);
+  return date;
+};
+export const addDateByDaysV2 = (d: Date, days: number) => {
+  d.setDate(d.getDate() + days);
+  return d;
+};
+export const getDateNow = () => {
+  return new Date();
+};
+export const getYearNow = () => {
+  return new Date().getFullYear();
+};
+export const getMonthNow = () => {
+  return new Date().getMonth();
+};
+export const getCurrentTimestamp = () => {
+  return Date.now();
+};
+export const getCurrentTime = () => {
+  const now = new Date();
+  const hours = String(now.getHours()).padStart(2, '0');  // Ensure two digits
+  const minutes = String(now.getMinutes()).padStart(2, '0');  // Ensure two digits
+  return `${hours}:${minutes}`;
+};
+export const getCurrentDateByFormat = (
+  forMatString: string | undefined = FORMAT_DATE_YYYY_MM_DD// yyyy-MM-dd
+) => {
+  return formatDateBy(getDateNow(), forMatString);
+};
+export const formatDateBy = (date: Date, formatString: string): string => {
+  const padZero = (num: number) => num.toString().padStart(2, "0");
+
+  const year = date.getFullYear();
+  const month = padZero(date.getMonth() + 1); // Months are 0-based
+  const day = padZero(date.getDate());
+  const hours = padZero(date.getHours());
+  const minutes = padZero(date.getMinutes());
+  const seconds = padZero(date.getSeconds());
+
+  return formatString
+    .replace("yyyy", year.toString())
+    .replace("MM", month)
+    .replace("dd", day)
+    .replace("HH", hours)
+    .replace("mm", minutes)
+    .replace("ss", seconds);
+};
+export const convertDateFormatToThai = (dateString?: string | null) => {
+  //convert YYYY-MM-DD to DD/MM/YYYY
+  if (!dateString) {
+    return undefined;
+  }
+  const parts = dateString.split('-');
+  return parts[2] + '/' + parts[1] + '/' + parts[0];
+};
+export const convertThaiDateFormatToEng = (dateString?: string | null) => {
+  //convert DD/MM/YYYY to YYYY-MM-DD
+  if (!dateString) {
+    return undefined;
+  }
+  const parts = dateString.split('/');
+  return parts[2] + '-' + parts[1] + '-' + parts[0];
+};
+export const isDate2GreaterThan = (d1: Date, d2: Date) => {
+  return d2.getTime() > d1.getTime();
+};
+export const isDate2GreaterOrEqualThanOnlyDate = (d1: Date, d2: Date) => {
+  const tempDate2 = new Date(
+    d2.getFullYear(),
+    d2.getMonth(),
+    d2.getDate(),
+    0,
+    0,
+    0,
+    0
+  );
+  const tempDate1 = new Date(
+    d1.getFullYear(),
+    d1.getMonth(),
+    d1.getDate(),
+    0,
+    0,
+    0,
+    0
+  );
+  return tempDate2.getTime() >= tempDate1.getTime();
+};
+export const removeTime = (datetimeString: string) => {
+  return datetimeString ? datetimeString.split(' ')[0] : '';
+};
+
+export const formatDurationFromMillis = (ms: number): string => {
+  const seconds = Math.floor(ms / 1000);
+  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+
+  const remainingSeconds = seconds % 60;
+  const remainingMinutes = minutes % 60;
+
+  const parts: string[] = [];
+  if (hours > 0) parts.push(`${hours}h`);
+  if (minutes > 0) parts.push(`${remainingMinutes}m`);
+  if (remainingSeconds > 0 || parts.length === 0) {
+    parts.push(`${remainingSeconds}s`);
+  }
+  return parts.join(" ");
+}
+export const formatDurationFromSecond = (seconds: number): string => {
+  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+
+  const remainingSeconds = seconds % 60;
+  const remainingMinutes = minutes % 60;
+
+  const parts: string[] = [];
+  if (hours > 0) parts.push(`${hours}h`);
+  if (minutes > 0) parts.push(`${remainingMinutes}m`);
+  if (remainingSeconds > 0 || parts.length === 0) {
+    parts.push(`${remainingSeconds}s`);
+  }
+  return parts.join(" ");
+}
+export const formatDurationHMS = (seconds: number): string => {
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = Math.floor(seconds % 60);
+
+  const pad = (n: number) => n.toString().padStart(2, "0");
+
+  if (h > 0) {
+    return `${pad(h)}:${pad(m)}:${pad(s)}`; // hh:mm:ss
+  } else {
+    return `${pad(m)}:${pad(s)}`;           // mm:ss
+  }
+};

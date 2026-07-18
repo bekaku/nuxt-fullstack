@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:18-alpine
+    container_name: nuxt_rbac
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: app_user
+      POSTGRES_PASSWORD: app_password
+      POSTGRES_DB: nuxt4_rbac
+    ports:
+      - '5432:5432'
+    volumes:
+      - pg_data:/var/lib/postgresql
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U app_user -d nuxt_rbac']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  pg_data:

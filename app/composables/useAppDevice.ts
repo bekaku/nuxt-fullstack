@@ -1,0 +1,57 @@
+import { Device } from '@capacitor/device';
+export const useAppDevice = () => {
+
+  const { isMobile, isTablet, isDesktop, isMobileOrTablet, isCrawler, isAndroid, isIos, isWindows } = useDevice();
+  const deviceId = ref();
+  const { getDateDiffMinutes } = useDateFns()
+  const { latestSyncActiveStatus } = useCache();
+
+  const getDeviceInfo = async (): Promise<any> => {
+    if (import.meta.server) return null;
+    return await Device.getInfo();
+  };
+
+  const getDeviceId = async (): Promise<string | undefined> => {
+    if (import.meta.server) return undefined;
+
+    const ID = await Device.getId();
+    deviceId.value = ID ? ID.identifier : undefined;
+    return deviceId.value;
+  };
+
+  const canSyncActiveStatusToServer = (): Promise<boolean> => {
+    return new Promise(resolve => {
+      const currentTimeTamp = getCurrentTimestamp();
+      let diffminutes;
+      if (latestSyncActiveStatus.value > 0) {
+        diffminutes = getDateDiffMinutes(
+          latestSyncActiveStatus.value,
+          currentTimeTamp
+        );
+      } else {
+        latestSyncActiveStatus.value = currentTimeTamp;
+        resolve(true);
+        return;
+      }
+      if (diffminutes != undefined && diffminutes >= 5) {
+        latestSyncActiveStatus.value = currentTimeTamp;
+        resolve(true);
+        return;
+      }
+      resolve(false);
+    });
+  };
+
+  const setSysncActiveStatus = () => {
+    latestSyncActiveStatus.value = getCurrentTimestamp();
+  };
+
+  return {
+    getDeviceInfo,
+    getDeviceId,
+    deviceId,
+    canSyncActiveStatusToServer,
+    setSysncActiveStatus,
+    isMobile, isTablet, isDesktop, isMobileOrTablet, isCrawler, isAndroid, isIos, isWindows,
+  };
+}

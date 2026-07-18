@@ -1,0 +1,53 @@
+/* @import "tailwindcss" theme(static); */
+@import "tailwindcss";
+@import "@nuxt/ui";
+
+@theme static {
+  --font-sans: "Public Sans", sans-serif;
+  /* --font-sans: 'Kanit', sans-serif; */
+  /* --font-sans: 'Prompt', sans-serif; */
+
+  --color-success-50: #f0fdf4;
+  --color-success-100: #dcfce6;
+  --color-success-200: #bbf7cf;
+  --color-success-300: #85f0aa;
+  --color-success-400: #49df7d;
+  --color-success-500: #23d160;
+  --color-success-600: #15a447;
+  --color-success-700: #14813b;
+  --color-success-800: #166533;
+  --color-success-900: #14532c;
+  --color-success-950: #052e15;
+
+  --color-error-50: #fff0f1;
+  --color-error-100: #ffe2e6;
+  --color-error-200: #ffcad3;
+  --color-error-300: #ff9fae;
+  --color-error-400: #ff6983;
+  --color-error-500: #ff3860;
+  --color-error-600: #ed1148;
+  --color-error-700: #c8083d;
+  --color-error-800: #a8093a;
+  --color-error-900: #8f0c38;
+  --color-error-950: #500119;
+
+  --color-warning-50: #fff8ed;
+  --color-warning-100: #ffefd4;
+  --color-warning-200: #ffdaa8;
+  --color-warning-300: #ffc071;
+  --color-warning-400: #ff9f43;
+  --color-warning-500: #fe7b11;
+  --color-warning-600: #ef6007;
+  --color-warning-700: #c64608;
+  --color-warning-800: #9d390f;
+  --color-warning-900: #7e3010;
+  --color-warning-950: #441506;
+
+}
+
+:root {
+  --ui-radius: 0.375rem;
+}
+/* .dark {
+  --ui-bg: var(--ui-color-neutral-950);
+} */

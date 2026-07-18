@@ -1,0 +1,12 @@
+name: nuxtui-web
+services:
+  nuxtui-web:
+    restart: unless-stopped
+    container_name: nuxtui-web
+    # build: .
+    image: "nuxtui-web:latest"
+    # extra_hosts:
+      # - 'host.docker.internal:host-gateway'
+    ports:
+      - "127.0.0.1:3002:3000"
+      - "172.17.0.1:3002:3000"
