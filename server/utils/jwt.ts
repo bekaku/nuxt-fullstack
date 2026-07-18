@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken'
 import { AccessTokenPayload } from '~/types/common'
+import { v7 as uuidv7 } from 'uuid';
 /**
 * Access Token = stateless JWT, short expiry date (default 15 minutes)
 * Not saved to DB — verified only with signature + experience
@@ -27,7 +28,8 @@ export function verifyAccessToken(token: string): AccessTokenPayload {
 * to enable revoke/rotate on the server side
 */
 export function generateRefreshToken(): string {
-  return crypto.randomUUID()
+  // return crypto.randomUUID()
+  return uuidv7();
 }
 
 export function refreshTokenExpiryDate(): Date {
