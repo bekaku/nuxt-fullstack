@@ -1,25 +1,26 @@
 import { AuthNoFilterPage } from '~/libs/constants';
-export default defineNuxtRouteMiddleware((to) => {
-    if (to.name == undefined || (typeof to.name !== 'string')) return
-    const baseRouteName = to?.name?.replace(/___[a-z]{2}$/, '');
-    if (typeof to.name == 'string' && AuthNoFilterPage.includes(baseRouteName)) return
-    // console.log('middleware > auth.global > Pagename: ', to.name, ', path: ', to.path, ',meta: ', to.meta?.layout);
+export default defineNuxtRouteMiddleware(async (to) => {
+  if (to.name == undefined || (typeof to.name !== 'string')) return
+  const baseRouteName = to?.name?.replace(/___[a-z]{2}$/, '');
+  if (typeof to.name == 'string' && AuthNoFilterPage.includes(baseRouteName)) return
+  // console.log('middleware > auth.global > Pagename: ', to.name, ', path: ', to.path, ',meta: ', to.meta?.layout);
 
-    // const { $config } = useNuxtApp()
-    const { currentUserId } = useAppCookie();
-    // console.log('middleware > auth.global > JWT currentUserId (SSR):', currentUserId.value)
-    // const token = useCookie($config.public.jwtKeyName); // get token from cookies
-    if (currentUserId.value && to.path === '/auth/login') {
-        return navigateTo('/');
-    }
+  const { auth, fetchMe } = useAuth();
 
-    if (!currentUserId.value && to.path !== '/auth/login') { // if token doesn't exist redirect to log in
-        abortNavigation();
-        // return navigateTo('/auth/login?continue=' + to.fullPath ? to.fullPath : '');
-        // return navigateTo('/auth/login?continue=' + (to.fullPath ? encodeURIComponent(to.fullPath):''));
-        const continueQuery = to.fullPath
-            ? `?continue=${!import.meta.server ? encodeURIComponent(to.fullPath) : to.fullPath}`
-            : ''
-        return navigateTo(`/auth/login${continueQuery}`)
-    }
+ // Hydrate user state for the first time (both on the SSR side and when refreshing the webpage)
+  if (auth.value === null) {
+    await fetchMe()
+  }
+
+  if (auth.value && to.path === '/auth/login') {
+    return navigateTo('/');
+  }
+
+  if (!auth.value && to.path !== '/auth/login') { // if token doesn't exist redirect to log in
+    abortNavigation();
+    const continueQuery = to.fullPath
+      ? `?continue=${!import.meta.server ? encodeURIComponent(to.fullPath) : to.fullPath}`
+      : ''
+    return navigateTo(`/auth/login${continueQuery}`)
+  }
 })

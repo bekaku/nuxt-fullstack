@@ -171,26 +171,6 @@ export const useAppCookie = () => {
 
 
   }
-  const removeAuthToken = async () => {
-    if (!currentUserId.value) {
-      return null;
-    }
-    await clearCurrentAuthenToken();
-    // set another user
-    const activeJwtCookies = await getAllJwtToken();
-    const otherJwts = activeJwtCookies.filter(cookie => cookie.userId != currentUserId.value);
-    if (otherJwts && otherJwts.length > 0) {
-      const firstCookie = otherJwts[0]
-      if (firstCookie && firstCookie.userId) {
-        currentUserId.value = firstCookie.userId;
-      }
-    } else {
-      currentUserId.value = null
-    }
-    return new Promise((resolve) => {
-      resolve(true);
-    });
-  }
   const validateUserExist = async (userId: number | string): Promise<boolean> => {
     const jwtCookies = await getAllJwtToken()
     if (!jwtCookies || jwtCookies.length == 0) {
@@ -240,7 +220,6 @@ export const useAppCookie = () => {
     getCurrentUserToken,
     getAllJwtToken,
     getAllJwtRefreshToken,
-    removeAuthToken,
     switchUser,
     currentUserJwt,
     currentUserJwtRefresh,

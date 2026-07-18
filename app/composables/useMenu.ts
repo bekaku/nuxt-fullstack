@@ -2,14 +2,10 @@ import type { AppNavigationMenuItem } from "~/types/common";
 import type { FavoriteMenu } from "~/types/models";
 
 export const useMenu = () => {
-
-  // const { t } = useLang();
   const nuxtApp = useNuxtApp();
   const t = nuxtApp.$i18n.t;
   const { hasPermissionLazy } = useRbac();
-  const appStore = useAppStore();
-  const { setAppNavigations } = appStore;
-  const { favoriteMenus, appNavigations } = storeToRefs(appStore)
+  const { auth, appNavigations, setAppNavigations, favoriteMenus } = useAuth();
   const appNavs: AppNavigationMenuItem[][] = [
     [
       {
@@ -168,9 +164,13 @@ export const useMenu = () => {
     return await hasPermissionLazy({ permissions });
   }
   const getFavoriteNavigations = computed<AppNavigationMenuItem[][]>(() => {
+
+    if (!auth.value || !auth.value.favoriteMenus || auth.value.favoriteMenus.length == 0) {
+      return []
+    }
     const items: AppNavigationMenuItem[] = [];
 
-    for (const menu of favoriteMenus.value) {
+    for (const menu of auth.value.favoriteMenus) {
       const result = findByUrl(appNavigations.value as AppNavigationMenuItem[][], menu.url);
       if (result) {
         items.push({ ...result });

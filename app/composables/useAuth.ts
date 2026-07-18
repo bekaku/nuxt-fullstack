@@ -1,40 +1,58 @@
-import type { LoginRequest, RefreshTokenResponse, ResponseMessage } from '~/types/common';
+import type { AppNavigationMenuItem, LoginRequest, ResponseMessage } from '~/types/common';
+import type { AppUser, FavoriteMenu } from '~/types/models';
 import { useAppBroadcastChannels } from './useAppBroadcastChannels';
 import { useBase } from './useBase';
-import { useAuthenStore } from '~/stores/authenStore';
 export const useAuth = () => {
   const api = useApi();
   const { sendBroradcastChanelReload } = useAppBroadcastChannels()
-  const { setAuthenToken, removeAuthToken, getCurrentUserToken, switchUser } = useAppCookie();
   const { getDeviceId } = useAppDevice()
-  const { isServer } = useConfiguration()
-  const authenStore = useAuthenStore();
   const loading = ref<boolean>(false);
   const { appNavigateTo } = useBase();
   const { t } = useLang();
   const confirm = useConfirmDialog();
   const loader = useLoader();
   const { inputSanitizeHtml } = useBase()
-  const signin = async (req: LoginRequest): Promise<RefreshTokenResponse | null> => {
+
+  const auth = useState<AppUser | null>('auth:user', () => null)
+  const appNavigations = useState<AppNavigationMenuItem>('auth:navigations', () => [])
+  const favoriteMenus = useState<FavoriteMenu[]>('auth:favoriteMenus', () => [])
+  const isLoggedIn = computed(() => !!auth.value)
+  const setAuth = (payload: AppUser) => {
+    auth.value = payload
+  }
+
+  const clearAuth = () => {
+    auth.value = null
+  }
+
+  const setAppNavigations = (items: AppNavigationMenuItem[][]) => {
+    appNavigations.value = items
+  }
+  const setFavoriteMenus = (items?: FavoriteMenu[]) => {
+    favoriteMenus.value = items || [];
+  }
+  const addFavoriteMenus = (item: FavoriteMenu) => {
+    favoriteMenus.value.push(item)
+  }
+  const signin = async (req: LoginRequest): Promise<AppUser | null> => {
 
     loading.value = true
     const deviceId = await getDeviceId()
     try {
-      const response = await api<RefreshTokenResponse>('/api/auth/login', {
+      const response = await api<AppUser>('/api/auth/login', {
         method: 'POST',
         body: {
-          data: {
-            emailOrUsername: inputSanitizeHtml(req.emailOrUsername),
-            password: inputSanitizeHtml(req.password),
-            loginFrom: 'WEB',
-            deviceId: deviceId,
-          }
+          emailOrUsername: inputSanitizeHtml(req.emailOrUsername),
+          password: inputSanitizeHtml(req.password),
+          loginFrom: 'WEB',
+          deviceId: deviceId,
         }
       })
 
-      if (response && response.authenticationToken) {
-        await setAuthenToken(response);
+      if (response) {
+        setAuth(response)
       }
+
       return new Promise((resolve) => {
         resolve(response);
       });
@@ -54,18 +72,11 @@ export const useAuth = () => {
     });
     if (conf) {
       loader.open();
-      const currentToken = await getCurrentUserToken();
       await api<ResponseMessage>('/api/auth/logout', {
         method: 'POST',
-        body: {
-          data: {
-            refreshToken: currentToken?.refreshToken,
-          }
-        }
       })
 
-      await removeAuthToken();
-      await authenStore.onLogout();
+      clearAuth();
       await sendBroradcastChanelReload();
       loader.close();
       appNavigateTo('/auth/login', { replace: true })
@@ -73,21 +84,31 @@ export const useAuth = () => {
     return new Promise((resolve) => resolve(true));
   };
 
-  const onSwithUser = async (userId: number | string) => {
-    if (!isServer() || !userId) {
-      return;
+  const fetchMe = async (): Promise<AppUser | null> => {
+    try {
+      const res = await api<AppUser>('/api/auth/me', {
+        method: 'GET',
+      })
+      setAuth(res)
+      return res
+    } catch {
+      clearAuth()
+      return null
     }
-    await switchUser(userId)
-    await sendBroradcastChanelReload();
-    setTimeout(() => {
-      window.location.replace('/')
-    }, 100)
   }
+
   return {
+    auth,
+    isLoggedIn,
     loading,
     signin,
     signout,
-    onSwithUser
+    fetchMe,
+    setAuth,
+    clearAuth,
+    appNavigations,
+    setAppNavigations,
+    favoriteMenus
   }
 
 }
