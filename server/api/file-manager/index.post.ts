@@ -14,7 +14,8 @@ export default defineEventHandler(async (event): Promise<ResponseEntity<any>> =>
   }
 
   const config = useRuntimeConfig()
-  const uplodPath = config.cdnDirectory
+  const cdnDirectory = config.cdnDirectory
+  const cdnBase = config.public.cdnBase
 
   let fileChunk: Buffer | undefined
   let uniqueId = ''
@@ -41,7 +42,7 @@ export default defineEventHandler(async (event): Promise<ResponseEntity<any>> =>
 
 
   //Prepare the folder.
-  const uploadDir = path.join(process.cwd(), uplodPath)
+  const uploadDir = path.join(process.cwd(), cdnDirectory)
   const tempDir = path.join(uploadDir, 'temp')
 
   await fs.mkdir(tempDir, { recursive: true }) // Create a folder if one doesn't already exist.
@@ -70,15 +71,13 @@ export default defineEventHandler(async (event): Promise<ResponseEntity<any>> =>
       status: 200,
       message: 'Upload and merge complete',
       data: {
-        url: `/${uplodPath}/${uniqueFilename}`
+        url: `${cdnBase}/${uniqueFilename}`
       }
     }
   }
 
   return {
     status: 200,
-    message: `Chunk ${chunkIndex} uploaded`,
-    data: {}
   }
   /*
   return {

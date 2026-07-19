@@ -1,5 +1,5 @@
 import type { FetchResponse } from 'ofetch';
-import type { AppException, RefreshTokenResponse, ResponseEntity, ResponseMessage } from '~/types/common';
+import type { AppException, ResponseEntity, ResponseMessage } from '~/types/common';
 import type { AppUser } from '~/types/models';
 
 let refreshPromise: Promise<ResponseEntity<AppUser>> | null = null
@@ -59,42 +59,38 @@ export const useApi = () => {
 
   const exeptionNotify = (response: any) => {
     if (response && response._data) {
-      if (isAppException(response._data)) {
-        notifyMessage(response._data);
-      } else if (isServerResponseMessage(response._data)) {
-        notifyServerMessage(response._data);
-      }
+      notifyServerMessage(response._data);
     }
   };
 
-  const notifyMessage = (response: AppException | null): void => {
-    if (import.meta.server || response == null) {
-      return;
-    }
+  // const notifyMessage = (response: AppException | null): void => {
+  //   if (import.meta.server || response == null) {
+  //     return;
+  //   }
 
-    toast.add({
-      title: h('span', { class: 'text-red-500 font-bold' }, response.message),
-      description: response.errors?.length
-        ? h(
-          'ul',
-          { class: 'list-disc list-inside space-y-1 mt-1 text-gray-600 dark:text-gray-300' },
-          response.errors.map(errorText => h('li', errorText))
-        )
-        : undefined,
-      icon: 'lucide:octagon-alert',
-      color: 'error',
-    })
-  };
+  //   toast.add({
+  //     title: h('span', { class: 'text-red-500 font-bold' }, response.message),
+  //     description: response.errors?.length
+  //       ? h(
+  //         'ul',
+  //         { class: 'list-disc list-inside space-y-1 mt-1 text-gray-600 dark:text-gray-300' },
+  //         response.errors.map(errorText => h('li', errorText))
+  //       )
+  //       : undefined,
+  //     icon: 'lucide:octagon-alert',
+  //     color: 'error',
+  //   })
+  // };
 
-  const notifyServerMessage = (response: ResponseMessage): void => {
-    if (import.meta.server || !response.message) {
+  const notifyServerMessage = (response: ResponseEntity<any>): void => {
+    if (import.meta.server || !response?.message) {
       return;
     }
 
     toast.add({
       description: response.message,
-      icon: response.status == '200 OK' || response.status == '201 Created' ? 'lucide:circle-check' : 'i-lucide-alert-circle',
-      color: response.status == '200 OK' || response.status == '201 Created' ? 'success' : 'error',
+      icon: response.status < 400 ? 'lucide:circle-check' : 'i-lucide-alert-circle',
+      color: response.status < 400 ? 'success' : 'error',
     })
   }
 
@@ -122,7 +118,7 @@ export const useApi = () => {
             }
           }
           if (isDevMode()) {
-            console.warn("[refresh token]", { request, options });
+            console.warn("[refresh token]");
           }
           refreshPromise = $fetch<ResponseEntity<AppUser>>('/api/auth/refresh', {
             baseURL: apiBase as string,
@@ -130,9 +126,15 @@ export const useApi = () => {
             headers: refreshHeaders,
             credentials: 'include',
           }).then(async (res) => {
+            if (isDevMode()) {
+              console.warn("[refresh token] res", res);
+            }
             loggedInCookie.value = 'true';
             return res;
           }).catch(async (err) => {
+            if (isDevMode()) {
+              console.warn("[refresh token] err", err);
+            }
             loggedInCookie.value = null;
             await handleLogout();
             throw err;
@@ -142,10 +144,19 @@ export const useApi = () => {
         }
 
         try {
-          // const newAccessToken = await refreshPromise;
+          if (refreshPromise) {
+            const newAccessToken = await refreshPromise;
+          }
           // Copy the options to prevent affecting the source object.
           const retryOptions = { ...options };
           retryOptions.headers = new Headers(retryOptions.headers);
+
+          if (import.meta.server) {
+            const reqHeaders = useRequestHeaders(['cookie']);
+            if (reqHeaders.cookie) {
+              retryOptions.headers.set('cookie', reqHeaders.cookie);
+            }
+          }
 
           return (await callApi(retryOptions)) as any;
         } catch (retryError) {
