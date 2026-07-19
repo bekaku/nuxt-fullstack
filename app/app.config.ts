@@ -12,6 +12,11 @@ export default defineAppConfig({
       warning: 'warning',
       error: 'error'
     },
+    avatar: {
+      defaultVariants: {
+        size: 'xl',
+      }
+    },
     button: {
       variants: {
         size: {
@@ -21,8 +26,15 @@ export default defineAppConfig({
         }
       },
       defaultVariants: {
-        variant: 'subtle',
+        variant: 'solid',
         color: 'neutral'
+      }
+    },
+    badge: {
+      defaultVariants: {
+        color: 'primary',
+        variant: 'soft',
+        size: 'md'
       }
     },
     card: {

@@ -6,6 +6,7 @@ import { signAccessToken, generateRefreshToken, refreshTokenExpiryDate } from '.
 import { loadUserPermissions } from '../../utils/permission'
 import { nextId } from '../../utils/snowflake'
 import { AppUser } from '~/types/models'
+import { ResponseEntity } from '~/types/common'
 
 const bodySchema = z.object({
   emailOrUsername: z.string().min(1),
@@ -21,7 +22,7 @@ const COOKIE_BASE = {
   path: '/',
 }
 
-export default defineEventHandler(async (event): Promise<AppUser> => {
+export default defineEventHandler(async (event): Promise<ResponseEntity<AppUser>> => {
 
 
   const body = await readValidatedBody(event, bodySchema.parse)
@@ -111,12 +112,15 @@ export default defineEventHandler(async (event): Promise<AppUser> => {
     ...COOKIE_BASE,
     maxAge: Number(config.refreshTokenDays ?? 7) * 24 * 60 * 60,
   })
-
   return {
-    id: user.id.toString(),
-    email: user.email,
-    username: user.username,
-    selectedRoles: roles,
-    permissions,
+    status: 200,
+    data: {
+      id: user.id.toString(),
+      email: user.email,
+      username: user.username,
+      selectedRoles: roles,
+      permissions,
+    }
   }
+
 })

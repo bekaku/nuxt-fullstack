@@ -1,7 +1,8 @@
 import type { FetchResponse } from 'ofetch';
-import type { AppException, RefreshTokenResponse, ResponseMessage } from '~/types/common';
+import type { AppException, RefreshTokenResponse, ResponseEntity, ResponseMessage } from '~/types/common';
+import type { AppUser } from '~/types/models';
 
-let refreshPromise: Promise<RefreshTokenResponse> | null = null
+let refreshPromise: Promise<ResponseEntity<AppUser>> | null = null
 
 export const useApi = () => {
   const { apiBase, apiClient, isDevMode, isServer } = useConfiguration()
@@ -39,7 +40,7 @@ export const useApi = () => {
       }
 
       options.credentials = options.credentials || 'include';
-  if (import.meta.server && options.credentials === 'include') {
+      if (import.meta.server && options.credentials === 'include') {
         const reqHeaders = useRequestHeaders(['cookie']);
         if (reqHeaders.cookie) {
           options.headers.set('cookie', reqHeaders.cookie);
@@ -120,7 +121,10 @@ export const useApi = () => {
               refreshHeaders.set('cookie', reqHeaders.cookie);
             }
           }
-          refreshPromise = $fetch<RefreshTokenResponse>('/api/auth/refresh', {
+          if (isDevMode()) {
+            console.warn("[refresh token]", { request, options });
+          }
+          refreshPromise = $fetch<ResponseEntity<AppUser>>('/api/auth/refresh', {
             baseURL: apiBase as string,
             method: 'POST',
             headers: refreshHeaders,
@@ -138,8 +142,7 @@ export const useApi = () => {
         }
 
         try {
-          const newAccessToken = await refreshPromise;
-
+          // const newAccessToken = await refreshPromise;
           // Copy the options to prevent affecting the source object.
           const retryOptions = { ...options };
           retryOptions.headers = new Headers(retryOptions.headers);

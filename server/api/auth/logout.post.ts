@@ -1,7 +1,8 @@
 import { eq } from 'drizzle-orm'
 import { useDb, schema } from '../../database/client'
+import { ResponseEntity } from '~/types/common'
 
-export default defineEventHandler(async (event) => {
+export default defineEventHandler(async (event): Promise<ResponseEntity<void>> => {
   const refreshToken = getCookie(event, 'refresh_token')
 
   if (refreshToken) {
@@ -15,5 +16,8 @@ export default defineEventHandler(async (event) => {
   deleteCookie(event, 'access_token', { path: '/' })
   deleteCookie(event, 'refresh_token', { path: '/' })
 
-  return { success: true }
+   return {
+    status: 200,
+    message: 'Logout successful'
+  }
 })

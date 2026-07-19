@@ -71,14 +71,10 @@ const handleLoader = () => {
       <div class="flex gap-2 py-4">
         <UButton
           label="Default"
-          color="neutral"
-          variant="subtle"
           @click="handleClick"
         />
         <UButton
           label="Custom Button"
-          color="neutral"
-          variant="subtle"
           @click="handleCustomClick"
         />
       </div>
@@ -89,8 +85,6 @@ const handleLoader = () => {
       <div class="flex gap-2 py-4">
         <UButton
           label="Default"
-          color="neutral"
-          variant="subtle"
           @click="
             () => {
               defaultModal = true;
@@ -99,8 +93,6 @@ const handleLoader = () => {
         />
         <UButton
           label="Dismissable"
-          color="neutral"
-          variant="subtle"
           @click="
             () => {
               dismissableModal = true;
@@ -109,8 +101,6 @@ const handleLoader = () => {
         />
         <UButton
           label="Footer"
-          color="neutral"
-          variant="subtle"
           @click="
             () => {
               footerModal = true;
@@ -119,8 +109,6 @@ const handleLoader = () => {
         />
         <UButton
           label="Full Screen"
-          color="neutral"
-          variant="subtle"
           @click="
             () => {
               fullScreenModal = true;
@@ -135,8 +123,6 @@ const handleLoader = () => {
       <div class="flex gap-2 py-4">
         <UButton
           label="Show Loader"
-          color="neutral"
-          variant="subtle"
           @click="handleLoader"
         />
       </div>

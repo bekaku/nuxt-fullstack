@@ -1,5 +1,5 @@
 import { count } from 'drizzle-orm'
-import { ApiResponse } from '~/types/common'
+import { ApiResponse, ResponseEntity } from '~/types/common'
 import { AppUser } from '~/types/models'
 import { paginate } from '~~/server/utils/dbPaging'
 import { schema, useDb } from '#server/database/client'
@@ -10,7 +10,7 @@ import { requirePermission } from '#server/utils/permission'
 * Permission name structure: "<table name>_<action name>"
 * http://localhost:3000/api/users?page=0&size=10&sort=email,asc&sort=id,asc&search=active=true,email:example.com,createdDate>=2026-07-18
 */
-export default defineEventHandler(async (event): Promise<ApiResponse<AppUser>> => {
+export default defineEventHandler(async (event): Promise<ResponseEntity<ApiResponse<AppUser>>> => {
   await requirePermission(event, 'app_user_list')
   const db = useDb()
 
@@ -30,7 +30,7 @@ export default defineEventHandler(async (event): Promise<ApiResponse<AppUser>> =
     .from(schema.appUser)
     .$dynamic()
 
-  return await paginate(event, {
+  const data = await paginate(event, {
     dataQuery,
     countQuery,
     columns: {
@@ -45,6 +45,11 @@ export default defineEventHandler(async (event): Promise<ApiResponse<AppUser>> =
       id: item.id.toString(),
     })
   })
+
+  return {
+    status: 200,
+    data
+  }
 })
 /** how to call paginate with join multiple table
 import { eq, count } from 'drizzle-orm'

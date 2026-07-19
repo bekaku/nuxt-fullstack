@@ -152,11 +152,12 @@ export default defineNuxtConfig({
     jwtRefreshSecret: 'change-this-access-secret-in-production',
     accessTokenTtl: '15m',
     refreshTokenDays: 7,
+    cdnDirectory: 'cdn',
     // Keys within public, will be also exposed to the client-side
     public: {
       apiDomain: 'localhost',//override by NUXT_PUBLIC_API_BASE in .env
       apiBase: '/api',//override by NUXT_PUBLIC_API_BASE in .env
-      cdnBase: '/api',
+      cdnBase: '/cdn',
       apiClient: '',
       timeOut: 0,
       appVersion: '',
@@ -185,6 +186,7 @@ export default defineNuxtConfig({
     },
     experimental: {
       openAPI: true,
+      websocket: true
     },
   },
   experimental: { nitroAutoImports: true },

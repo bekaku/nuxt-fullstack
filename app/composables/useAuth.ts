@@ -1,4 +1,4 @@
-import type { AppNavigationMenuItem, LoginRequest, ResponseMessage } from '~/types/common';
+import type { AppNavigationMenuItem, LoginRequest, ResponseEntity, ResponseMessage } from '~/types/common';
 import type { AppUser, FavoriteMenu } from '~/types/models';
 import { useAppBroadcastChannels } from './useAppBroadcastChannels';
 import { useBase } from './useBase';
@@ -50,7 +50,7 @@ export const useAuth = () => {
     const deviceId = await getDeviceId();
 
     try {
-      const response = await api<AppUser>('/api/auth/login', {
+      const response = await api<ResponseEntity<AppUser>>('/api/auth/login', {
         method: 'POST',
         body: {
           emailOrUsername: req.emailOrUsername,
@@ -60,12 +60,12 @@ export const useAuth = () => {
         }
       });
 
-      if (response) {
-        setAuth(response);
+      if (response && response.status == 200 && response.data) {
+        setAuth(response.data);
         loggedInCookie.value = 'true';
       }
 
-      return response; // ไม่จำเป็นต้องห่อ new Promise
+      return response.data || null;
     } catch (error) {
       console.error('Failed to fetch profile', error);
       return null;
@@ -92,7 +92,7 @@ export const useAuth = () => {
 
     if (conf) {
       loader.open();
-      await api<ResponseMessage>('/api/auth/logout', {
+      await api<ResponseEntity<void>>('/api/auth/logout', {
         method: 'POST',
       });
 
@@ -107,11 +107,14 @@ export const useAuth = () => {
 
   const fetchMe = async (): Promise<AppUser | null> => {
     try {
-      const res = await api<AppUser>('/api/auth/me', {
+      const response = await api<ResponseEntity<AppUser>>('/api/auth/me', {
         method: 'GET',
       });
-      setAuth(res);
-      return res;
+      if (response && response.status == 200 && response.data) {
+        setAuth(response.data);
+      }
+
+      return response.data || null;
     } catch {
       clearAuth();
       return null;

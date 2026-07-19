@@ -2,7 +2,8 @@ import { getAuthUser } from '../../utils/permission'
 import { eq, or } from 'drizzle-orm'
 import { useDb, schema } from '../../database/client'
 import { AppUser } from '~/types/models'
-export default defineEventHandler(async (event): Promise<AppUser> => {
+import { ResponseEntity } from '~/types/common'
+export default defineEventHandler(async (event): Promise<ResponseEntity<AppUser>> => {
   const userAuth = getAuthUser(event)
   if (!userAuth) {
     throw createError({ statusCode: 403, statusMessage: 'Unauthorized.' })
@@ -21,10 +22,13 @@ export default defineEventHandler(async (event): Promise<AppUser> => {
   }
   const { roles, permissions } = await loadUserPermissions(user.id)
   return {
-    id: user.id.toString(),
-    email: user.email,
-    username: user.username,
-    selectedRoles: roles,
-    permissions,
+    status: 200,
+    data: {
+      id: user.id.toString(),
+      email: user.email,
+      username: user.username,
+      selectedRoles: roles,
+      permissions,
+    }
   }
 })

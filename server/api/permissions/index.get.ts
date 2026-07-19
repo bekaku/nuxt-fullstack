@@ -1,11 +1,11 @@
 import { count } from 'drizzle-orm'
-import { ApiResponse } from '~/types/common'
+import { ApiResponse, ResponseEntity } from '~/types/common'
 import { Permission } from '~/types/models'
 import { paginate } from '~~/server/utils/dbPaging'
 import { schema, useDb } from '#server/database/client'
 import { requirePermission } from '#server/utils/permission'
 
-export default defineEventHandler(async (event): Promise<ApiResponse<Permission>> => {
+export default defineEventHandler(async (event): Promise<ResponseEntity<ApiResponse<Permission>>> => {
   await requirePermission(event, 'permission_list')
 
   const db = useDb()
@@ -25,7 +25,7 @@ export default defineEventHandler(async (event): Promise<ApiResponse<Permission>
     .from(schema.permission)
     .$dynamic()
 
-  return await paginate(event, {
+  const data = await paginate(event, {
     dataQuery,
     countQuery,
     columns: {
@@ -40,4 +40,8 @@ export default defineEventHandler(async (event): Promise<ApiResponse<Permission>
       id: item.id.toString(),
     })
   })
+  return {
+    status: 200,
+    data
+  }
 })

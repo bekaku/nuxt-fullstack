@@ -4,6 +4,7 @@ import { requirePermission } from '#server/utils/permission'
 import { hashPassword } from '#server/utils/password'
 import { nextId } from '#server/utils/snowflake'
 import { AppUser } from '~/types/models'
+import { ResponseEntity } from '~/types/common'
 
 const bodySchema = z.object({
   email: z.email(),
@@ -11,7 +12,7 @@ const bodySchema = z.object({
   password: z.string().min(8),
 })
 
-export default defineEventHandler(async (event): Promise<AppUser> => {
+export default defineEventHandler(async (event): Promise<ResponseEntity<AppUser>> => {
   await requirePermission(event, 'app_user_add')
 
   const body = await readValidatedBody(event, bodySchema.parse)
@@ -40,10 +41,14 @@ export default defineEventHandler(async (event): Promise<AppUser> => {
     throw createError({ statusCode: 500, statusMessage: 'Failed to create user.' })
   }
   setResponseStatus(event, 201)
+
   return {
-    id: created.id.toString(),
-    email: created.email,
-    username: created.username,
-    active: created.active,
+    status: 200,
+    data: {
+      id: created.id.toString(),
+      email: created.email,
+      username: created.username,
+      active: created.active,
+    }
   }
 })

@@ -102,6 +102,11 @@ export const useMenu = () => {
             to: "/example/blank",
           },
           {
+            label: "Chats",
+            icon: "lucide:message-circle",
+            to: "/example/chats",
+          },
+          {
             label: "Charts",
             icon: "lucide:chart-line",
             to: "/example/charts",
@@ -146,6 +151,11 @@ export const useMenu = () => {
             label: "Transitions",
             icon: "lucide:layers",
             to: "/example/transitions",
+          },
+          {
+            label: "Upload files",
+            icon: "lucide:cloud-upload",
+            to: "/example/upload-files",
           },
 
         ]

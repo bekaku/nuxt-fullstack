@@ -28,3 +28,6 @@ logs
 
 # Drizzle
 drizzle/meta
+
+# upload folder
+data

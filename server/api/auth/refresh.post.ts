@@ -3,6 +3,7 @@ import { useDb, schema } from '../../database/client'
 import { signAccessToken, generateRefreshToken, refreshTokenExpiryDate } from '../../utils/jwt'
 import { loadUserPermissions } from '../../utils/permission'
 import { AppUser } from '~/types/models'
+import { ResponseEntity } from '~/types/common'
 
 const COOKIE_BASE = {
   httpOnly: true,
@@ -11,7 +12,7 @@ const COOKIE_BASE = {
   path: '/',
 }
 
-export default defineEventHandler(async (event): Promise<AppUser> => {
+export default defineEventHandler(async (event): Promise<ResponseEntity<AppUser>> => {
   const refreshToken = getCookie(event, 'refresh_token')
   if (!refreshToken) {
     throw createError({ statusCode: 401, statusMessage: 'No refresh token found.' })
@@ -81,10 +82,13 @@ export default defineEventHandler(async (event): Promise<AppUser> => {
   })
 
   return {
-    id: user.id.toString(),
-    email: user.email,
-    username: user.username,
-    selectedRoles: roles,
-    permissions,
+    status: 200,
+    data: {
+      id: user.id.toString(),
+      email: user.email,
+      username: user.username,
+      selectedRoles: roles,
+      permissions,
+    }
   }
 })
