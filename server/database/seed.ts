@@ -19,7 +19,7 @@ const client = postgres(connectionString, { max: 1 })
 const db = drizzle(client, { schema })
 
 // Permission code convention: "<table_name>_<action>"
-const RESOURCES = ['app_user', 'app_role', 'permission', 'api_client'] as const
+const RESOURCES = ['app_user', 'app_role', 'permission', 'api_client', 'files_directory', 'file_manager'] as const
 const ACTIONS = ['list', 'view', 'add', 'edit', 'delete'] as const
 
 async function main() {
@@ -101,13 +101,13 @@ async function main() {
   }
 
 
-console.log(' ✓ admin user created')
-console.log('')
-console.log('=================================================')
-console.log(' Login: admin@example.com / admin')
-console.log(` Password: ${plainPassword}`)
-console.log(' ⚠️ Change this password immediately before use')
-console.log('================================================')
+  console.log(' ✓ admin user created')
+  console.log('')
+  console.log('=================================================')
+  console.log(' Login: admin@example.com / admin')
+  console.log(` Password: ${plainPassword}`)
+  console.log(' ⚠️ Change this password immediately before use')
+  console.log('================================================')
 
   await client.end()
 }

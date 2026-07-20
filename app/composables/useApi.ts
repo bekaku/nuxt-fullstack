@@ -7,8 +7,8 @@ let refreshPromise: Promise<ResponseEntity<AppUser>> | null = null
 export const useApi = () => {
   const { apiBase, apiClient, isDevMode, isServer } = useConfiguration()
   const localeCookie = useCookie('locale');
-  const toast = useToast()
 
+  const toast = useToast()
   const { refreshTokenDays } = useConfiguration()
   const ttlDays = Number(refreshTokenDays) || 7;
   const loggedInCookie = useCookie('is_logged_in', {

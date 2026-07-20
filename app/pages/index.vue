@@ -123,6 +123,7 @@ const { data: dashBaordRecentSalseItems } = await useFetch<
           label="Export"
           class="ml-2 rounded-lg"
         />
+
       </div>
     </div>
 
@@ -146,7 +147,7 @@ const { data: dashBaordRecentSalseItems } = await useFetch<
           </template>
 
           <template #end>
-             <ULink :to="item.to || ''">Explore</ULink>
+            <ULink :to="item.to || ''">Explore</ULink>
           </template>
         </BaseItem>
       </UCard>

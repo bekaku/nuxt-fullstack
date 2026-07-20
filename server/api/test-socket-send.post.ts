@@ -1,5 +1,6 @@
+import { ResponseEntity } from "~/types/common";
 import { broadcastToTopic } from "../utils/wsManager";
-export default defineEventHandler(async (event) => {
+export default defineEventHandler(async (event): Promise<ResponseEntity<void>> => {
   const body = await readBody(event)
   const topicName = body.topic
 
@@ -16,5 +17,7 @@ export default defineEventHandler(async (event) => {
   }
 
   broadcastToTopic(topicName, broadcastPayload)
-  return { success: true }
+  return {
+    status: 200,
+  }
 })

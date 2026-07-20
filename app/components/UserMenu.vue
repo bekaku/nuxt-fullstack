@@ -106,7 +106,7 @@ const items = computed<DropdownMenuItem[][]>(() => [
     {
       label: "GitHub repository",
       icon: "i-simple-icons-github",
-      to: "https://github.com/nuxt-ui-templates/dashboard",
+      to: "https://github.com/bekaku/nuxt-fullstack",
       target: "_blank",
     },
     {

@@ -79,6 +79,7 @@ export default defineEventHandler(async (event): Promise<ResponseEntity<AppUser>
     })
     .returning()
 
+  const { public: publicConfig, accessTokenTtl, refreshTokenDays } = useRuntimeConfig()
   // Create a Refresh Token (opaque) and save it to the access_token table.
   const refreshToken = generateRefreshToken()
   await db.insert(schema.accessToken).values({
@@ -100,17 +101,16 @@ export default defineEventHandler(async (event): Promise<ResponseEntity<AppUser>
     sub: user.id.toString(),
   })
 
-  const config = useRuntimeConfig()
-  const ttlString = String(config.accessTokenTtl || '15m')
+  const ttlString = String(accessTokenTtl || '15m')
   const minutes = Number(ttlString.replace(/[^0-9]/g, '')) || 15
   // setCookie(event, 'access_token', accessToken, COOKIE_BASE)
-  setCookie(event, 'access_token', accessToken, {
+  setCookie(event, publicConfig.jwtKeyName, accessToken, {
     ...COOKIE_BASE,
     maxAge: minutes * 60
   })
-  setCookie(event, 'refresh_token', refreshToken, {
+  setCookie(event, publicConfig.refreshJwtKeyName, refreshToken, {
     ...COOKIE_BASE,
-    maxAge: Number(config.refreshTokenDays ?? 7) * 24 * 60 * 60,
+    maxAge: Number(refreshTokenDays ?? 7) * 24 * 60 * 60,
   })
   return {
     status: 200,

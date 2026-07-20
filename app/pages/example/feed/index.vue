@@ -5,7 +5,7 @@ import type { FeedItem } from "~/types";
 useSeoMeta({
   title: "Feed page",
 });
-const authenStore = useAuthenStore();
+const { auth, loginedAvatar, loginedDisplay } = useAuth();
 const { isMobile } = useDevice();
 const { t } = useLang();
 const api = useApi();
@@ -257,7 +257,7 @@ const onLoadData = async (): Promise<void> => {
       params: {
         page: page.value,
       },
-      credentials: 'omit'
+      credentials: "omit",
     });
     data.value.push(...response);
     return;
@@ -277,7 +277,7 @@ const handleFilter = (ev: any) => {
   firstLoad.value = false;
   onLoadData();
 };
- onLoadData();
+onLoadData();
 </script>
 
 <template>
@@ -290,12 +290,12 @@ const handleFilter = (ev: any) => {
       class="w-full lg:w-64 shrink-0 lg:sticky lg:top-[6rem] lg:h-[calc(100vh-7rem)] overflow-y-auto scrollbar-hide hidden lg:flex flex-col gap-6"
     >
       <UserCard
-        v-if="authenStore.auth"
+        v-if="auth"
         :avatar="{
-          src: authenStore.auth?.avatar?.image,
+          src: loginedAvatar,
         }"
-        :cover-image="authenStore.loginedCover"
-        :name="authenStore.loginedDisplay"
+        cover-image=""
+        :name="loginedDisplay"
         description="Software Engineer"
         height="100px"
         avatar-top="70px"
@@ -394,7 +394,7 @@ const handleFilter = (ev: any) => {
           <div class="w-full flex flex-col gap-2">
             <div class="w-full flex gap-2">
               <UAvatar
-                :src="authenStore.auth?.avatar?.image"
+                :src="loginedAvatar"
                 loading="lazy"
                 size="xl"
                 class="shadow-sm"

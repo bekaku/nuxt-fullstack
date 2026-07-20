@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import type { ResponseEntity } from '~/types/common';
+import type { FileManager } from '~/types/models';
+
 definePageMeta({
   layout: "default",
 });
@@ -39,7 +42,7 @@ const onUpload = async () => {
       formData.append("chunkIndex", chunkIndex.toString());
       formData.append("totalChunks", totalChunks.toString());
 
-      const chunkRespone = await api<any>("/api/file-manager", {
+      const chunkRespone = await api<ResponseEntity<FileManager | void>>("/api/file-manager", {
         method: "POST",
         body: formData,
       });

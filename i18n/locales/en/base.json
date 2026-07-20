@@ -1,7 +1,7 @@
 {
   "base": {
-    "appCookiepolicy": "NuxtUI Starter Website Use cookies to give you a better experience.",
-    "welcomeText": "Welcome to NuxtUI Starter",
+    "appCookiepolicy": "NuxtUI Fullstack Starter Website Use cookies to give you a better experience.",
+    "welcomeText": "Welcome to NuxtUI Fullstack Starter",
     "by": "By",
     "login": "Login",
     "logout": "Logout",

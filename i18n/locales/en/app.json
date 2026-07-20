@@ -1,11 +1,11 @@
 {
   "app": {
-    "name": "Nuxt UI",
-    "monogram": "Nuxt UI",
-    "fullName": "Nuxt UI",
-    "backendTitle": "Nuxt UI Starter",
+    "name": "Nuxt Fullstack",
+    "monogram": "Nuxt Fullstack",
+    "fullName": "Nuxt Fullstack",
+    "backendTitle": "Nuxt Fullstack Starter",
     "appVersion": "Version {0}",
-    "copyright": "Nuxt UI Starter © {0} All Rights Reserved.",
+    "copyright": "Nuxt Fullstack Starter © {0} All Rights Reserved.",
     "description": "",
     "keyword": "",
     "developedBy": "Developed",

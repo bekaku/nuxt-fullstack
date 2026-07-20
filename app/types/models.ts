@@ -28,13 +28,10 @@ export interface FileManager extends FileManagerMetaData {
   fileMime: string;
   fileName: string;
   filePath: string;
-  streamPath?: string;
-  fileThumbnailPath: string;
-  fileSize: string;
-  fileSizeNo?: number;
+  fileThumbnailPath?: string;
+  fileSize: number;
   fileCount?: number;
   functionId?: number;
-  uniqueId?: string | null
   createdDate?: string;
   updatedDate?: string;
   file?: any;
@@ -42,6 +39,7 @@ export interface FileManager extends FileManagerMetaData {
   videoSources?: VideoSrc[]
   videoTracks?: VideoTrack[]
   deleteFlag?: boolean | undefined
+  uniqueId?: string
   uploadProgress?: {
     uploading: boolean;
     progress: number;

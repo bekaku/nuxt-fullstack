@@ -1,5 +1,6 @@
 import { relations } from 'drizzle-orm'
 import {
+  AnyPgColumn,
   bigint,
   boolean,
   check,
@@ -123,7 +124,8 @@ export const fileManager = pgTable('file_manager', {
   description: text('description'),
   duration: integer('duration').default(0),
   title: varchar('title', { length: 125 }),
-  thumbnailFile: bigint('thumbnail_file', { mode: 'bigint' }),
+  thumbnailFile: bigint('thumbnail_file', { mode: 'bigint' })
+    .references((): AnyPgColumn => fileManager.id),
   useThumbnail: boolean('use_thumbnail').default(false),
   updatedDate: timestamp('updated_date', { precision: 6 }),
   updatedUser: bigint('updated_user', { mode: 'bigint' }),
@@ -383,3 +385,43 @@ export const loginLogRelations = relations(loginLog, ({ one }) => ({
   user: one(appUser, { fields: [loginLog.appUser], references: [appUser.id] }),
   userAgentRef: one(userAgent, { fields: [loginLog.userAgent], references: [userAgent.id] }),
 }))
+
+/*
+const record = await db.query.fileManager.findFirst({
+  where: eq(schema.fileManager.id, BigInt(id)),
+  with: {
+    // Please retrieve only the 'name' column from the 'fileMime' table.
+    fileMime: {
+      columns: { name: true }
+    },
+    // Please retrieve only the filePath from your own table's thumbnail images.
+    thumbnail: {
+      columns: { filePath: true }
+    }
+  }
+});
+
+Result
+{
+  "id": 1,
+  "fileName": "photo.jpg",
+  "fileSize": 1024,
+  // ...other columns of fileManager
+  "fileMime": {
+    "name": "image/jpeg"
+  },
+  "thumbnail": {
+    "filePath": "/uploads/thumbnails/photo_thumb.jpg"
+  }
+}
+*/
+export const fileManagerRelations = relations(fileManager, ({ one }) => ({
+  thumbnail: one(fileManager, {
+    fields: [fileManager.thumbnailFile],
+    references: [fileManager.id],
+  }),
+  fileMime: one(fileMime, {
+    fields: [fileManager.fileMimeId],
+    references: [fileMime.id],
+  }),
+}));

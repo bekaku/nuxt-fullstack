@@ -7,13 +7,21 @@ export default defineEventHandler(async (event) => {
   if (!filename) {
     throw createError({ statusCode: 400, message: 'Filename is required' })
   }
-    const config = useRuntimeConfig()
-  const uplodPath = config.cdnDirectory
+  const { cdnDirectory } = useRuntimeConfig()
+  // const uplodPath = config.cdnDirectory
 
-  const filePath = path.join(process.cwd(), uplodPath, filename)
+  const uploadsDir = path.join(process.cwd(), cdnDirectory)
+  // const filePath = path.join(process.cwd(), uplodPath, filename)
+  const filePath = path.normalize(path.join(uploadsDir, filename))
+
+  // Security Check (Very Important!)
+  // Prevent directory traversal, e.g., someone calling /cdn/../../etc/passwd
+  if (!filePath.startsWith(uploadsDir)) {
+    throw createError({ statusCode: 403, message: 'Access denied' })
+  }
 
   if (!fs.existsSync(filePath)) {
-    throw createError({ statusCode: 404, message: 'File not found' })
+    throw createError({ statusCode: 404, message: `File not found. Looking at: ${filePath}` })
   }
 
   const stream = fs.createReadStream(filePath)

@@ -21,9 +21,9 @@ export default defineEventHandler((event) => {
   if (PUBLIC_PATHS.includes(path)) { return }
 
   // It's not /api/* at all, it's irrelevant.
-  if (!path.startsWith('/api/')) {return}
-
-  const token = getCookie(event, 'access_token')
+  if (!path.startsWith('/api/')) { return }
+  const { public: publicConfig } = useRuntimeConfig()
+  const token = getCookie(event, publicConfig.jwtKeyName)
 
   // case provided to mobile app too use header token
   // if (!token) {
@@ -41,7 +41,7 @@ export default defineEventHandler((event) => {
     const payload = verifyAccessToken(token)
     event.context.user = payload
   } catch {
-    deleteCookie(event, 'access_token')
+    deleteCookie(event, publicConfig.jwtKeyName)
     throw createError({ statusCode: 401, statusMessage: 'Access token expired or invalid' })
   }
 })

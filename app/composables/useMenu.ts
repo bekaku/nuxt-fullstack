@@ -143,6 +143,11 @@ export const useMenu = () => {
             to: "/example/modal",
           },
           {
+            label: "RBAC",
+            icon: 'lucide:user-key',
+            to: "/example/rbac",
+          },
+          {
             label: "Social",
             icon: "lucide:panel-right",
             to: "/example/feed",
@@ -156,6 +161,11 @@ export const useMenu = () => {
             label: "Upload files",
             icon: "lucide:cloud-upload",
             to: "/example/upload-files",
+          },
+          {
+            label: "Websocket",
+            icon: "lucide:unplug",
+            to: "/example/websocket",
           },
 
         ]

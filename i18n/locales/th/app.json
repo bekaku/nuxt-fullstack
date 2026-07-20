@@ -1,13 +1,13 @@
 {
   "app": {
-    "name": "แอพ Nuxt UI",
-    "monogram": "Nuxt UI",
-    "fullName": "Nuxt UI",
-    "backendTitle": "Nuxt UI Starter",
+    "name": "แอพ Nuxt Fullstack",
+    "monogram": "Nuxt Fullstack",
+    "fullName": "Nuxt Fullstack",
+    "backendTitle": "Nuxt Fullstack Starter",
     "appVersion": "เวอร์ชั่น {0}",
-    "copyright": "Nuxt UI เทมเพลต © {0} สงวนลิขสิทธิ์",
-    "description": "Nuxt UI เทมเพลต ",
-    "keyword": "Nuxt UI เทมเพลต",
+    "copyright": "Nuxt Fullstack เทมเพลต © {0} สงวนลิขสิทธิ์",
+    "description": "Nuxt Fullstack เทมเพลต ",
+    "keyword": "Nuxt Fullstack เทมเพลต",
     "developedBy": "พัฒนา",
     "location": "-"
   },

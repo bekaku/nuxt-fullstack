@@ -13,7 +13,9 @@ const COOKIE_BASE = {
 }
 
 export default defineEventHandler(async (event): Promise<ResponseEntity<AppUser>> => {
-  const refreshToken = getCookie(event, 'refresh_token')
+  const { public: publicConfig, accessTokenTtl, refreshTokenTtlDays } = useRuntimeConfig()
+
+  const refreshToken = getCookie(event, publicConfig.refreshJwtKeyName)
   if (!refreshToken) {
     throw createError({ statusCode: 401, statusMessage: 'No refresh token found.' })
   }
@@ -28,14 +30,14 @@ export default defineEventHandler(async (event): Promise<ResponseEntity<AppUser>
     .limit(1)
 
   if (!session || session.revoked) {
-    deleteCookie(event, 'access_token', { path: '/' })
-    deleteCookie(event, 'refresh_token', { path: '/' })
+    deleteCookie(event, publicConfig.jwtKeyName, { path: '/' })
+    deleteCookie(event, publicConfig.refreshJwtKeyName, { path: '/' })
     throw createError({ statusCode: 401, statusMessage: 'The refresh token has been cancelled. Please log in again.' })
   }
 
   if (!session.expiresAt || session.expiresAt.getTime() < Date.now()) {
-    deleteCookie(event, 'access_token', { path: '/' })
-    deleteCookie(event, 'refresh_token', { path: '/' })
+    deleteCookie(event, publicConfig.jwtKeyName, { path: '/' })
+    deleteCookie(event, publicConfig.refreshJwtKeyName, { path: '/' })
     throw createError({ statusCode: 401, statusMessage: 'Your refresh token has expired. Please log in again.' })
   }
 
@@ -67,18 +69,17 @@ export default defineEventHandler(async (event): Promise<ResponseEntity<AppUser>
     sub: user.id.toString(),
   })
 
-  const config = useRuntimeConfig()
-  const ttlString = String(config.accessTokenTtl || '15m')
+  const ttlString = String(accessTokenTtl || '15m')
   const minutes = Number(ttlString.replace(/[^0-9]/g, '')) || 15
 
-  // setCookie(event, 'access_token', newAccessToken, COOKIE_BASE)
-  setCookie(event, 'access_token', newAccessToken, {
+  // setCookie(event, publicConfig.jwtKeyName, newAccessToken, COOKIE_BASE)
+  setCookie(event, publicConfig.jwtKeyName, newAccessToken, {
     ...COOKIE_BASE,
     maxAge: minutes * 60
   })
-  setCookie(event, 'refresh_token', newRefreshToken, {
+  setCookie(event, publicConfig.refreshJwtKeyName, newRefreshToken, {
     ...COOKIE_BASE,
-    maxAge: Number(config.refreshTokenTtlDays ?? 7) * 24 * 60 * 60,
+    maxAge: Number(refreshTokenTtlDays ?? 7) * 24 * 60 * 60,
   })
 
   return {
