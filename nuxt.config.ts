@@ -35,10 +35,12 @@ export default defineNuxtConfig({
         '@capacitor/device',
         '@internationalized/date',
         '@tanstack/table-core',
+        'browser-image-compression',
         'clsx',
         'date-fns',
         'date-fns/locale',
         'dompurify',
+        'jszip',
         'tailwind-merge',
         'vue3-apexcharts',
         'zod',
@@ -150,7 +152,7 @@ export default defineNuxtConfig({
     databaseUrl: 'postgres://app_user:app_password@localhost:5432/nuxt4_rbac',
     jwtAccessSecret: 'change-this-access-secret-in-production',
     jwtRefreshSecret: 'change-this-access-secret-in-production',
-    accessTokenTtl: '15m',
+    accessTokenTtl: '360m',// default 15m
     refreshTokenDays: 7,
     cdnDirectory: 'cdn',
     // Keys within public, will be also exposed to the client-side
@@ -170,6 +172,37 @@ export default defineNuxtConfig({
       jwtAges: 7,//days
       jwtAgesSecond: 604800,//7 days = 7 * 24 * 60 * 60 = 604800 seconds
       refreshTokenDays: 7,
+      limitFileUploadSize: 52428800,//byte LimitFileSizeMB * 1024 * 1024;
+      maxImageToResize: 1776,
+      maxImageToResizeMb: 10,
+      acceptFiles: [
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/vnd.ms-excel',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'application/vnd.ms-powerpoint',
+        'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+        'application/pdf',
+        'application/vnd.rar',
+        'application/zip',
+        'application/x-zip-compressed',
+        'image/jpeg',
+        'image/png',
+        'image/gif',
+        'image/webp',
+        'text/plain',
+        'text/csv',
+        'video/mpeg',
+        'video/mp4',
+        'video/quicktime',
+        'video/x-msvideo',
+        'video/webm',
+        'audio/mpeg',
+        'audio/wav',
+        'audio/ogg',
+        'audio/flac',
+        'audio/mp4'
+      ]
     }
   },
   routeRules: {
@@ -186,8 +219,15 @@ export default defineNuxtConfig({
     },
     experimental: {
       openAPI: true,
-      websocket: true
+      websocket: true,
+      tasks: true
     },
+    scheduledTasks: {
+      // Run every day at 3 AM (using Cron Syntax)
+      '0 3 * * *': ['cleanup-temp'],
+      // Change it to run every 2 minutes for testing.
+      // '*/2 * * * *': ['cleanup-temp']
+    }
   },
   experimental: { nitroAutoImports: true },
   devServer: {

@@ -5,25 +5,26 @@ definePageMeta({
 </script>
 <template>
   <div class="w-full h-full flex flex-col gap-4 p-4">
-
-    <UButton variant="ghost" label="Back" icon="i-lucide-arrow-left" to="/" class="w-fit" />
+    <UButton
+      variant="ghost"
+      label="Back"
+      icon="i-lucide-arrow-left"
+      to="/"
+      class="w-fit"
+    />
     <UCard title="Responsive Grid">
       <div class="flex flex-col gap-4">
         <h1>Divide it equally.</h1>
-        <div
-          class="w-full grid grid-cols-1 md:grid-cols-3 gap-4"
-        >
-          <div class="p-4 border">Column 1</div>
-          <div class="p-4 border">Column 2</div>
-          <div class="p-4 border">Column 3</div>
-          <div class="p-4 border">Column 4</div>
+        <div class="w-full grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>Column 1</div>
+          <div>Column 2</div>
+          <div>Column 3</div>
+          <div>Column 4</div>
         </div>
         <h1>Divide it equally.</h1>
-        <div
-          class="w-full grid grid-cols-1 md:grid-cols-2  gap-4"
-        >
-          <div class="p-4 border">Column 1</div>
-          <div class="p-4 border">Column 2</div>
+        <div class="w-full grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>Column 1</div>
+          <div>Column 2</div>
         </div>
 
         <h1>Unequal division</h1>

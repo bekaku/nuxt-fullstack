@@ -44,6 +44,13 @@ export default defineAppConfig({
         body: 'p-4! sm:p-4!',
       }
     },
+    fileUpload: {
+      variants: {
+        dropzone: {
+          true: 'border-dashed data-[dragging=true]:bg-elevated/55'
+        },
+      }
+    },
     link: {
       variants: {
         active: {

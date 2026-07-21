@@ -120,7 +120,7 @@ export const fileManager = pgTable('file_manager', {
   writeable: boolean('writeable').notNull(),
   fileMimeId: bigint('file_mime_id', { mode: 'bigint' }).references(() => fileMime.id),
   filesDirectoryId: bigint('files_directory_id', { mode: 'bigint' }).references(() => filesDirectory.id),
-  owner: bigint('owner', { mode: 'bigint' }),
+  owner: bigint('owner', { mode: 'bigint' }).references((): AnyPgColumn => appUser.id),
   description: text('description'),
   duration: integer('duration').default(0),
   title: varchar('title', { length: 125 }),

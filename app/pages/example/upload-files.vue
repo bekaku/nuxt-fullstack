@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { ResponseEntity } from '~/types/common';
-import type { FileManager } from '~/types/models';
+import type { ResponseEntity } from "~/types/common";
+import type { FileManager } from "~/types/models";
 
 definePageMeta({
   layout: "default",
@@ -8,76 +8,79 @@ definePageMeta({
 useSeoMeta({
   title: "Upload files page",
 });
-const api = useApi();
-const value = ref<File | null>(null);
-const isUploading = ref(false);
-const progress = ref(0);
-const CHUNK_SIZE = 1024 * 1024;
+
+const { files, uploading, progress, onStartUploadChunk, onUploadChunk } =
+  useUpload();
+const file = ref<File | null>(null);
 const onChange = (f: File | null | undefined) => {
   console.log("onChange", f);
 };
-
-const onUpload = async () => {
-  if (!value.value) {
+const uploadChunk = async () => {
+  if (!file.value) {
     return;
   }
-
-  isUploading.value = true;
-  progress.value = 0;
-  const file = value.value;
-  const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
-  const filename = file.name;
-  const uniqueId = generateSnowFlakeId().toString()
-
-  try {
-    for (let chunkIndex = 0; chunkIndex < totalChunks; chunkIndex++) {
-      const start = chunkIndex * CHUNK_SIZE;
-      const end = Math.min(start + CHUNK_SIZE, file.size);
-      const chunk = file.slice(start, end);
-
-      const formData = new FormData();
-      formData.append("chunk", chunk);
-      formData.append("filename", filename);
-      formData.append("uniqueId", uniqueId);
-      formData.append("chunkIndex", chunkIndex.toString());
-      formData.append("totalChunks", totalChunks.toString());
-
-      const chunkRespone = await api<ResponseEntity<FileManager | void>>("/api/file-manager", {
-        method: "POST",
-        body: formData,
-      });
-
-      console.log("chunkRespone", chunkRespone);
-
-      progress.value = Math.round(((chunkIndex + 1) / totalChunks) * 100);
-    }
-
-    console.log("Upload Complete!");
-  } catch (error) {
-    console.error("Upload failed:", error);
-    alert("Upload Error");
-  } finally {
-    isUploading.value = false;
-  }
+  uploading.value = true;
+  const response = await onUploadChunk(file.value, {
+    setProgress: false,
+  });
+  uploading.value = false;
+  console.log("uploadChunk", response);
 };
 </script>
 
 <template>
   <BaseDashboardPanel id="example-upload-files" title="Upload files page">
-    <div class="flex- flex-col gap-4">
-      <UFileUpload
-        v-model="value"
-        label="Drop your file here"
-        :multiple="false"
-        class="w-96 min-h-48 my-2"
-        @update:modelValue="
-          (f: File | null | undefined) => {
-            onChange(f);
-          }
-        "
-      />
-      progress {{ progress }}
-      <UButton icon="lucide:hard-drive-upload" @click="onUpload">Upload</UButton>
+    <div class="w-full grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="w-full">
+        <UCard title="Nuxt UI">
+          <div class="flex flex-col gap-4">
+            <UFileUpload
+              v-model="file"
+              label="Drop your file here"
+              :multiple="false"
+              dropzone
+              class="w-96 min-h-48 my-2"
+              @update:modelValue="
+                (f: File | null | undefined) => {
+                  onChange(f);
+                }
+              "
+            />
+            <UButton
+              :loading="uploading"
+              icon="lucide:hard-drive-upload"
+              class="w-fit"
+              @click="uploadChunk"
+            >
+              Upload
+            </UButton>
+          </div>
+        </UCard>
+      </div>
+      <div class="w-full">
+        <UCard title="Custom components">
+          <div class="flex flex-col gap-4">
+            <BaseFileUpload
+              description="SVG, PNG, JPG or GIF (max. 2MB)"
+              multiple
+              class="w-96 my-2"
+              icon="lucide:image"
+              :max-files="2"
+              v-model="files"
+            />
+
+            <UProgress v-model="progress" status />
+
+            <UButton
+              :loading="uploading"
+              icon="lucide:hard-drive-upload"
+              class="w-fit"
+            >
+              Upload
+            </UButton>
+          </div>
+        </UCard>
+      </div>
     </div>
   </BaseDashboardPanel>
 </template>

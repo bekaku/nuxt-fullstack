@@ -39,7 +39,7 @@ export interface FileManager extends FileManagerMetaData {
   videoSources?: VideoSrc[]
   videoTracks?: VideoTrack[]
   deleteFlag?: boolean | undefined
-  uniqueId?: string
+  uniqueId?: string | null
   uploadProgress?: {
     uploading: boolean;
     progress: number;

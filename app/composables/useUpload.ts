@@ -1,10 +1,7 @@
 import type { ResponseEntity, UploadStatus } from "~/types/common";
 import type { FileManager, FileManagerMetaData } from "~/types/models";
 
-export const useFileUpload = (options?: {
-  chunkSize?: number;
-  maxRetries?: number;
-}) => {
+export const useUpload = () => {
 
   const api = useApi();
   const files = ref<FileManager[]>([])
