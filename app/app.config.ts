@@ -19,15 +19,11 @@ export default defineAppConfig({
     },
     button: {
       variants: {
-        size: {
-          md: {
-            base: 'px-4 py-2 text-sm'
-          }
-        }
       },
       defaultVariants: {
-        variant: 'solid',
-        color: 'neutral'
+        variant: 'subtle',
+        color: 'primary',
+        size:'md'
       }
     },
     badge: {
@@ -61,7 +57,7 @@ export default defineAppConfig({
       compoundVariants: [
         {
           class: [
-            'hover:text-primary',
+            'hover:text-primary hover:underline',
           ]
         }
       ]

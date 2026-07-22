@@ -1,7 +1,6 @@
 <script setup lang="ts">
 definePageMeta({
-  layout: "default",
-  // requiresPermission: ['role_manage', 'rome_list'],
+  requiresPermission: ["permission_list"],
   // breadcrumbs: ExampleHomeBreadcrumb,
   // tabs: TabTest,
 });

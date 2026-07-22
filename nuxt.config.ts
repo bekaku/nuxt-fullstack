@@ -40,6 +40,7 @@ export default defineNuxtConfig({
         'date-fns',
         'date-fns/locale',
         'dompurify',
+        'isomorphic-dompurify',
         'jszip',
         'tailwind-merge',
         'vue3-apexcharts',
@@ -121,26 +122,26 @@ export default defineNuxtConfig({
     families: [
       // { name: 'Kanit', weights: [100, 200, 300, 400, 500, 600, 700, 800, 900], global: true },
       {
-        name: 'Kanit',
-        src: '/fonts/Kanit-Regular.ttf',
+        name: 'NotoSansThaiLooped',
+        src: '/fonts/NotoSansThaiLooped-Light.ttf',
+        weight: 300,
+        global: true
+      },
+      {
+        name: 'NotoSansThaiLooped',
+        src: '/fonts/NotoSansThaiLooped-Regular.ttf',
         weight: 400,
         global: true
       },
       {
-        name: 'Kanit',
-        src: '/fonts/Kanit-Bold.ttf',
-        weight: 700,
+        name: 'NotoSansThaiLooped',
+        src: '/fonts/NotoSansThaiLooped-Medium.ttf',
+        weight: 500,
         global: true
       },
       {
-        name: 'Prompt',
-        src: '/fonts/Prompt-Regular.ttf',
-        weight: 400,
-        global: true
-      },
-      {
-        name: 'Prompt',
-        src: '/fonts/Prompt-Bold.ttf',
+        name: 'NotoSansThaiLooped',
+        src: '/fonts/NotoSansThaiLooped-Bold.ttf',
         weight: 700,
         global: true
       }
@@ -152,7 +153,7 @@ export default defineNuxtConfig({
     databaseUrl: 'postgres://app_user:app_password@localhost:5432/nuxt4_rbac',
     jwtAccessSecret: 'change-this-access-secret-in-production',
     jwtRefreshSecret: 'change-this-access-secret-in-production',
-    accessTokenTtl: '360m',// default 15m
+    accessTokenTtl: '15m',// default 15m
     refreshTokenDays: 7,
     cdnDirectory: 'cdn',
     // Keys within public, will be also exposed to the client-side

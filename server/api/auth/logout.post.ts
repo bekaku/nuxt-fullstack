@@ -13,8 +13,9 @@ export default defineEventHandler(async (event): Promise<ResponseEntity<void>> =
       .where(eq(schema.accessToken.token, refreshToken))
   }
 
-  deleteCookie(event, 'access_token', { path: '/' })
-  deleteCookie(event, 'refresh_token', { path: '/' })
+  const { public: publicConfig } = useRuntimeConfig()
+  deleteCookie(event, publicConfig.jwtKeyName, { path: '/' })
+  deleteCookie(event, publicConfig.refreshJwtKeyName, { path: '/' })
 
    return {
     status: 200,

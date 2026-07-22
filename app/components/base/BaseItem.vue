@@ -42,7 +42,7 @@ const handleClick = (e: any) => {
 <template>
   <div
     v-bind="$attrs"
-    class="flex flex-row items-center justify-between pl-2.5 pr-2.5"
+    class="flex flex-row items-center justify-between pl-2.5 pr-2.5 overflow-hidden"
     :class="{
       'active:bg-muted cursor-pointer hover:bg-muted': button && !disabled,
       'opacity-50': disabled,
@@ -99,7 +99,7 @@ const handleClick = (e: any) => {
 
     <div
       v-if="$slots.end"
-      class="flex flex-row justify-end"
+      class="flex flex-row justify-end "
       :class="{
         'items-center': !top,
         'items-start': top,

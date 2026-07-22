@@ -1,5 +1,6 @@
 import type { ButtonProps } from '@nuxt/ui';
-import DOMPurify from 'dompurify';
+// import DOMPurify from 'dompurify';
+import DOMPurify from 'isomorphic-dompurify';
 import type { RouteLocationRaw } from "vue-router";
 import type { AppNuxtError, IPageMeta, NavigateToOptions } from "~/types/common";
 export const useBase = () => {

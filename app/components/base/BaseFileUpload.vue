@@ -16,6 +16,7 @@ const {
   videoEditor,
   maxFiles = 10,
   disabled,
+  priview = true,
 } = defineProps<{
   icon?: string;
   label?: string;
@@ -37,10 +38,14 @@ const {
   interactive?: boolean;
   strictMode?: boolean;
   maxFiles?: number; //0 = unlimited pick
+  priview?: boolean;
 }>();
 
 const emit = defineEmits<{
   "on-file-add": [files: File[] | File | null | undefined];
+  "on-remove": [index: number];
+  "on-click": [index: number];
+  "on-soft-delete": [index: number];
 }>();
 const { t } = useLang();
 const modelValue = defineModel<FileManager[]>({ default: () => [] });
@@ -167,7 +172,18 @@ const onChange = async (files: File[] | File | null | undefined) => {
   if (!files) {
     return;
   }
-  const fileList = Array.isArray(files) ? files : [files];
+  const incomingFiles = Array.isArray(files) ? files : [files];
+  const currentCount = modelValue.value.length;
+  const remainingQuota = maxFiles - currentCount;
+  if (remainingQuota <= 0) {
+    toast.add({
+      description: t("error.limitFile2", { total: maxFiles }),
+      icon: "lucide:file-up",
+      color: "error",
+    });
+    return;
+  }
+  const fileList = incomingFiles.slice(0, remainingQuota);
   if (!videoEditor) {
     const finalFiles = await validateAndZipFile(fileList);
     onEmitFileAdd(finalFiles);
@@ -209,6 +225,18 @@ const onVideoAdd = (f: FileManager) => {
     modelValue.value.push(f);
   }
 };
+const onClick = async (event: any, index: number) => {
+  console.log("onClick", { index, event });
+};
+const onRemove = (index: number) => {
+  emit("on-remove", index);
+  if (modelValue.value[index]) {
+    modelValue.value.splice(index, 1);
+  }
+};
+const onSoftDelete = (index: number) => {
+  emit("on-soft-delete", index);
+};
 const onClearProcess = () => {
   modelValue.value = [];
   modelFile.value = null;
@@ -229,13 +257,17 @@ onBeforeUnmount(() => {
     v-model="modelFile"
     :label="label || $t('base.dragFile')"
     :icon
-    :description
+    :description="
+      description
+        ? `${description}(${$t('drive.limitFiles', { count: 2, limit: maxFiles })})`
+        : `${$t('drive.limitFiles', { count: 2, limit: maxFiles })}`
+    "
     :multiple="multiple"
     :dropzone
     :accept
     :layout
     :required
-    :disabled="isDisabled"
+    :disabled
     :preview
     :ui
     :interactive
@@ -262,7 +294,21 @@ onBeforeUnmount(() => {
             />
           </div>
 
-          modelValue {{ modelValue }}
+          <div
+            v-if="priview"
+            class="w-full flex-col overflow-hidden mt-4 text-left"
+          >
+            <BaseFileItem
+              v-for="(item, index) in modelValue"
+              :key="item.uniqueId || item.id + ''"
+              :index="index"
+              :item="item"
+              @on-click="onClick"
+              @on-remove="onRemove"
+              @on-soft-delete="onSoftDelete"
+            >
+            </BaseFileItem>
+          </div>
         </div>
       </slot>
     </template>

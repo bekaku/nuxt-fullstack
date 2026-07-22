@@ -17,11 +17,6 @@ export const useAuth = () => {
   const loginedAvatar = computed(() => getMockAvatarByIndex(19));
   const loginedDisplay = computed(() => auth.value?.username || auth.value?.email);
   const ttlDays = Number(refreshTokenDays) || 7;
-  const loggedInCookie = useCookie('is_logged_in', {
-    maxAge: 60 * 60 * 24 * ttlDays,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-  });
   const setAuth = (payload: AppUser) => {
     auth.value = payload;
   };
@@ -62,7 +57,6 @@ export const useAuth = () => {
 
       if (response && response.status == 200 && response.data) {
         setAuth(response.data);
-        loggedInCookie.value = 'true';
       }
 
       return response.data || null;
@@ -80,7 +74,6 @@ export const useAuth = () => {
       return;
     }
 
-    // ย้าย Composables ที่เกี่ยวกับการแสดงผล/UI มาไว้ในนี้
     const { appNavigateTo } = useBase();
     const confirm = useConfirmDialog();
     const loader = useLoader();
@@ -97,7 +90,6 @@ export const useAuth = () => {
       });
 
       clearAuth();
-      loggedInCookie.value = null;
       await sendBroradcastChanelReload();
       loader.close();
       appNavigateTo('/auth/login', { replace: true });
@@ -115,8 +107,7 @@ export const useAuth = () => {
       }
 
       return response.data || null;
-    } catch {
-      clearAuth();
+    } catch (e) {
       return null;
     }
   };

@@ -1,19 +1,21 @@
 import type { FetchResponse } from 'ofetch';
 import type { AppException, ResponseEntity, ResponseMessage } from '~/types/common';
 import type { AppUser } from '~/types/models';
+import { parse, parseSetCookie } from 'cookie-es';
 
-let refreshPromise: Promise<ResponseEntity<AppUser>> | null = null
+// let refreshPromise: Promise<ResponseEntity<AppUser>> | null = null
 
 export const useApi = () => {
   const { apiBase, apiClient, isDevMode, isServer } = useConfiguration()
   const localeCookie = useCookie('locale');
-
+  const event = import.meta.server ? useRequestEvent() : null;
+  const requestHeaders = import.meta.server ? useRequestHeaders(['cookie']) : {};
+  const responseCookies = new Map<string, string>();
   const toast = useToast()
   const { refreshTokenDays } = useConfiguration()
   const ttlDays = Number(refreshTokenDays) || 7;
-  const loggedInCookie = useCookie('is_logged_in', {
-    maxAge: 60 * 60 * 24 * ttlDays
-  });
+
+  const nuxtApp = useNuxtApp();
   const getBaseHeaders = () => {
     return {
       // 'X-User-ID': currentUserId.value + '',
@@ -23,10 +25,10 @@ export const useApi = () => {
   }
 
   const handleLogout = async () => {
-    refreshPromise = null
+    nuxtApp._refreshPromise = null;
 
     if (import.meta.client) {
-      await navigateTo('/auth/login')
+      await navigateTo('/auth/login');
     }
   }
 
@@ -41,9 +43,10 @@ export const useApi = () => {
 
       options.credentials = options.credentials || 'include';
       if (import.meta.server && options.credentials === 'include') {
-        const reqHeaders = useRequestHeaders(['cookie']);
-        if (reqHeaders.cookie) {
-          options.headers.set('cookie', reqHeaders.cookie);
+        if (!options.headers.has('cookie')) {
+          if (requestHeaders.cookie) {
+            options.headers.set('cookie', requestHeaders.cookie as string);
+          }
         }
       }
     },
@@ -107,55 +110,86 @@ export const useApi = () => {
     try {
       return (await callApi(options)) as any;
     } catch (error: any) {
-      if (error.response?.status === 401) {
 
-        if (!refreshPromise) {
-          const refreshHeaders = new Headers(getBaseHeaders());
-          if (import.meta.server) {
-            const reqHeaders = useRequestHeaders(['cookie']);
-            if (reqHeaders.cookie) {
-              refreshHeaders.set('cookie', reqHeaders.cookie);
-            }
+      if (error.response?.status === 401) {
+        if (!nuxtApp._refreshPromise) {
+          const refreshHeaders = new Headers();
+
+          Object.entries(getBaseHeaders()).forEach(([k, v]) => {
+            refreshHeaders.set(k, v);
+          });
+
+          if (import.meta.server && requestHeaders.cookie) {
+            refreshHeaders.set('cookie', requestHeaders.cookie as string);
           }
-          if (isDevMode()) {
-            console.warn("[refresh token]");
-          }
-          refreshPromise = $fetch<ResponseEntity<AppUser>>('/api/auth/refresh', {
+
+
+          nuxtApp._refreshPromise = $fetch<ResponseEntity<AppUser>>('/api/auth/refresh', {
             baseURL: apiBase as string,
             method: 'POST',
             headers: refreshHeaders,
             credentials: 'include',
-          }).then(async (res) => {
-            if (isDevMode()) {
-              console.warn("[refresh token] res", res);
+            onResponse({ response }) {
+
+              if (!import.meta.server) {
+                return;
+              }
+              if (!event) {
+                return;
+              }
+              const cookies =
+                (response.headers as any).getSetCookie?.() ??
+                (response.headers.get('set-cookie')
+                  ? [response.headers.get('set-cookie')!]
+                  : []);
+
+              if (cookies.length) {
+                event.node.res.setHeader('set-cookie', cookies);
+
+                for (const cookie of cookies) {
+                  const parsed = parseSetCookie(cookie);
+                  if (parsed) {
+
+                    responseCookies.set(parsed.name, parsed.value);
+                  }
+                }
+              }
             }
-            loggedInCookie.value = 'true';
-            return res;
-          }).catch(async (err) => {
-            if (isDevMode()) {
-              console.warn("[refresh token] err", err);
-            }
-            loggedInCookie.value = null;
-            await handleLogout();
-            throw err;
-          }).finally(() => {
-            refreshPromise = null;
-          });
+          })
+            .then(async (res) => {
+              if (isDevMode() && !isServer()) {
+                console.warn("[refresh token] res", res);
+              }
+              return res;
+            }).catch(async (err) => {
+              if (isDevMode() && !isServer()) {
+                console.warn("[refresh token] err", err);
+              }
+              await handleLogout();
+              throw err;
+            }).finally(() => {
+              nuxtApp._refreshPromise = null;
+            });
         }
 
         try {
-          if (refreshPromise) {
-            const newAccessToken = await refreshPromise;
-          }
+          await nuxtApp._refreshPromise;
           // Copy the options to prevent affecting the source object.
           const retryOptions = { ...options };
           retryOptions.headers = new Headers(retryOptions.headers);
 
           if (import.meta.server) {
-            const reqHeaders = useRequestHeaders(['cookie']);
-            if (reqHeaders.cookie) {
-              retryOptions.headers.set('cookie', reqHeaders.cookie);
+            const cookies = parse((requestHeaders.cookie as string) || '');
+
+            for (const [name, value] of responseCookies) {
+              cookies[name] = value;
             }
+            retryOptions.headers.set(
+              'cookie',
+              Object.entries(cookies)
+                .map(([k, v]) => `${k}=${v}`)
+                .join('; ')
+            );
           }
 
           return (await callApi(retryOptions)) as any;

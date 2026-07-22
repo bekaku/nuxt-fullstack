@@ -71,12 +71,13 @@ const testExtractHashTag = () => {
         <UCard title="Ellipsis text">
           <template #header>
             <h1 class="font-bold">Ellipsis text</h1>
-            <UFormField
-              orientation="horizontal"
-              label="Rows"
-              class="w-72"
-            >
-              <UInput placeholder="Enter rows" class="w-full" v-model="ellipsisLines" type="number" />
+            <UFormField orientation="horizontal" label="Rows" class="w-72">
+              <UInput
+                placeholder="Enter rows"
+                class="w-full"
+                v-model="ellipsisLines"
+                type="number"
+              />
             </UFormField>
           </template>
           <BaseContentText
@@ -90,11 +91,7 @@ const testExtractHashTag = () => {
           />
         </UCard>
         <UCard title="Preview with escape html">
-          <BaseContentText
-            :content="content"
-            :urlify="true"
-          />
-
+          <BaseContentText :content="content" :urlify="true" />
           <BaseOpenGraphItemAlt class="mt-4" :content="content" />
         </UCard>
       </div>

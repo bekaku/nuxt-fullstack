@@ -60,12 +60,47 @@ const uploadChunk = async () => {
       <div class="w-full">
         <UCard title="Custom components">
           <div class="flex flex-col gap-4">
+            <!-- <BaseImage
+              src="https://images.unsplash.com/photo-1784146930322-6e7eca40f176?q=80&w=687&auto=format&fit=crop"
+              alt="image"
+              class="w-96 h-96 rounded-xl"
+              fit="contain"
+            >
+              <div class="absolute inset-0 bg-black/40"></div>
+
+              <div
+                class="relative z-10 flex flex-col items-center justify-center"
+              >
+                <div
+                  class="w-8 h-8 bg-white rounded-full flex items-center justify-center text-blue-600 font-bold shadow-sm mb-2"
+                >
+                  +
+                </div>
+                <span class="text-sm font-bold text-white drop-shadow-md">
+                  Add Story
+                </span>
+              </div>
+            </BaseImage>
+            <BaseImage
+              src="https://images.unsplash.com/photo-1782346056252-c3699920bf19?q=80&w=1170&auto=format&fit=crop"
+              alt="image"
+              class="w-48 rounded-xl"
+              fit="cover"
+            >
+              <UButton
+                class="absolute top-2 right-2 z-20 flex items-center justify-center w-7 h-7 rounded-full bg-black/60 text-white hover:bg-red-600 transition-colors shadow-md"
+                label="Remove image"
+              >
+                <UIcon name="lucide:x" />
+              </UButton>
+            </BaseImage> -->
+
+            files {{ files.length }}
             <BaseFileUpload
-              description="SVG, PNG, JPG or GIF (max. 2MB)"
+              description="Upload multiple files"
               multiple
-              class="w-96 my-2"
+              class="my-2"
               icon="lucide:image"
-              :max-files="2"
               v-model="files"
             />
 

@@ -355,6 +355,8 @@
     "donwloadingTitle3": "ความเร็ว: {speed}, {loaded}/{total}, {percent}%",
     "downloadCancelled": "การดาวน์โหลดถูกยกเลิก",
     "cancelDownload": "ยกเลิกดาวน์โหลด",
+    "limitFiles": "ไม่จํากัดไฟล์ | จำกัด {limit} ไฟล์ | จำกัด {limit} ไฟล์",
+    "uploading": "กำลังอัพโหลดไฟล์",
     "download": "ดาวน์โหลด"
   },
   "theme": {

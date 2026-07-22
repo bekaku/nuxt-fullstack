@@ -354,6 +354,8 @@
     "donwloadingTitle3": "Speed: {speed}, {loaded}/{total}, {percent}%",
     "downloadCancelled": "Download cancelled",
     "cancelDownload": "Cancel Download",
+    "limitFiles": "unlimit file |limit {limit} file | limit {limit} files",
+    "uploading": "Uploading",
     "download": "Download"
   },
   "theme": {

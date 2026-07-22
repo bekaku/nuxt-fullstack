@@ -10,6 +10,7 @@ export default defineNuxtRouteMiddleware(async (to) => {
     // console.log('middleware > checkPermit.global > ', to);
     const metaRequirePermit=to?.meta?.requiresPermission;
     if(metaRequirePermit!=undefined && isArray(metaRequirePermit)){
+
         const { isHavePermissionLazy } = useRbac();
        const isPermited= await isHavePermissionLazy(metaRequirePermit as string[]);
         // console.log('middleware > checkPermit.global > metaRequirePermit: ', metaRequirePermit);
