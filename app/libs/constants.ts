@@ -1,15 +1,6 @@
 export const FileUploadKey = '_filesUploadName';
 export const FileDirectoryKey = 'fileDirectoryId';
 export const FileNamePrefix = 'app_file';
-export const DefultItemsPerPage = 10;
-export const MaxSelectFiles = 10;
-export const LimitFileSizeMB = 50;
-export const LimitFileSize = LimitFileSizeMB * 1024 * 1024;
-export const MaxImageResize = 1776;
-export const MaxImageResizeMB = 10;
-export const DefaultItemsPerPage = 10;
-export const DefaultMaxItemsPerPage = 50;
-export const SearchMinCharactor = 1;
 export const SearchParamiter = '_q';
 export const KeywordParamiter = '_keyword';
 export const PageActionParamiter = 'crud';

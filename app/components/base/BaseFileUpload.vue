@@ -17,6 +17,10 @@ const {
   maxFiles = 10,
   disabled,
   priview = true,
+  priviewLayout = "list",
+  scrollClass = "max-h-96",
+  showDelete = true,
+  showProgress = true,
 } = defineProps<{
   icon?: string;
   label?: string;
@@ -39,6 +43,11 @@ const {
   strictMode?: boolean;
   maxFiles?: number; //0 = unlimited pick
   priview?: boolean;
+  priviewLayout?: "list" | "grid";
+  scrollClass?: string;
+  softDelete?: boolean;
+  showDelete?: boolean;
+  showProgress?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -47,8 +56,10 @@ const emit = defineEmits<{
   "on-click": [index: number];
   "on-soft-delete": [index: number];
 }>();
+const loader = useLoader();
 const { t } = useLang();
 const modelValue = defineModel<FileManager[]>({ default: () => [] });
+const progress = defineModel<number>("progress", { default: 0 });
 const modelFile = ref<File[] | File | null>(null);
 const toast = useToast();
 const config = useRuntimeConfig();
@@ -83,10 +94,6 @@ const validateAndZipFile = async (files: File[]): Promise<any[]> => {
   for (const f of files) {
     const type = f.type;
 
-    console.log("validateAndZipFile", {
-      size: f.size,
-      limitSize: limitSize.value,
-    });
     if (f.size > limitSize.value) {
       toast.add({
         description: t("error.limitEachFile2", [
@@ -160,7 +167,6 @@ const onAddFile = async (f: any): Promise<void> => {
         if (coompressFile) {
           file = coompressFile;
         }
-        console.log("resize", coompressFile);
       }
       url = await getImgUrlFromFile(file);
     }
@@ -168,10 +174,10 @@ const onAddFile = async (f: any): Promise<void> => {
   }
 };
 const onChange = async (files: File[] | File | null | undefined) => {
-  console.log("onChange", files);
   if (!files) {
     return;
   }
+
   const incomingFiles = Array.isArray(files) ? files : [files];
   const currentCount = modelValue.value.length;
   const remainingQuota = maxFiles - currentCount;
@@ -183,6 +189,7 @@ const onChange = async (files: File[] | File | null | undefined) => {
     });
     return;
   }
+  loader.open();
   const fileList = incomingFiles.slice(0, remainingQuota);
   if (!videoEditor) {
     const finalFiles = await validateAndZipFile(fileList);
@@ -198,6 +205,8 @@ const onChange = async (files: File[] | File | null | undefined) => {
       await onAddFile(finalFiles[0]);
     }
     modelFile.value = [];
+
+    loader.close();
   } else {
     const f = fileList[0];
     if (f && f?.type) {
@@ -206,8 +215,10 @@ const onChange = async (files: File[] | File | null | undefined) => {
         vdoFile.value = f;
         videoEditorTimeout.value = setTimeout(() => {
           showVdoEditor.value = true;
+          loader.close();
         }, 350);
       } else {
+        loader.close();
         onEmitFileAdd(fileList);
       }
     }
@@ -236,6 +247,10 @@ const onRemove = (index: number) => {
 };
 const onSoftDelete = (index: number) => {
   emit("on-soft-delete", index);
+  const item = modelValue.value[index];
+  if (item) {
+    item.deleteFlag = !item.deleteFlag;
+  }
 };
 const onClearProcess = () => {
   modelValue.value = [];
@@ -282,7 +297,7 @@ onBeforeUnmount(() => {
 
     <template #actions="{ removeFile, files, open }">
       <slot name="actions" v-bind="{ removeFile, files, open }">
-        <div class="w-full flex flex-col gap-2">
+        <div class="w-full self-stretch flex flex-col gap-2">
           <div class="w-full flex justify-center">
             <UButton
               :label="$t('base.chooseFile')"
@@ -295,19 +310,50 @@ onBeforeUnmount(() => {
           </div>
 
           <div
-            v-if="priview"
-            class="w-full flex-col overflow-hidden mt-4 text-left"
+            v-if="priview && modelValue.length > 0"
+            class="w-full min-w-75 sm:min-w-100 flex flex-col overflow-hidden mt-4 text-left"
           >
-            <BaseFileItem
-              v-for="(item, index) in modelValue"
-              :key="item.uniqueId || item.id + ''"
-              :index="index"
-              :item="item"
-              @on-click="onClick"
-              @on-remove="onRemove"
-              @on-soft-delete="onSoftDelete"
+            <UScrollArea
+              v-if="priviewLayout == 'list'"
+              v-slot="{ item, index }"
+              :items="modelValue"
+              :class="['w-full', scrollClass]"
             >
-            </BaseFileItem>
+              <BaseFileItem
+                :index="index"
+                :item="item"
+                :clickable="false"
+                :soft-delete="softDelete"
+                :show-delete="showDelete"
+                @on-click="onClick"
+                @on-remove="onRemove"
+                @on-soft-delete="onSoftDelete"
+              >
+              </BaseFileItem>
+            </UScrollArea>
+            <UScrollArea v-else :class="['w-full', scrollClass]">
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div
+                  v-for="(item, index) in modelValue"
+                  :key="item.uniqueId || item.id + ''"
+                  class="relative aspect-square w-full"
+                >
+                  <BaseFileItem
+                    :index="index"
+                    :item="item"
+                    :clickable="true"
+                    layout="grid"
+                    :soft-delete="softDelete"
+                    :show-delete="showDelete"
+                    @on-click="onClick"
+                    @on-remove="onRemove"
+                    @on-soft-delete="onSoftDelete"
+                  >
+                  </BaseFileItem>
+                </div>
+              </div>
+            </UScrollArea>
+            <UProgress v-if="showProgress" v-model="progress" status />
           </div>
         </div>
       </slot>

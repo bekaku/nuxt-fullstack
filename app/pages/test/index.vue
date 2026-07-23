@@ -24,8 +24,8 @@ const { fetchMe } = useAuth();
           <div class="flex gap-2 items-center">
             <span>Subtle</span>
             <UButton
-              label="บันทึก"
-              icon="lucide:save"
+              label="ดึงข้อมูลส่วนตัว"
+              icon="lucide:user"
               class="w-fit"
               @click="fetchMe"
             />
@@ -51,6 +51,16 @@ const { fetchMe } = useAuth();
               label="เพิ่มเติม"
               icon="lucide:ellipsis"
               color="neutral"
+              class="w-fit"
+            />
+            <UButton
+              label="เพิ่มเติม"
+              :avatar="{
+                src: '/images/user.png',
+                loading: 'lazy',
+              }"
+              trailing-icon="lucide:ellipsis"
+              color="primary"
               class="w-fit"
             />
           </div>

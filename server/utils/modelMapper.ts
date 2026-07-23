@@ -28,7 +28,7 @@ export const mapToFileManager = (
     fileMime: optional?.fileMime || '',
     fileThumbnailPath: optional?.fileThumbnailPath || undefined,
     fileMimeType: optional?.fileMimeType,
-    id: record.id ? Number(record.id) : undefined,
+    id: record.id ? record.id.toString() : undefined,
     duration: record.duration || 0,
     title: record.title || undefined,
     description: record.description || undefined,

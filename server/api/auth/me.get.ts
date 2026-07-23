@@ -12,7 +12,11 @@ export default defineEventHandler(async (event): Promise<ResponseEntity<AppUser>
   const db = useDb()
 
   const [user] = await db
-    .select()
+    .select({
+      id: schema.appUser.id,
+      email: schema.appUser.email,
+      username: schema.appUser.username
+    })
     .from(schema.appUser)
     .where(eq(schema.appUser.id, userAuth.sub as any))
     .limit(1)

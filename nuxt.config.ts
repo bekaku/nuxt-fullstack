@@ -108,6 +108,14 @@ export default defineNuxtConfig({
     }
   },
   image: {
+    // domains: [
+    //   'localhost', // For when running on your own machine. (Dev)
+    //   '127.0.0.1'
+    //   // 'api.your-domain.com', // Don't forget to use your actual domain when going into production.
+    // ],
+    // alias: {
+    //   '/cdn': 'http://127.0.0.1:3000/cdn'
+    // },
     presets: {
       avatar: {
         modifiers: {
@@ -176,6 +184,8 @@ export default defineNuxtConfig({
       limitFileUploadSize: 52428800,//byte LimitFileSizeMB * 1024 * 1024;
       maxImageToResize: 1776,
       maxImageToResizeMb: 10,
+      defaultMaxItemsPerPage: 50,
+      defultItemsPerPage: 10,
       acceptFiles: [
         'application/msword',
         'application/vnd.openxmlformats-officedocument.wordprocessingml.document',

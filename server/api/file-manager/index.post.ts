@@ -152,7 +152,7 @@ export default defineEventHandler(async (event): Promise<ResponseEntity<FileMana
       .returning()
 
     if (!record) {
-      throw createError({ statusCode: 500, message: 'Failed to insert file manager record' })
+      throw createError({ statusCode: 500, message: `Failed to insert file manager record for ${uniqueFilename}` })
     }
 
     const result: FileManager = mapToFileManager(record, {
@@ -176,7 +176,7 @@ export default defineEventHandler(async (event): Promise<ResponseEntity<FileMana
     // }
     return {
       status: 200,
-      message: 'Upload and merge complete',
+      message: `Upload and merge ${originalFilename} complete`,
       data: result
     }
   }

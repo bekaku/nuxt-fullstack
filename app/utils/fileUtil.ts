@@ -606,8 +606,8 @@ export const getImageDimensions = (file: File): Promise<ImageDimensions> => {
 export const resizeImage = async (file: File, options: ImageResizeOptions): Promise<File> => {
   const compressedBlob = await imageCompression(file, options);
 
-  console.log(`Original size: ${(file.size / 1024 / 1024).toFixed(2)} MB`);
-  console.log(`New size: ${(compressedBlob.size / 1024 / 1024).toFixed(2)} MB`);
+  // console.log(`Original size: ${(file.size / 1024 / 1024).toFixed(2)} MB`);
+  // console.log(`New size: ${(compressedBlob.size / 1024 / 1024).toFixed(2)} MB`);
   return new Promise((resolve) => {
     resolve(compressedBlob);
   });

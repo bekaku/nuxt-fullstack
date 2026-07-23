@@ -189,7 +189,7 @@ export interface CrudListApiOptions {
   fetchListOnload?: boolean;
   pageAble?: boolean;
   pageStartZero?: boolean;
-  sortAble?: boolean;
+  sortable?: boolean;
   concatList?: boolean;
   reverseList?: boolean;
   addUnshift?: boolean;
@@ -272,7 +272,8 @@ export interface ISortMode {
   value: ISortModeType;
 }
 export interface ITextValue {
-  text: string;
+  text?: string;
+  label?: number | string;
   value: number | string;
 }
 export interface IPagination {
@@ -281,7 +282,7 @@ export interface IPagination {
   totalPages: number;
   totalElements?: number;
   last?: boolean;
-  perPageList: ITextValue[];
+  perPageList?: ITextValue[];
 }
 
 export interface ICrudListHeaderOption {

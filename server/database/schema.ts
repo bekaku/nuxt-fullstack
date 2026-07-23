@@ -385,10 +385,15 @@ export const loginLogRelations = relations(loginLog, ({ one }) => ({
   user: one(appUser, { fields: [loginLog.appUser], references: [appUser.id] }),
   userAgentRef: one(userAgent, { fields: [loginLog.userAgent], references: [userAgent.id] }),
 }))
-
 /*
 const record = await db.query.fileManager.findFirst({
   where: eq(schema.fileManager.id, BigInt(id)),
+  //orretrieve only the following columns
+  columns: {
+    id: true,
+    filePath: true,
+    fileName: true,
+  },
   with: {
     // Please retrieve only the 'name' column from the 'fileMime' table.
     fileMime: {
@@ -396,7 +401,7 @@ const record = await db.query.fileManager.findFirst({
     },
     // Please retrieve only the filePath from your own table's thumbnail images.
     thumbnail: {
-      columns: { filePath: true }
+      columns: { filePath: true, id: true }
     }
   }
 });
@@ -414,7 +419,7 @@ Result
     "filePath": "/uploads/thumbnails/photo_thumb.jpg"
   }
 }
-*/
+  */
 export const fileManagerRelations = relations(fileManager, ({ one }) => ({
   thumbnail: one(fileManager, {
     fields: [fileManager.thumbnailFile],

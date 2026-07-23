@@ -356,6 +356,8 @@
     "cancelDownload": "Cancel Download",
     "limitFiles": "unlimit file |limit {limit} file | limit {limit} files",
     "uploading": "Uploading",
+    "uploadFail": "Upload failed",
+    "uploadComplete": "Upload complete",
     "download": "Download"
   },
   "theme": {

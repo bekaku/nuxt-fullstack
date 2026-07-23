@@ -18,12 +18,24 @@ export default defineAppConfig({
       }
     },
     button: {
-      variants: {
+      slots: {
+        base: [
+          'font-normal',
+        ],
       },
+      variants: {
+        size: {
+          md: {
+            leadingIcon: 'size-5',
+            trailingIcon: 'size-5'
+          },
+        },
+      },
+
       defaultVariants: {
         variant: 'subtle',
-        color: 'primary',
-        size:'md'
+        color: 'neutral',
+        size: 'md'
       }
     },
     badge: {

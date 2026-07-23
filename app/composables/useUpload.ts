@@ -11,10 +11,32 @@ export const useUpload = () => {
   const CHUNK_SIZE = 1024 * 1024;
   const MAX_RETRIES = 3;
 
+  const uploadFileTotal = ref<number>(0)
+  const uploadFileSucess = ref<number>(0)
+  const fileUploadedIdItems = ref<(string | number)[]>([])
+
   // Track uploaded chunks for resume support
   const uploadedChunks = new Set<number>()
   const chunkFileName = ref<string>('');
   const currentFileIndex = ref(0)
+
+
+  const uploadSuccessPercent = computed<number>(() => {
+    if (uploadFileTotal.value === 0 || uploadFileSucess.value === 0) {
+      return 0;
+    }
+    const percent = (uploadFileSucess.value / uploadFileTotal.value) * 100;
+    return Math.round(percent);
+  });
+
+  const onClearFileUpload = (clearFileItems = false) => {
+    fileUploadedIdItems.value = []
+    if (clearFileItems) {
+      files.value = []
+      uploadFileSucess.value = 0
+      uploadFileTotal.value = 0
+    }
+  }
 
   const onChunkUploadClear = () => {
     chunkFileName.value = '';
@@ -160,6 +182,8 @@ export const useUpload = () => {
 
   const onStartUploadChunk = async () => {
     if (files.value && files.value.length > 0) {
+
+      uploadFileTotal.value = files.value.length
       uploading.value = true
       const fileItems = files.value;
 
@@ -194,6 +218,13 @@ export const useUpload = () => {
             setProgress: true,
             metaData
           });
+          if (response && response.id) {
+            if (uploadFileSucess.value == undefined || uploadFileSucess.value ==null) {
+              uploadFileSucess.value = 0;
+            }
+            uploadFileSucess.value++
+            fileUploadedIdItems.value.push(response.id)
+          }
         }
       }
       uploading.value = false
@@ -205,7 +236,11 @@ export const useUpload = () => {
     files,
     uploading,
     status,
-    progress,
+    fileUploadedIdItems,
+    uploadFileTotal,
+    uploadFileSucess,
+    uploadSuccessPercent,
+    onClearFileUpload
   }
 
 }

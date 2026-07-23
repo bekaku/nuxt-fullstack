@@ -357,6 +357,8 @@
     "cancelDownload": "ยกเลิกดาวน์โหลด",
     "limitFiles": "ไม่จํากัดไฟล์ | จำกัด {limit} ไฟล์ | จำกัด {limit} ไฟล์",
     "uploading": "กำลังอัพโหลดไฟล์",
+    "uploadFail": "อัพโหลดไฟล์ไม่สําเร็จ",
+    "uploadComplete": "อัพโหลดไฟล์สําเร็จ",
     "download": "ดาวน์โหลด"
   },
   "theme": {

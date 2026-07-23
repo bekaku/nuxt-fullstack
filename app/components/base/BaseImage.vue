@@ -22,6 +22,9 @@ const {
   fit?: "cover" | "contain" | "fill" | "inside" | "outside";
   quality?: string;
 }>();
+defineEmits<{
+  "on-click": [payload: any];
+}>();
 const objectFitClass = computed(() => {
   switch (fit) {
     case "contain":
@@ -37,7 +40,11 @@ const objectFitClass = computed(() => {
 });
 </script>
 <template>
-  <div class="relative overflow-hidden inline-block" :class="attrs.class">
+  <div
+    class="relative overflow-hidden inline-block"
+    :class="attrs.class"
+    @click="$emit('on-click', $event)"
+  >
     <NuxtImg
       v-bind="attrs"
       :src="src"
@@ -52,6 +59,7 @@ const objectFitClass = computed(() => {
       :quality
       :fit
       :class="['w-full h-full', objectFitClass, attrs.class]"
+      loading="lazy"
     />
     <div
       v-if="$slots.default"
