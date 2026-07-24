@@ -29,16 +29,17 @@ export default defineEventHandler(async (event): Promise<ResponseEntity<ApiRespo
     dataQuery,
     countQuery,
     columns: {
+      id: schema.permission.id,
       code: schema.permission.code,
       module: schema.permission.module,
       operationType: schema.permission.operationType,
       description: schema.permission.description,
     },
     defaultSort: schema.permission.id,
-    transform: (item) => ({
-      ...item,
-      id: item.id.toString(),
-    })
+    // transform: (item) => ({
+    //   ...item,
+    //   id: item.id.toString(),
+    // })
   })
   return {
     status: 200,

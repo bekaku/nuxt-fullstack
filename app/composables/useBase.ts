@@ -5,9 +5,11 @@ import type { RouteLocationRaw } from "vue-router";
 import type { AppNuxtError, IPageMeta, NavigateToOptions } from "~/types/common";
 export const useBase = () => {
 
+  const { t } = useLang();
   const confirm = useConfirmDialog()
+  const toast = useToast();
   const getCurrentPath = (fullPath = true) => {
-      const route = useRoute();
+    const route = useRoute();
     return fullPath ? route.fullPath : route.path;
   };
   const getPreviousPath = () => {
@@ -15,33 +17,33 @@ export const useBase = () => {
     return router.options.history.state.back;
   };
   const getPageMeta = () => {
-      const route = useRoute();
+    const route = useRoute();
     return route.meta;
   }
   const getPageMetaByKey = (key: IPageMeta) => {
-      const route = useRoute();
+    const route = useRoute();
     return route.meta[key];
   }
   const getParam = <T>(field: string): T | undefined => {
     if (!field) {
       return undefined;
     }
-      const route = useRoute();
+    const route = useRoute();
     return route.params ? (route.params[field] as T) : undefined;
   };
   const getParamNumber = (att: string): number => {
     const val = getParam(att);
     return val != undefined ? +val : 0;
   };
-  const getQuery = <T>(field: string): T | undefined => {
+  const getPageQuery = <T>(field: string): T | undefined => {
     if (!field) {
       return;
     }
-      const route = useRoute();
+    const route = useRoute();
     return route.query ? (route.query[field] as T) : undefined;
   };
   const getQueryNumber = (att: string): number => {
-    const val = getQuery(att);
+    const val = getPageQuery(att);
     return val != undefined ? +val : 0;
   };
   const onReplaceUrl = (url: string) => {
@@ -138,6 +140,16 @@ export const useBase = () => {
       }
     );
   };
+
+  const writeToClipboard = (text: string) => {
+    if (import.meta.server) {
+      return;
+    }
+    navigator.clipboard.writeText(text);
+    toast.add({
+      description: t('success.copy')
+    })
+  }
   return {
     getPageMeta,
     getPageMetaByKey,
@@ -145,7 +157,7 @@ export const useBase = () => {
     getPreviousPath,
     getParam,
     getParamNumber,
-    getQuery,
+    getPageQuery,
     getQueryNumber,
     onReplaceUrl,
     onPageGo,
@@ -154,6 +166,7 @@ export const useBase = () => {
     appThrowError,
     scrollToTop,
     appConfirm,
-    inputSanitizeHtml
+    inputSanitizeHtml,
+    writeToClipboard
   }
 }

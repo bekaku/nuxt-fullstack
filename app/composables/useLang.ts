@@ -1,7 +1,10 @@
 import type { ILanguge, ILocales } from "~/types/common";
 
 export const useLang = () => {
-  const { t, locale, setLocale } = useI18n({ useScope: 'global' });
+  const nuxtApp = useNuxtApp();
+  // const { t, locale, setLocale } = useI18n({ useScope: 'global' });
+  const { t, locale, setLocale } = nuxtApp.$i18n;
+  // const t = nuxtApp.$i18n.t;
   const timeout = ref<any>();
   const availableLocales: ILocales[] = [
     {

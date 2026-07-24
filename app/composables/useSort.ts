@@ -1,7 +1,7 @@
 import type { ISort, ISortMode } from '~/types/common';
 
 export const useSort = (defaultSorts?: ISort[]) => {
-  const { getQuery } = useBase();
+  const { getPageQuery } = useBase();
   const { t } = useLang();
 
   const sortMode = ref<ISortMode[]>([
@@ -10,7 +10,7 @@ export const useSort = (defaultSorts?: ISort[]) => {
   ]);
 
   const getSortParams = (): ISort[] | undefined => {
-    let sortQuery = getQuery('sort') as any;
+    let sortQuery = getPageQuery('sort') as any;
 
     if (!sortQuery) {
       return undefined;

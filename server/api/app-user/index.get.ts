@@ -33,7 +33,7 @@ export default defineEventHandler(async (event): Promise<ResponseEntity<ApiRespo
   const data = await paginate(event, {
     dataQuery,
     countQuery,
-    columns: {
+    columns: {//for all field you want to sort order and where condition
       id: schema.appUser.id,
       email: schema.appUser.email,
       active: schema.appUser.active,

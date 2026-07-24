@@ -175,7 +175,7 @@ export interface CrudListApiOptions {
   apiEndpoint?: string;
   crudName?: string;
   enpointList?: string;
-  enpointDelete?: string;
+  endpointDelete?: string;
   enpointPost?: string;
   enpointPut?: string;
   enpointGetOne?: string;
@@ -187,7 +187,7 @@ export interface CrudListApiOptions {
   defaultSorts?: ISort[];
   itemsPerPage?: number;
   fetchListOnload?: boolean;
-  pageAble?: boolean;
+  pageable?: boolean;
   pageStartZero?: boolean;
   sortable?: boolean;
   concatList?: boolean;

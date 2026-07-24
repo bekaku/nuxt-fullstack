@@ -7,7 +7,7 @@ const { createFavorite, deleteFavorite } = useFavoriteMenuApi();
 const route = useRoute();
 const toast = useToast();
 const { t } = useLang();
-const { appNavigations, favoriteMenus, addFavoriteMenus } = useAuth();
+const { appNavigations, addFavoriteMenus, removeFavoriteMenus } = useAuth();
 const { getFavoriteNavigations, findByUrl, getFaveroteIndex, isFaveroteExist } =
   useMenu();
 const open = ref(false);
@@ -33,6 +33,7 @@ const groups = computed(() => [
 ]);
 
 onMounted(async () => {
+  console.log("getFavoriteNavigations", getFavoriteNavigations.value);
   const cookie = useCookie("cookie-consent");
   if (cookie.value === "accepted") {
     return;
@@ -67,7 +68,7 @@ const onFav = async (e: any, item: AppNavigationMenuItem) => {
   }
   const to = item.to as string;
   const existIndex = getFaveroteIndex(to);
-  if (existIndex < 0) {
+  if (existIndex == undefined || existIndex < 0) {
     const result = findByUrl(
       appNavigations.value as AppNavigationMenuItem[][],
       to,
@@ -95,8 +96,8 @@ const onUnFav = async (e: any, item: AppNavigationMenuItem) => {
   }
   const to = item.to as string;
   const existIndex = getFaveroteIndex(to);
-  if (existIndex >= 0) {
-    favoriteMenus.value.splice(existIndex, 1);
+  if (existIndex != undefined && existIndex >= 0) {
+    removeFavoriteMenus(existIndex);
     await deleteFavorite({
       url: to,
     });
@@ -131,30 +132,32 @@ const onUnFav = async (e: any, item: AppNavigationMenuItem) => {
         />
 
         <template v-if="getFavoriteNavigations.length > 0">
-          <UNavigationMenu
-            :collapsed="collapsed"
-            :items="getFavoriteNavigations"
-            orientation="vertical"
-            tooltip
-            class="overflow-hidden"
-          >
-            <template #item-trailing="{ item }">
-              <div
-                class="flex -mr-1.5 -my-0.5 translate-x-full group-hover:translate-x-0 has-data-[state=open]:translate-x-0 transition-transform"
-              >
-                <UButton
-                  as="div"
-                  icon="lucide:trash"
-                  color="neutral"
-                  variant="ghost"
-                  size="xs"
-                  class="text-muted hover:text-highlighted hover:bg-accented/50 data-[state=open]:bg-accented/50 mr-1.5 rounded-full"
-                  @click="onUnFav($event, item as any)"
-                />
-              </div>
-            </template>
-          </UNavigationMenu>
-          <USeparator />
+          <div class="shrink-0">
+            <UNavigationMenu
+              :collapsed="collapsed"
+              :items="getFavoriteNavigations"
+              orientation="vertical"
+              tooltip
+              class="overflow-hidden"
+            >
+              <template #item-trailing="{ item }">
+                <div
+                  class="flex -mr-1.5 -my-0.5 translate-x-full group-hover:translate-x-0 has-data-[state=open]:translate-x-0 transition-transform"
+                >
+                  <UButton
+                    as="div"
+                    icon="lucide:trash"
+                    color="neutral"
+                    variant="ghost"
+                    size="xs"
+                    class="text-muted hover:text-highlighted hover:bg-accented/50 data-[state=open]:bg-accented/50 mr-1.5 rounded-full"
+                    @click="onUnFav($event, item as any)"
+                  />
+                </div>
+              </template>
+            </UNavigationMenu>
+            <USeparator class="my-2" />
+          </div>
         </template>
         <UNavigationMenu
           :collapsed="collapsed"

@@ -10,10 +10,10 @@ useSeoMeta({
 });
 const { t } = useLang();
 const { isDark } = useTheme();
-const { getQuery } = useBase();
+const { getPageQuery } = useBase();
 const { signin, loading } = useAuth();
 const redirectTimeout = ref<any>(null);
-const redirectTo = ref<string | undefined>(getQuery("continue"));
+const redirectTo = ref<string | undefined>(getPageQuery("continue"));
 const { sendBroradcastChanelReload } = useAppBroadcastChannels();
 const schema = z.object({
   email: z.email(t("error.emailFormat")),

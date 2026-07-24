@@ -44,6 +44,7 @@ export default defineEventHandler(async (event): Promise<ResponseEntity<ApiRespo
     dataQuery,
     countQuery,
     columns: {
+      id: schema.fileManager.id,
       fileName: schema.fileManager.fileName,
     },
     defaultSort: schema.fileManager.fileName,

@@ -1,3 +1,4 @@
+import { KeywordParamiter } from "~/libs/constants";
 import type { ApiResponse, CrudListApiOptions, ISortModeType, ResponseEntity } from "~/types/common";
 
 export const usePagefecth = <T>(options: CrudListApiOptions) => {
@@ -9,13 +10,20 @@ export const usePagefecth = <T>(options: CrudListApiOptions) => {
   const isInfiniteDisabled = ref(false)
   const firstLoaded = ref(false)
   const loading = ref(false)
-  const urlEndpoint = ref(options.apiEndpoint)
+  const apiEndpoint = ref(options.apiEndpoint)
   const additionalUri = ref(options?.additionalUri)
+
+  const manualActionList = ref<string>();
+  const advanceSearchUri = ref('');
+  const keywordSearchText = ref('');
+  const endpointDelete = ref(options?.endpointDelete);
+
+  const { inputSanitizeHtml, getCurrentPath } = useBase();
 
   const queryParam = computed((): string | undefined => {
     let haveParam = false
     let q = ''
-    if (options.pageAble == undefined || options.pageAble) {
+    if (options.pageable == undefined || options.pageable) {
       if (pages.value) {
         q += `page=${options.pageStartZero == undefined || options.pageStartZero ? (pages.value.current > 0 ? pages.value.current - 1 : 0) : pages.value.current}`
         q += `&size=${pages.value.itemsPerPage}`
@@ -30,6 +38,21 @@ export const usePagefecth = <T>(options: CrudListApiOptions) => {
       }
       haveParam = true
     }
+    if (advanceSearchUri.value) {
+      if (haveParam) {
+        q += '&';
+      }
+      q += `${advanceSearchUri.value}`;
+      haveParam = true;
+    }
+
+    if (keywordSearchText.value) {
+      if (haveParam) {
+        q += '&';
+      }
+      q += `${KeywordParamiter}=${inputSanitizeHtml(keywordSearchText.value)}`;
+      haveParam = true;
+    }
     if (additionalUri.value) {
       if (haveParam) {
         q += '&'
@@ -38,13 +61,13 @@ export const usePagefecth = <T>(options: CrudListApiOptions) => {
     }
     return !isEmpty(q) ? q : undefined
   })
-  const apiEndpoint = computed(
-    () => `${urlEndpoint.value}${queryParam.value ? '?' + queryParam.value : ''}`
+  const pageParam = computed(
+    () => `${apiEndpoint.value}${queryParam.value ? '?' + queryParam.value : ''}`
   )
 
   const loadDataProcess = async (): Promise<ResponseEntity<ApiResponse<T>> | null> => {
     try {
-      const response = await api<ResponseEntity<ApiResponse<T>>>(apiEndpoint.value, {
+      const response = await api<ResponseEntity<ApiResponse<T>>>(pageParam.value, {
         method: "GET",
       });
       return response;
@@ -203,7 +226,7 @@ export const usePagefecth = <T>(options: CrudListApiOptions) => {
     return dataList.value.findIndex((item: any) => item?.id === id)
   }
 
-  const getItemByIndex = (index: number) => {
+  const getItemByIndex = (index: number): T | undefined => {
     return dataList.value[index]
   }
 
@@ -223,8 +246,13 @@ export const usePagefecth = <T>(options: CrudListApiOptions) => {
     pages,
     sorts,
     dataList,
-    urlEndpoint,
+    apiEndpoint,
     additionalUri,
+    manualActionList,
+    endpointDelete,
+    advanceSearchUri,
+    keywordSearchText,
+    queryParam,
     loadData,
     resetData,
     onPageChange,

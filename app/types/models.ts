@@ -1,8 +1,9 @@
 import type { ChatMessageType, ChatType, EmojiType, FileMimeType, ILanguge, LoginLogType, UploadStatus, VideoSrc, VideoTrack } from "./common";
 export type IPermissionOperationType = 1 | 2 | 3; // 1=crud, 2=report, 3=other
 export type PermissionType = "CRUD" | "REPORT" | "OTHER" | "FEATURE";
+export type IdType = bigint | string | null | undefined;
 export interface Id {
-  id?: number | string | null;
+  id?: IdType
 }
 export interface AccessToken extends Id {
   ipAddredd: string;
@@ -112,7 +113,6 @@ export interface AppUser extends Id {
   favoriteMenus?: FavoriteMenu[]
 }
 export interface UserProfile extends Id {
-  id: number;
   username: string;
   fullName: string;
   avatar: ImageDto | null;
@@ -202,6 +202,7 @@ export interface GroupChatMsgRequest {
   shareMessageIds?: number[]
   replyToId?: number | null
 }
-export interface FavoriteMenu {
-  url: string
+export interface FavoriteMenu extends Id {
+  url: string | null
+  appUser?: IdType
 }

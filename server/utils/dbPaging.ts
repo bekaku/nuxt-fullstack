@@ -30,6 +30,9 @@ export async function paginate<T>(
   const orderByClause = []
   const sortQuery = query.sort
 
+  console.log('sortQuery', sortQuery)
+
+
   if (sortQuery) {
     const sorts = Array.isArray(sortQuery) ? sortQuery : [sortQuery]
     for (const s of sorts) {

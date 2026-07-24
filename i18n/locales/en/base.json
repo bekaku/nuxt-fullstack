@@ -53,7 +53,9 @@
     "disable": "Disable",
     "pleaseWait": "Please wait...",
     "pleaseWaitWhileLoading": "Plese wait while loading",
-    "deleteConfirm": "Confirm to delete ?",
+    "deleteConfirm": "Confirm to delete",
+    "deleteConfirmHelp": "Are you sure, this action cannot be undone.",
+    "deleteCountConfirm": "Confirm the deletion of {count} items.",
     "changePassword": "Change password",
     "changeAvatar": "Change avata",
     "changeCover": "Change cover",
@@ -358,7 +360,8 @@
     "uploading": "Uploading",
     "uploadFail": "Upload failed",
     "uploadComplete": "Upload complete",
-    "download": "Download"
+    "download": "Download",
+    "copyID": "Copy ID"
   },
   "theme": {
     "light": "Light",

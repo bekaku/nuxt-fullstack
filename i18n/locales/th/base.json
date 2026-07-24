@@ -55,6 +55,8 @@
     "pleaseWait": "กรุณารอสักครู่...",
     "pleaseWaitWhileLoading": "กรุณารอสักครู่ระบบกำลังประมวลผล",
     "deleteConfirm": "ยืนยันการลบข้อมูล",
+    "deleteConfirmHelp": "คุณแน่ใจใช่หรือไม่ เพราะการลบข้อมูลนี้ไม่สามารถกู้คืนได้",
+    "deleteCountConfirm": "ยืนยันการลบข้อมูลจำนวน {count} รายการ",
     "changePassword": "เปลี่ยนรหัสผ่าน",
     "changeAvatar": "เปลี่ยนรูปประจำตัว",
     "changeCover": "เปลี่ยนรูปคัฟเวอร์",
@@ -312,7 +314,8 @@
     "goTo": "ไปที่",
     "enterDetails": "โปรดกรอกรายละเอียดของคุณ",
     "addLinkTitle": "ข้อความที่ต้องการแสดง (Title)",
-    "addLinkLink": "URL (เช่น https://...)"
+    "addLinkLink": "URL (เช่น https://...)",
+    "copyID": "คัดลอก ID"
   },
   "drive": {
     "title": "ไฟล์ของฉัน",

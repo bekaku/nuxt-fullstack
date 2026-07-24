@@ -5,7 +5,7 @@ export const useMenu = () => {
   const nuxtApp = useNuxtApp();
   const t = nuxtApp.$i18n.t;
   const { hasPermissionLazy } = useRbac();
-  const { auth, appNavigations, setAppNavigations, favoriteMenus } = useAuth();
+  const { auth, appNavigations, setAppNavigations } = useAuth();
   const appNavs: AppNavigationMenuItem[][] = [
     [
       {
@@ -190,9 +190,11 @@ export const useMenu = () => {
     const items: AppNavigationMenuItem[] = [];
 
     for (const menu of auth.value.favoriteMenus) {
-      const result = findByUrl(appNavigations.value as AppNavigationMenuItem[][], menu.url);
-      if (result) {
-        items.push({ ...result });
+      if (menu.url) {
+        const result = findByUrl(appNavigations.value as AppNavigationMenuItem[][], menu.url);
+        if (result) {
+          items.push({ ...result });
+        }
       }
     }
 
@@ -254,10 +256,16 @@ export const useMenu = () => {
   }
 
   const isFaveroteExist = (url: string) => {
-    return favoriteMenus.value.some((item: FavoriteMenu) => item.url === url);
+    if (!auth.value || !auth.value.favoriteMenus || auth.value.favoriteMenus.length == 0) {
+      return false
+    }
+    return auth.value.favoriteMenus.some((item: FavoriteMenu) => item.url === url);
   }
   const getFaveroteIndex = (url: string) => {
-    return favoriteMenus.value.findIndex((item: FavoriteMenu) => item.url === url);
+    if (!auth.value || !auth.value.favoriteMenus || auth.value.favoriteMenus.length == 0) {
+      return
+    }
+    return auth.value.favoriteMenus.findIndex((item: FavoriteMenu) => item.url === url);
   }
   const findByUrl = (groups: AppNavigationMenuItem[][], to: string): AppNavigationMenuItem | null => {
     const searchRecursive = (items: AppNavigationMenuItem[]): AppNavigationMenuItem | null => {

@@ -12,7 +12,6 @@ export const useAuth = () => {
   const { sendBroradcastChanelReload } = useAppBroadcastChannels();
   const auth = useState<AppUser | null>('auth:user', () => null);
   const appNavigations = useState<AppNavigationMenuItem[]>('auth:navigations', () => []);
-  const favoriteMenus = useState<FavoriteMenu[]>('auth:favoriteMenus', () => []);
   const isLoggedIn = computed(() => !!auth.value);
   const loginedAvatar = computed(() => getMockAvatarByIndex(19));
   const loginedDisplay = computed(() => auth.value?.username || auth.value?.email);
@@ -29,13 +28,20 @@ export const useAuth = () => {
     appNavigations.value = items;
   };
 
-  const setFavoriteMenus = (items?: FavoriteMenu[]) => {
-    favoriteMenus.value = items || [];
-  };
 
   const addFavoriteMenus = (item: FavoriteMenu) => {
-    favoriteMenus.value.push(item);
+    if (!auth.value || !auth.value.favoriteMenus) {
+      return
+    }
+    auth.value.favoriteMenus.push(item);
   };
+    const removeFavoriteMenus = (index: number) => {
+    if (!auth.value || !auth.value.favoriteMenus) {
+      return
+    }
+    auth.value.favoriteMenus.splice(index, 1);;
+  };
+
 
   const signin = async (req: LoginRequest): Promise<AppUser | null> => {
     loading.value = true;
@@ -123,8 +129,8 @@ export const useAuth = () => {
     clearAuth,
     appNavigations,
     setAppNavigations,
-    favoriteMenus,
     addFavoriteMenus,
+    removeFavoriteMenus,
     loginedAvatar,
     loginedDisplay
   };

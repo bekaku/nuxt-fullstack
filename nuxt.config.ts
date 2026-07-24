@@ -148,11 +148,23 @@ export default defineNuxtConfig({
         global: true
       },
       {
-        name: 'NotoSansThaiLooped',
-        src: '/fonts/NotoSansThaiLooped-Bold.ttf',
+        name: 'GoogleSans',
+        src: '/fonts/GoogleSans-Regular.ttf',
+        weight: 400,
+        global: true
+      },
+      {
+        name: 'GoogleSans',
+        src: '/fonts/GoogleSans-Medium.ttf',
+        weight: 500,
+        global: true
+      },
+      {
+        name: 'GoogleSans',
+        src: '/fonts/GoogleSans-Bold.ttf',
         weight: 700,
         global: true
-      }
+      },
     ],
   },
   runtimeConfig: {

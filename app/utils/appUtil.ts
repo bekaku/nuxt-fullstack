@@ -340,14 +340,13 @@ export const getValFromObjectByPath = (obj: any, path: string) => {
 
   return undefined;
 };
-export const cloneObject = <T>(obj: T | undefined) => {
-  if (!obj) {
+export const cloneObject = <T>(source: T | undefined) => {
+  if (!source) {
     return undefined;
   }
   // return Object.assign({}, obj) as T;
-  return JSON.parse(JSON.stringify(obj)) as T
+  return JSON.parse(JSON.stringify(source)) as T
 };
-
 export const appPreventDefult = async (event: any) => {
   if (event) {
     event.stopPropagation();

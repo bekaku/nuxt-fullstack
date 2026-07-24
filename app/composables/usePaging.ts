@@ -1,10 +1,10 @@
 import type { IPagination } from "~/types/common";
 
 export const usePaging = (perPage?: number) => {
-  const { getQuery } = useBase();
+  const { getPageQuery } = useBase();
   const { defaultMaxItemsPerPage, defultItemsPerPage } = useConfiguration()
   const getNumberQuery = (param: string): number => {
-    const pageQuery = getQuery(param);
+    const pageQuery = getPageQuery(param);
     return pageQuery ? +pageQuery : 0;
   };
   const p = getNumberQuery('page');
