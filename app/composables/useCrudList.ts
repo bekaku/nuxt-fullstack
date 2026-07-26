@@ -27,6 +27,7 @@ export const useCrudList = <T>(options: CrudListApiOptions) => {
     onPerPageChange: onPerPageChangeBase,
     onNextPage,
     onReload,
+    onSort: onSortBase,
     onSortColumn: onSortColumnBase,
     onSortMode: onSortModeBase,
     getItemById,
@@ -101,7 +102,17 @@ export const useCrudList = <T>(options: CrudListApiOptions) => {
     onPasteUrlPathParam();
   };
 
-  const onSortColumn = async (column: string | undefined) => {
+
+  const onSort = async (column: string, mode: ISortModeType): Promise<void> => {
+    if (column == undefined || mode == undefined) {
+      return;
+    }
+    await onSortBase(column, mode);
+    sortTimeout.value = setTimeout(() => {
+      onPasteUrlPathParam();
+    }, 150);
+  }
+  const onSortColumn = async (column: string | undefined): Promise<void> => {
     if (column == undefined) {
       return;
     }
@@ -112,7 +123,8 @@ export const useCrudList = <T>(options: CrudListApiOptions) => {
     }, 150);
 
   };
-  const onSortMode = async (mode: ISortModeType) => {
+
+  const onSortMode = async (mode: ISortModeType): Promise<void> => {
     await onSortModeBase(mode);
     sortTimeout.value = setTimeout(() => {
       onPasteUrlPathParam();
@@ -128,7 +140,7 @@ export const useCrudList = <T>(options: CrudListApiOptions) => {
     // await loadData();
   };
 
-  const onAdvanceSearch = async (q: string) => {
+  const onSearch = async (q: string) => {
     keywordSearchText.value = '';
     advanceSearchUri.value = `${SearchParamiter}=${q}`;
     onPasteUrlPathParam();
@@ -256,13 +268,14 @@ export const useCrudList = <T>(options: CrudListApiOptions) => {
     onPerPageChange,
     onNextPage,
     onReload,
+    onSort,
     onSortColumn,
     onSortMode,
     getItemById,
     getItemByIndex,
     removeItemById,
     removeItemByIndex,
-    onAdvanceSearch,
+    onSearch,
     onKeywordSearch,
     onNewForm,
     onItemDelete,

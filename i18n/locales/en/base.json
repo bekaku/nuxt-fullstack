@@ -53,6 +53,7 @@
     "disable": "Disable",
     "pleaseWait": "Please wait...",
     "pleaseWaitWhileLoading": "Plese wait while loading",
+    "pleaseWaitWhileLoading2": "Please wait, the system is retrieving data.",
     "deleteConfirm": "Confirm to delete",
     "deleteConfirmHelp": "Are you sure, this action cannot be undone.",
     "deleteCountConfirm": "Confirm the deletion of {count} items.",
@@ -300,6 +301,7 @@
     "subDistrict": "Sub District",
     "items": "no items | {n} item | {n} items",
     "selectdItems": "Not selected | Selected {n} item | Selected {n} items",
+    "selectdItemsOf": "{selected} of {total} row selected. | {selected} of {total} row(s) selected.",
     "print": "Print",
     "showAllPage": "Show all pages",
     "title": "Title",
@@ -313,7 +315,8 @@
     "goTo": "Go to",
     "enterDetails": "Please enter your details.",
     "addLinkTitle": "Message to display (Title)",
-    "addLinkLink": "URL (eg. https://...)"
+    "addLinkLink": "URL (eg. https://...)",
+     "copyID": "Copy ID"
   },
   "drive": {
     "title": "My Files",
@@ -360,8 +363,7 @@
     "uploading": "Uploading",
     "uploadFail": "Upload failed",
     "uploadComplete": "Upload complete",
-    "download": "Download",
-    "copyID": "Copy ID"
+    "download": "Download"
   },
   "theme": {
     "light": "Light",

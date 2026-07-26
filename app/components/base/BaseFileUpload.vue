@@ -131,7 +131,7 @@ const onAddFilePreview = (
 ) => {
   if (modelValue.value && f) {
     modelValue.value.push({
-      id: 0,
+      id: null,
       uniqueId: idToString(generateSnowFlakeId()),
       fileMime: f.type,
       fileName: f.name,

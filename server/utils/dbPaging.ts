@@ -59,7 +59,7 @@ export async function paginate<T>(
     conditions.push(config.where)
   }
 
-  const searchStr = query.search as string
+  const searchStr = query._q as string
   if (searchStr) {
     const filters = searchStr.split(',')
     for (const filter of filters) {

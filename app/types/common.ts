@@ -1,4 +1,4 @@
-import type { AvatarProps, IconProps, NavigationMenuItem } from "@nuxt/ui";
+import type { AvatarProps, IconProps, NavigationMenuItem, TableColumn } from "@nuxt/ui";
 import type { AppUser } from "./models";
 import type { RBACProps } from "./props";
 
@@ -321,6 +321,22 @@ export interface ICrudListHeaderOption {
     multiple?: boolean
   };
 }
+export interface ICrudFilterOptions {
+  searchable?: boolean;
+  searchType?: ICrudListHeaderOptionSearchType;
+  searchModel?: any;
+  searchColunm?: string;
+  sortable?: boolean;
+  sortColunm?: string;
+  label?: string;
+  searchOperation?: SearchOperation;
+  searchOperationReadonly?: boolean;
+  func?: any;
+  selectOption?: {
+    items: LabelValue<any>[]
+    multiple?: boolean
+  };
+}
 export interface ICrudListHeader {
   column?: string;
   field?: any;
@@ -383,6 +399,7 @@ export interface LabelValue<Type> {
   fetch?: boolean;
   icon?: IconProps;
   label?: string;
+  id?: any;
   noActiveLink?: boolean;
   params?: string[];
   queries?: string[];

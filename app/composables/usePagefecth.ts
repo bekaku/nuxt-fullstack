@@ -78,6 +78,7 @@ export const usePagefecth = <T>(options: CrudListApiOptions) => {
   }
   const setDataList = (list: T[]): Promise<void> => {
     return new Promise(resolve => {
+
       if (pages.value && pages.value.current == 1) {
         dataList.value = list
       } else {
@@ -185,6 +186,16 @@ export const usePagefecth = <T>(options: CrudListApiOptions) => {
     await loadPageChange(false)
     return
   }
+  const onSort = async (column: string, mode: ISortModeType): Promise<void> => {
+    if (!sorts.value) {
+      sorts.value = []
+    }
+    sorts.value = [{
+      column: column,
+      mode: mode
+    }];
+    await loadData();
+  }
   const onSortColumn = async (column: string): Promise<void> => {
     if (!sorts.value) {
       sorts.value = []
@@ -259,6 +270,7 @@ export const usePagefecth = <T>(options: CrudListApiOptions) => {
     onPerPageChange,
     onNextPage,
     onReload,
+    onSort,
     onSortColumn,
     onSortMode,
     getItemById,

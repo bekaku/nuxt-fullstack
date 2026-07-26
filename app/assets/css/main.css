@@ -51,12 +51,17 @@
   --ui-text-highlighted: var(--ui-color-neutral-900);
   --ui-text-inverted: white;
 }
-html {
-  font-size: 16px; /* Default browser size is usually 16px */
-}
+
 :root {
   --ui-radius: 0.375rem;
+  --bg-main: var(--ui-color-neutral-50);
+  /* --ui-bg: #fff; */
 }
-/* .dark {
-  --ui-bg: var(--ui-color-neutral-950);
-} */
+.dark {
+  --bg-main: var(--ui-color-neutral-950);
+  /* --ui-bg: var(--ui-color-neutral-900); */
+}
+html {
+  font-size: 16px; /* Default browser size is usually 16px */
+  /* background-color: var(--bg-main); */
+}

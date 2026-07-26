@@ -11,7 +11,7 @@ export const useApi = () => {
   const event = import.meta.server ? useRequestEvent() : null;
   const requestHeaders = import.meta.server ? useRequestHeaders(['cookie']) : {};
   const responseCookies = new Map<string, string>();
-  const toast = useToast()
+  const toast = import.meta.client ? useToast() : null
   const { refreshTokenDays } = useConfiguration()
   const ttlDays = Number(refreshTokenDays) || 7;
 
@@ -86,7 +86,7 @@ export const useApi = () => {
   // };
 
   const notifyServerMessage = (response: ResponseEntity<any>): void => {
-    if (import.meta.server || !response?.message) {
+    if (import.meta.server || !response?.message ||!toast) {
       return;
     }
 

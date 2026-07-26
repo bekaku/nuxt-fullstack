@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import type { TableColumn } from "@nuxt/ui";
-import type { Row } from "@tanstack/table-core";
+import {
+  ICrudListHeaderOptionSearchType,
+  type ICrudFilterOptions,
+} from "~/types/common";
 import type { Permission } from "~/types/models";
 
 definePageMeta({
@@ -26,10 +29,9 @@ const {
   sorts,
   onPageChange,
   onPerPageChange,
-  onSortColumn,
-  onSortMode,
+  onSort,
   onReload,
-  onAdvanceSearch,
+  onSearch,
   onItemDelete,
   onNewForm,
   onItemClick,
@@ -53,54 +55,7 @@ const {
     },
   ],
 });
-function getRowItems(row: Row<Permission>) {
-  return [
-    {
-      type: "label",
-      label: t("base.tool"),
-    },
-    {
-      label: "Copy customer ID",
-      icon: "i-lucide-copy",
-      onSelect() {
-        if (!row.original.id) {
-          return;
-        }
-        navigator.clipboard.writeText(row.original.id.toString());
-        toast.add({
-          title: "Copied to clipboard",
-          description: "Customer ID copied to clipboard",
-        });
-      },
-    },
-    {
-      type: "separator",
-    },
-    {
-      label: "View customer details",
-      icon: "i-lucide-list",
-    },
-    {
-      label: "View customer payments",
-      icon: "i-lucide-wallet",
-    },
-    {
-      type: "separator",
-    },
-    {
-      label: "Delete customer",
-      icon: "i-lucide-trash",
-      color: "error",
-      onSelect() {
-        toast.add({
-          title: "Customer deleted",
-          description: "The customer has been deleted.",
-        });
-      },
-    },
-  ];
-}
-const columns: TableColumn<Permission>[] = [
+const columns = ref<TableColumn<Permission>[]>([
   {
     accessorKey: "module",
     header: "Module",
@@ -110,11 +65,29 @@ const columns: TableColumn<Permission>[] = [
     accessorKey: "code",
     header: t("model_permission_name"),
     cell: ({ row }) => row.getValue("code"),
+    meta: {
+      options: {
+        sortable: true,
+        searchable: true,
+        searchType: ICrudListHeaderOptionSearchType.TEXT,
+        searchOperation: ":",
+        searchModel: "",
+      } as ICrudFilterOptions,
+    } as any,
   },
   {
     accessorKey: "description",
     header: t("model_permission_description"),
     cell: ({ row }) => row.getValue("description"),
+    meta: {
+      options: {
+        sortable: true,
+        searchable: true,
+        searchType: ICrudListHeaderOptionSearchType.BOOLEAN,
+        searchOperation: ":",
+        searchModel: "",
+      } as ICrudFilterOptions,
+    } as any,
   },
   {
     accessorKey: "operationType",
@@ -133,28 +106,66 @@ const columns: TableColumn<Permission>[] = [
         type = "other";
       }
       return h(
-        UBadge,
-        { class: "capitalize", variant: "subtle", color: "neutral" },
+        UButton,
+        {
+          class: "capitalize",
+          variant: "subtle",
+          color: "neutral",
+          size: "sm",
+          onClick: () => {
+            onCellTypeClick(row.index);
+          },
+        },
         () => type,
       );
     },
+    // meta: {
+    //   options: {
+    //     searchType: ICrudListHeaderOptionSearchType.OPTIONS,
+    //     searchOperation: ":",
+    //     searchModel: "",
+    //     selectOption:{
+    //       items: [
+    //         {
+    //           label: "crud",
+    //           value: 1,
+    //         },
+    //         {
+    //           label: "report",
+    //           value: 2,
+    //         },
+    //         {
+    //           label: "other",
+    //           value: 3,
+    //         },
+    //       ]
+    //     }
+    //   } as ICrudFilterOptions,
+    // } as any,
   },
-];
+]);
+
+const onCellTypeClick = (index: number) => {
+  let rowItem = dataList.value[index];
+  console.log("rowItem", rowItem);
+};
 </script>
 
 <template>
   <BaseDashboardPanel id="permission-index" title="Permission page">
-    <BaseCrudList
-      icon="lucide:shield-keyhole"
+    <BaseTable
+      icon="lucide:shield-cog-corner"
       :title="$t('model_permission')"
+      description="Permission management"
       :crud-name="crudName"
       :list="dataList"
-      :columns="columns"
       :show-checkbox="true"
       :loading="loading"
       :first-loaded="firstLoaded"
-      :pages="pages"
-      :sorts="sorts"
+      :columns="columns"
+      v-model:sorts="sorts"
+      v-model:paging="pages"
+      show-keword-search
       :view-permission="{
         permissions: ['permission_view'],
       }"
@@ -168,6 +179,25 @@ const columns: TableColumn<Permission>[] = [
         permissions: ['permission_delete'],
       }"
       @on-item-delete="onItemDelete"
-    />
+      @on-page-no-change="onPageChange"
+      @on-items-perpage-change="onPerPageChange"
+      @on-new-form="onNewForm"
+      @on-item-click="onItemClick"
+      @on-item-copy="onItemCopy"
+      @on-sort="onSort"
+      @on-reload="onReload"
+      @on-keyword-search="onKeywordSearch"
+      @on-search="onSearch"
+    >
+      <!--
+    accessorKey or id of column can be used as slots everywhere in side BaseCrudList
+    <template #actions-cell="{ row }">
+     Action slot
+    </template>
+    <template #code-cell="{ row }">
+     Code slot
+    </template>
+    -->
+    </BaseTable>
   </BaseDashboardPanel>
 </template>

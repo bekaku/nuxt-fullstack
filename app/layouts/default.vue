@@ -33,7 +33,6 @@ const groups = computed(() => [
 ]);
 
 onMounted(async () => {
-  console.log("getFavoriteNavigations", getFavoriteNavigations.value);
   const cookie = useCookie("cookie-consent");
   if (cookie.value === "accepted") {
     return;

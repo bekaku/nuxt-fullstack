@@ -45,6 +45,7 @@
     "username5": "No _ or . at the end",
     "cookiePolicyText": "We use first-party cookies to enhance your experience on our website.",
     "imageNotYetChoose": "No picture has been selected yet.",
-    "pleaseSelectAddress": "Province,District,Sub District"
+    "pleaseSelectAddress": "Province,District,Sub District",
+    "emptyDescription": "It looks like you haven't added any record. Create one to get started."
   }
 }
