@@ -209,10 +209,12 @@ export interface CrudFormApiOptions {
   actionDelete?: string;
   basePath?: string;
   fectchDataOnLoad?: boolean;
+  preValidate?: boolean;
   autoPageTitle?: boolean;
   preventRedirectToList?: boolean;
   requestEntityName?: string;
   methodPutIncludeId?: boolean;
+  entity?: any;
 }
 export interface DefaultAxiosInstance {
   Accept: string;

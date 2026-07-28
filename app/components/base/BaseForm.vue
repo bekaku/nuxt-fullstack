@@ -1,4 +1,5 @@
 <script setup lang="ts" generic="T">
+import { UAvatar, UChip, UIcon, USeparator } from "#components";
 import type { FormSubmitEvent } from "@nuxt/ui";
 import z, { ZodType } from "zod";
 import type { ICrudAction } from "~/types/common";
@@ -18,6 +19,7 @@ const {
   deleteButton = true,
   canSubmit = true,
   copyButton = false,
+  editMode = true,
   crudAction,
   zodSchema,
   orientation = "horizontal",
@@ -38,6 +40,7 @@ const {
   crudAction?: ICrudAction;
   showActionText?: boolean;
   editButton?: boolean;
+  editMode?: boolean;
   deleteButton?: boolean;
   copyButton?: boolean;
   canSubmit?: boolean;
@@ -50,6 +53,7 @@ const emit = defineEmits<{
   "on-submit": [];
   "on-delete": [];
   "on-edit-enable": [];
+  "on-item-click": [type: ICrudAction];
 }>();
 
 const { t } = useLang();
@@ -58,6 +62,7 @@ const { hasPermission } = useRbac();
 type Schema = z.output<typeof zodSchema>;
 const state = defineModel<Partial<Schema>>();
 const { isMobile } = useAppDevice();
+const confirm = useConfirmDialog();
 const isHaveListPermission = computed(() => {
   if (byPassPermission) {
     return true;
@@ -299,8 +304,22 @@ const onSubmit = async (event: FormSubmitEvent<Schema>) => {
   console.log(event.data);
 };
 
-const onDelete = (event: any) => {
-  emit("on-delete");
+const onEditBtnClick = (type: ICrudAction) => {
+  emit("on-item-click", type);
+};
+const onDelete = async (event: any) => {
+  const conf = await confirm({
+    title: t("base.deleteCountConfirm", { count: 1 }),
+    description: t("base.deleteConfirmHelp"),
+    confirmButton: {
+      label: t("base.delete"),
+      color: "error",
+      icon: "lucide:trash",
+    },
+  });
+  if (conf) {
+    emit("on-delete");
+  }
 };
 </script>
 <template>
@@ -310,15 +329,17 @@ const onDelete = (event: any) => {
         <slot name="header">
           <div class="flex flex-col">
             <BaseItem :separator="false">
-              <template v-if="icon" #start>
-                <!-- <UAvatar :icon="icon" /> -->
-                <UButton
-                  v-if="showBack && isHaveListPermission"
-                  variant="ghost"
-                  icon="lucide:arrow-left"
-                  class="rounded-full"
-                  @click="emit('on-back')"
-                />
+              <template #start>
+                <slot name="heder-start">
+                  <!-- <UAvatar v-if="icon" :icon="icon" /> -->
+                  <UButton
+                    v-if="showBack && isHaveListPermission"
+                    variant="ghost"
+                    icon="lucide:arrow-left"
+                    class="rounded-full"
+                    @click="emit('on-back')"
+                  />
+                </slot>
               </template>
               <div class="flex gap-2">
                 <div v-if="title" class="text-xl font-bold">
@@ -339,6 +360,9 @@ const onDelete = (event: any) => {
               <div v-if="description" class="text-sm text-muted">
                 {{ description }}
               </div>
+              <template #end>
+                <slot name="header-end" />
+              </template>
             </BaseItem>
           </div>
         </slot>
@@ -376,6 +400,7 @@ const onDelete = (event: any) => {
                 <!-- Component: Input (Text, Number) -->
                 <template v-if="field.componentType === 'input'">
                   <UInput
+                    v-if="editMode"
                     v-model="state[field.name]"
                     :loading="loading"
                     :type="field.inputType"
@@ -417,9 +442,25 @@ const onDelete = (event: any) => {
                       />
                     </template>
                   </UInput>
+                  <BaseItem v-else :separator="false">
+                    <template v-if="field.icon || field.avatar" #start>
+                      <UAvatar v-if="field.avatar" v-bind="field.avatar" />
+                      <UIcon v-else-if="field.icon" :name="field.icon" />
+                    </template>
+                    <div class="flex flex-col">
+                      <div v-if="state[field.name]">
+                        {{ state[field.name] }}
+                      </div>
+                    </div>
+
+                    <template v-if="field.trailingIcon" #end>
+                      <UIcon :name="field.trailingIcon" />
+                    </template>
+                  </BaseItem>
                 </template>
                 <template v-if="field.componentType === 'number-step'">
                   <UInputNumber
+                    v-if="editMode"
                     v-model="state[field.name]"
                     :loading="loading"
                     :placeholder="field.ui?.placeholder"
@@ -436,13 +477,28 @@ const onDelete = (event: any) => {
                     :class="[field.ui?.class || '']"
                   >
                   </UInputNumber>
+                  <BaseItem v-else :separator="false">
+                    <template v-if="field.icon || field.avatar" #start>
+                      <UAvatar v-if="field.avatar" v-bind="field.avatar" />
+                      <UIcon v-else-if="field.icon" :name="field.icon" />
+                    </template>
+                    <div class="flex flex-col">
+                      <div v-if="state[field.name]">
+                        {{ state[field.name] }}
+                      </div>
+                    </div>
+
+                    <template v-if="field.trailingIcon" #end>
+                      <UIcon :name="field.trailingIcon" />
+                    </template>
+                  </BaseItem>
                 </template>
                 <template v-if="field.componentType === 'slider'">
                   <USlider
                     v-model="state[field.name]"
                     :loading="loading"
                     :color="field.color"
-                    :readonly="field.ui?.readonly"
+                    :disabled="field.ui?.disable || !editMode"
                     :size="field.ui?.size"
                     :min="field.ui?.min"
                     :max="field.ui?.max"
@@ -455,6 +511,7 @@ const onDelete = (event: any) => {
                 </template>
                 <template v-if="field.componentType === 'input-tags'">
                   <UInputTags
+                    v-if="editMode"
                     v-model="state[field.name]"
                     :loading="loading"
                     :placeholder="field.ui?.placeholder"
@@ -469,8 +526,24 @@ const onDelete = (event: any) => {
                     :max-length="field.ui?.maxlength"
                     :max="field.ui?.max"
                     :class="[field.ui?.class || '']"
-                  >
-                  </UInputTags>
+                  />
+                  <BaseItem v-else :separator="false">
+                    <template v-if="field.icon || field.avatar" #start>
+                      <UAvatar v-if="field.avatar" v-bind="field.avatar" />
+                      <UIcon v-else-if="field.icon" :name="field.icon" />
+                    </template>
+                    <div class="flex flex-col">
+                      <div v-if="state[field.name]" class="flex gap-2">
+                        <UBadge v-for="item in state[field.name]" :key="item">
+                          {{ item }}
+                        </UBadge>
+                      </div>
+                    </div>
+
+                    <template v-if="field.trailingIcon" #end>
+                      <UIcon :name="field.trailingIcon" />
+                    </template>
+                  </BaseItem>
                 </template>
                 <template v-if="field.componentType === 'input-pin'">
                   <UPinInput
@@ -479,7 +552,7 @@ const onDelete = (event: any) => {
                     :placeholder="field.ui?.placeholder"
                     :color="field.color"
                     :variant="field.ui?.variant"
-                    :disabled="field.disable"
+                    :disabled="field.disable || !editMode"
                     :size="field.ui?.size"
                     :length="field.ui?.max"
                     :separator="field.ui?.separatorLength"
@@ -490,6 +563,7 @@ const onDelete = (event: any) => {
 
                 <template v-else-if="field.componentType === 'textarea'">
                   <UTextarea
+                    v-if="editMode"
                     v-model="state[field.name]"
                     :loading="loading"
                     :rows="field.ui?.rows || 4"
@@ -531,6 +605,21 @@ const onDelete = (event: any) => {
                       />
                     </template>
                   </UTextarea>
+                  <BaseItem v-else :separator="false">
+                    <template v-if="field.icon || field.avatar" #start>
+                      <UAvatar v-if="field.avatar" v-bind="field.avatar" />
+                      <UIcon v-else-if="field.icon" :name="field.icon" />
+                    </template>
+                    <div class="flex flex-col">
+                      <div v-if="state[field.name]">
+                        {{ state[field.name] }}
+                      </div>
+                    </div>
+
+                    <template v-if="field.trailingIcon" #end>
+                      <UIcon :name="field.trailingIcon" />
+                    </template>
+                  </BaseItem>
                 </template>
 
                 <!-- Component: Checkbox / Toggle (Boolean) -->
@@ -539,7 +628,7 @@ const onDelete = (event: any) => {
                     v-model="state[field.name]"
                     :label="`${$t('base.enable')} (${field.label})`"
                     :size="field.ui?.size"
-                    :disabled="field.disable"
+                    :disabled="field.disable || !editMode"
                     :color="field.color"
                     :variant="field.ui?.variant"
                     :loading="loading"
@@ -551,7 +640,7 @@ const onDelete = (event: any) => {
                     v-model="state[field.name]"
                     :label="`${$t('base.enable')} (${field.label})`"
                     :size="field.ui?.size"
-                    :disabled="field.disable"
+                    :disabled="field.disable || !editMode"
                     :color="field.color"
                     :items="field.options"
                     :variant="field.ui?.variant"
@@ -565,7 +654,7 @@ const onDelete = (event: any) => {
                     v-model="state[field.name]"
                     :label="field.label"
                     :size="field.ui?.size"
-                    :disabled="field.disable"
+                    :disabled="field.disable || !editMode"
                     :color="field.color"
                     :items="field.options"
                     :variant="field.ui?.variant"
@@ -581,7 +670,7 @@ const onDelete = (event: any) => {
                     checked-icon="i-lucide-check"
                     :legend="$t('base.enable')"
                     :size="field.ui?.size"
-                    :disabled="field.disable"
+                    :disabled="field.disable || !editMode"
                     :color="field.color"
                     :variant="field.ui?.variant"
                     :loading="loading"
@@ -594,7 +683,7 @@ const onDelete = (event: any) => {
                     v-model="state[field.name]"
                     :label="`${$t('base.enable')} (${field.label})`"
                     :size="field.ui?.size"
-                    :disabled="field.disable"
+                    :disabled="field.disable || !editMode"
                     :color="field.color"
                     :items="field.options"
                     value-key="value"
@@ -618,7 +707,7 @@ const onDelete = (event: any) => {
                     :items="field.options"
                     :icon="field.icon || undefined"
                     :trailing-icon="field.trailingIcon || undefined"
-                    :disabled="field.disable"
+                    :disabled="field.disable || !editMode"
                     :avatar="field.avatar ? { ...field.avatar } : undefined"
                     :variant="field.ui?.variant"
                     :multiple="field.ui?.multiple"
@@ -630,15 +719,18 @@ const onDelete = (event: any) => {
                 </template>
                 <template v-else-if="field.componentType === 'file'">
                   <LazyBaseFileUpload
+                    v-if="editMode"
                     :description="field?.description"
                     :multiple="field.ui?.multiple"
                     :max-files="field.ui?.max"
+                    :disabled="field.disable || !editMode"
                     :icon="field.icon || 'lucide:paperclip'"
                     v-model="state[field.name]"
                     :show-progress="false"
                     :priview-layout="field.ui?.layout || 'list'"
                     :class="[field.ui?.class || '']"
                   />
+                  <div v-else>File Items Preview here</div>
                 </template>
               </UFormField>
             </slot>
@@ -647,30 +739,45 @@ const onDelete = (event: any) => {
           </template>
         </slot>
         <slot />
-        <div class="flex justify-center gap-2">
+
+        <div class="flex flex-col gap-4 mt-4">
           <slot name="crud-action">
-            <UButton
-              v-if="isHaveAddPermission || isHaveEditPermission"
-              icon="lucide:save"
-              :label="
-                crudAction == 'edit' ||
-                crudAction == 'new' ||
-                crudAction == 'copy'
-                  ? $t('base.save')
-                  : $t('base.okay')
-              "
-              color="primary"
-              type="submit"
-            >
-            </UButton>
-            <UButton
-              v-if="crudAction == 'edit' && isHaveDeletePermission"
-              icon="lucide:trash"
-              :label="$t('base.delete')"
-              color="error"
-              @@click.prevent="onDelete"
-            >
-            </UButton>
+            <USeparator class="mt-4" type="dashed" />
+            <div class="flex justify-center gap-4">
+              <template v-if="isHaveAddPermission || isHaveEditPermission">
+                <UButton
+                  v-if="crudAction === 'view'"
+                  icon="lucide:pencil"
+                  :label="$t('base.edit')"
+                  @click.prevent="$emit('on-edit-enable')"
+                >
+                </UButton>
+                <UButton
+                  v-else
+                  icon="lucide:save"
+                  :label="
+                    crudAction == 'edit' ||
+                    crudAction == 'new' ||
+                    crudAction == 'copy'
+                      ? $t('base.save')
+                      : $t('base.okay')
+                  "
+                  color="primary"
+                  type="submit"
+                >
+                </UButton>
+              </template>
+              <UButton
+                v-if="
+                  deleteButton && crudAction == 'edit' && isHaveDeletePermission
+                "
+                icon="lucide:trash"
+                :label="$t('base.delete')"
+                color="error"
+                @click.prevent="onDelete"
+              >
+              </UButton>
+            </div>
           </slot>
         </div>
       </UForm>

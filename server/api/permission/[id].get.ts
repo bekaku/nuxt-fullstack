@@ -26,6 +26,7 @@ export default defineEventHandler(async (event): Promise<ResponseEntity<Permissi
         id: true,
         code: true,
         description: true,
+        module: true,
         operationType: true,
       }
     })
@@ -43,6 +44,7 @@ export default defineEventHandler(async (event): Promise<ResponseEntity<Permissi
         id: permission.id.toString(),
         code: permission.code,
         description: permission.description,
+        module: permission.module,
         operationType: permission.operationType as any,
       }
     }

@@ -61,7 +61,7 @@ const schema = z.object({
     )
     .optional(),
   inputfile: z
-    .any()
+    .array(z.any())
     .describe(
       ui({
         label: "Input file",
@@ -102,6 +102,19 @@ const schema = z.object({
         icon: "lucide:toggle-right",
         ui: {
           type: "switch",
+          required: true,
+        },
+      }),
+    )
+    .optional(),
+  checkbox: z
+    .boolean()
+    .describe(
+      ui({
+        description: "Checkbox",
+        label: "Checkbox",
+        ui: {
+          type: "checkbox",
           required: true,
         },
       }),
@@ -274,56 +287,53 @@ const schema = z.object({
     .optional(),
 });
 type Schema = z.output<typeof schema>;
-const state = reactive<Partial<Schema>>({
-  code: "",
-  description: "",
-  module: "",
-  themes: [],
+const state = ref<Partial<Schema>>({
+  code: "test",
+  description: "test",
+  module: "test",
+  themes: 'system',
   operationType: "CRUD",
   enable: true,
-  radiogroups: undefined,
+  checkbox: false,
+  radiogroups: 'system',
   checkgroups: ["system"],
   tags: ["vue"],
-  pins: [],
+  pins: [1, 2, 3, 4, 5, 6, 7],
   slider: 0,
   sliders: [25, 75],
   inputfile: [],
+  id:999
 });
 
-const entity: Permission = Object.freeze<Permission>({
-  id: null,
-  code: "",
-  description: null,
-  operationType: "CRUD",
-});
 const {
   crudAction,
   loading,
-  crudEntity,
   crudName,
   isEditMode,
   onDelete,
   onBack,
   onEnableEditForm,
   onSubmit,
+  test,
 } = useCrudForm<Permission>(
   {
     crudName: "Permission",
+    preValidate:false
   },
-  entity,
+  state,
 );
-
-const value = ref(5);
 </script>
 <template>
   <BaseDashboardPanel id="example-form" title="Form page">
-    <BaseCrudForm
+    <UButton @click="test">Test</UButton>
+    <BaseForm
       :zod-schema="schema"
       v-model="state"
       by-pass-permission
+      :show-back="false"
+      :edit-mode="true"
       :crud-action="crudAction"
       :loading="loading"
-      :crud-entity="crudEntity"
       :crud-name="crudName"
       icon="lucide:shield-cog-corner"
       title="Form"
@@ -357,6 +367,6 @@ const value = ref(5);
 
       <!-- you can override auto-fields here -->
       <!-- <template #auto-fields> </template> -->
-    </BaseCrudForm>
+    </BaseForm>
   </BaseDashboardPanel>
 </template>

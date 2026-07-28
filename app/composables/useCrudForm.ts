@@ -1,8 +1,8 @@
 import { BackendRootPath, CrudAction, PageActionParamiter, PageIdParamiter } from "~/libs/constants";
 import type { CrudFormApiOptions, ICrudAction, IMethod, RequestDto, ResponseEntity } from "~/types/common"
 
-export const useCrudForm = <T>(options: CrudFormApiOptions, initialEntity: T) => {
-  const { appNavigateTo, getParam, appConfirm, getPreviousPath, appThrowError } = useBase();
+export const useCrudForm = <T>(options: CrudFormApiOptions, entity: Ref<Partial<any>>) => {
+  const { appNavigateTo, getParam, getPreviousPath, appThrowError } = useBase();
   const confirm = useConfirmDialog();
   const loader = useLoader();
   const { t } = useLang();
@@ -11,7 +11,6 @@ export const useCrudForm = <T>(options: CrudFormApiOptions, initialEntity: T) =>
   const previousPath = ref(getPreviousPath() as string);
   const loading = ref(false);
   const crudId = ref<number | undefined>(getParam<number>(PageIdParamiter));
-  const crudEntity = ref<T>(Object.assign({}, initialEntity) as T);
   const requestEntityName = ref<string | undefined>(options?.requestEntityName ? options.requestEntityName : undefined);
   const crudAction = ref<ICrudAction | undefined>(getParam<ICrudAction>(PageActionParamiter));
   const fetchDataLink = ref(options.fetchDataLink);
@@ -49,11 +48,11 @@ export const useCrudForm = <T>(options: CrudFormApiOptions, initialEntity: T) =>
     if (crudAction.value === CrudAction.EDIT) {
       return options.actionPut
         ? options.actionPut
-        : (options.apiEndpoint ||'/api') + '/' + pascalToKebab(options.crudName) + (options.methodPutIncludeId === undefined || options.methodPutIncludeId === true ? '/' + crudEntity.value.id : '');
+        : (options.apiEndpoint || '/api') + '/' + pascalToKebab(options.crudName) + (options.methodPutIncludeId === undefined || options.methodPutIncludeId === true ? '/' + entity.value.id : '');
     }
     return options.actionPost
       ? options.actionPost
-      : (options.apiEndpoint ||'/api') + '/' + pascalToKebab(options.crudName);
+      : (options.apiEndpoint || '/api') + '/' + pascalToKebab(options.crudName);
   });
 
   const deleteApiEndpoint = computed(() => {
@@ -64,11 +63,18 @@ export const useCrudForm = <T>(options: CrudFormApiOptions, initialEntity: T) =>
         }`
         : '';
   });
+  // const getFetchDataLink = computed(() => {
+  //   if (fetchDataLink.value) {
+  //     return fetchDataLink.value;
+  //   }
+  //   return `${options.apiEndpoint || '/api'}/${pascalToKebab(options.crudName ? options.crudName : '')}/${crudId.value}`;
+  // });
   const getFetchDataLink = computed(() => {
     if (fetchDataLink.value) {
       return fetchDataLink.value;
     }
-    return `${options.apiEndpoint || '/api'}/${pascalToKebab(options.crudName ? options.crudName : '')}/${crudId.value}`;
+    const basePath = `${options.apiEndpoint || '/api'}/${pascalToKebab(options.crudName || '')}`;
+    return crudId.value ? `${basePath}/${crudId.value}` : basePath;
   });
   const fetchDataById = async (): Promise<ResponseEntity<T> | null> => {
     if (!crudId.value && !options.crudName) {
@@ -81,7 +87,8 @@ export const useCrudForm = <T>(options: CrudFormApiOptions, initialEntity: T) =>
       });
       loading.value = false;
       if (response.status == 200 && response.data) {
-        crudEntity.value = response.data;
+        entity.value = response.data;
+        // Object.assign(entity, response.data);
       }
       return response;
     } catch (error: any) {
@@ -102,12 +109,14 @@ export const useCrudForm = <T>(options: CrudFormApiOptions, initialEntity: T) =>
     ) {
       await fetchDataById();
       if (crudAction.value == CrudAction.COPY) {
-        crudEntity.value.id = null;
+        entity.value.id = null;
       }
     }
   };
   const resetEntity = () => {
-    crudEntity.value = { ...initialEntity } as T;
+    for (const key in entity.value) {
+      delete entity.value[key];
+    }
   };
   const onBack = () => {
     let backLink: string | undefined = '';
@@ -132,13 +141,18 @@ export const useCrudForm = <T>(options: CrudFormApiOptions, initialEntity: T) =>
       return new Promise((resolve) => resolve(false))
     }
     await onSubmitProcess<T>(
-      crudEntity.value,
-      crudAction.value === CrudAction.VIEW ? 'PUT' : 'POST',
+      entity.value,
+      'POST',
       apiEnpoint.value
     )
+    // await onSubmitProcess<T>(
+    //   entity.value,
+    //   crudAction.value === CrudAction.VIEW ? 'PUT' : 'POST',
+    //   apiEnpoint.value
+    // )
   }
   const onSubmitProcess = async <E>(
-    data: E,
+    data: any,
     methodType: IMethod,
     enpoint: string,
     jsonRootName: string | undefined = undefined,
@@ -147,13 +161,9 @@ export const useCrudForm = <T>(options: CrudFormApiOptions, initialEntity: T) =>
     if (!enpoint) {
       return
     }
-
-
     if (!apiEnpoint.value) {
       return
     }
-
-
     // const requestItem: RequestDto = {};
     // if (jsonRootName) {
     //   requestItem[jsonRootName || 'data'] = data
@@ -174,7 +184,7 @@ export const useCrudForm = <T>(options: CrudFormApiOptions, initialEntity: T) =>
     loading.value = true;
     try {
       const response = await api<ResponseEntity<T>>(enpoint, {
-        method: "POST",
+        method: methodType,
         body: requestItem
       });
       if (import.meta.dev) {
@@ -221,38 +231,35 @@ export const useCrudForm = <T>(options: CrudFormApiOptions, initialEntity: T) =>
   };
 
   const onDelete = async () => {
-    console.log('onDelete', crudAction.value != CrudAction.EDIT || crudAction.value != CrudAction.VIEW)
-    if (
-      (crudAction.value != CrudAction.EDIT || crudAction.value != CrudAction.VIEW) &&
-      !crudEntity.value &&
-      crudId.value == 0 &&
-      !deleteApiEndpoint.value
-    ) {
+    console.log('onDelete');
+    if (crudAction.value !== CrudAction.EDIT && crudAction.value !== CrudAction.VIEW) {
       return;
     }
-    const conf = await appConfirm(t('app.monogram'), t('base.deleteConfirm'));
-    if (conf) {
-      loading.value = true;
-      try {
-        const response = await api<ResponseEntity<void>>(deleteApiEndpoint.value, {
-          method: "DELETE",
-        });
-        if (import.meta.dev) {
-          console.log('useCrudFrom > onDelete', deleteApiEndpoint.value, response);
-        }
-        onBack();
-      } catch (error: any) {
-        console.error('useCrudForm>onDelete', error);
-        if (error.message) {
 
-          showToast({
-            message: error.message,
-            status: 500
-          });
-        }
-      } finally {
-        loading.value = false;
+    if (!entity.value || !crudId.value || !deleteApiEndpoint.value) {
+      console.warn("Cannot delete: Missing required data (entity, id, or endpoint)");
+      return;
+    }
+    loading.value = true;
+    try {
+      const response = await api<ResponseEntity<void>>(deleteApiEndpoint.value, {
+        method: "DELETE",
+      });
+      if (import.meta.dev) {
+        console.log('useCrudFrom > onDelete', deleteApiEndpoint.value, response);
       }
+      onBack();
+    } catch (error: any) {
+      console.error('useCrudForm>onDelete', error);
+      if (error.message) {
+
+        showToast({
+          message: error.message,
+          status: 500
+        });
+      }
+    } finally {
+      loading.value = false;
     }
   };
 
@@ -266,6 +273,18 @@ export const useCrudForm = <T>(options: CrudFormApiOptions, initialEntity: T) =>
     }
   };
 
+
+  if (options?.preValidate === undefined || options?.preValidate) {
+    preValidate();
+  }
+  if (options?.fectchDataOnLoad === undefined || options?.fectchDataOnLoad) {
+    preFectData();
+  }
+  //test
+  const test = () => {
+    entity.value.code = '55555'
+    console.log('entity', entity.value)
+  }
   onBeforeUnmount(() => {
     resetEntity();
   });
@@ -275,12 +294,12 @@ export const useCrudForm = <T>(options: CrudFormApiOptions, initialEntity: T) =>
     ...methods,
     crudId,
     crudAction,
-    crudEntity,
     crudName: options.crudName,
     requestEntityName,
     fetchDataLink,
     firstLoaded,
-    isEditMode
+    isEditMode,
+    test
   };
 
 }

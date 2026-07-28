@@ -19,16 +19,12 @@ const schema = z.object({
         label: t("model_permission_name"),
         description: "This is help text for Permission code",
         icon: "lucide:key",
-        trailingIcon: "lucide:search",
-        color: "warning",
+        trailingIcon: "lucide:file-headphone",
         ui: {
           type: "text",
           required: true,
-          placeholder: "Enter code...",
-          variant: "subtle",
-          size: "xl",
           clearable: true,
-          maxlength: 50,
+          maxlength: 125,
         },
       }),
     ),
@@ -48,13 +44,9 @@ const schema = z.object({
     .describe(
       ui({
         label: t("model_permission_description"),
-        avatar: {
-          src: "https://github.com/nuxt.png",
-          loading: "lazy",
-        },
         ui: {
           type: "textarea",
-          maxlength: 500,
+          maxlength: 125,
           clearable: true,
           separator: true,
         },
@@ -79,130 +71,18 @@ const schema = z.object({
       }),
     )
     .optional(),
-  enable: z
-    .boolean()
-    .describe(
-      ui({
-        description: "Enable permission",
-        label: t("base.status"),
-        icon: "lucide:toggle-right",
-        ui: {
-          type: "switch",
-          required: true,
-        },
-      }),
-    )
-    .optional(),
-  id: z
-    .number()
-    .describe(
-      ui({
-        label: "Number step",
-        ui: {
-          type: "number-step",
-          step: 1,
-          min: 1,
-          max: 10,
-          required: true,
-        },
-      }),
-    )
-    .optional(),
-  themes: z
-    .any()
-    .describe(
-      ui({
-        label: "Test Input Menu",
-        ui: {
-          type: "input-menu",
-          // type: "checkbox-group",
-        },
-        icon: "lucide:brush",
-        children: [
-          {
-            label: "System",
-            description: "This is the first option.",
-            value: "system",
-            icon: "i-lucide-laptop",
-          },
-          {
-            label: "Light",
-            description: "This is the second option.",
-            value: "light",
-            icon: "i-lucide-sun",
-          },
-          {
-            label: "Dark",
-            description: "This is the third option.",
-            value: "dark",
-            icon: "i-lucide-moon",
-          },
-        ],
-      }),
-    )
-    .optional(),
-  checkgroups: z
-    .array(z.string())
-    .describe(
-      ui({
-        label: "Checkbox group",
-        ui: {
-          type: "checkbox-group",
-        },
-        children: [
-          {
-            label: "System",
-            description: "This is the first option.",
-            value: "system",
-          },
-          {
-            label: "Light",
-            description: "This is the second option.",
-            value: "light",
-          },
-          {
-            label: "Dark",
-            description: "This is the third option.",
-            value: "dark",
-          },
-        ],
-      }),
-    )
-    .optional(),
-  tags: z
-    .array(z.string())
-    .describe(
-      ui({
-        label: "Input Tags",
-        ui: {
-          type: "input-tags",
-        },
-      }),
-    )
-    .optional(),
 });
 type Schema = z.output<typeof schema>;
-const state = reactive<Partial<Schema>>({
+const state = ref<Partial<Schema>>({
   code: "",
   description: "",
   module: "",
-  themes: [],
   operationType: "CRUD",
-  enable: true,
-  checkgroups: ["system"],
-  tags: ["vue"],
 });
 
-const entity: Permission = Object.freeze<Permission>({
-  id: null,
-  code: "",
-  description: null,
-  operationType: "CRUD",
-});
 const {
   crudAction,
   loading,
-  crudEntity,
   crudName,
   isEditMode,
   onDelete,
@@ -213,23 +93,20 @@ const {
   {
     crudName: "Permission",
   },
-  entity,
+  state,
 );
-
-const value = ref(5);
 </script>
 <template>
   <BaseDashboardPanel
     id="permission-crud-index"
     :title="$t('model_permission')"
   >
-    {{ state }}
-    <BaseCrudForm
+    <BaseForm
       :zod-schema="schema"
       v-model="state"
+      :edit-mode="isEditMode"
       :crud-action="crudAction"
       :loading="loading"
-      :crud-entity="crudEntity"
       :crud-name="crudName"
       icon="lucide:shield-cog-corner"
       :title="$t('model_permission')"
@@ -241,29 +118,6 @@ const value = ref(5);
       @on-submit="onSubmit"
       @on-delete="onDelete"
     >
-      <!-- <UFormField label="Code" name="code">
-        <UInput v-model="state.code" />
-      </UFormField>
-
-      <UFormField label="Description" name="description">
-        <UInput v-model="state.description" type="description" />
-      </UFormField> -->
-
-      <!-- <template #field-code>
-        <UFormField label="Password" name="code" class="w-full">
-          Override code
-        </UFormField>
-      </template>
-      <template #field-description>
-        <UFormField label="Password" name="description" class="w-full">
-          Override description
-        </UFormField>
-      </template>
-      <template #field-operationType>
-        <UFormField label="Password" name="operationType" class="w-full">
-          Override operationType
-        </UFormField>
-      </template> -->
-    </BaseCrudForm>
+    </BaseForm>
   </BaseDashboardPanel>
 </template>

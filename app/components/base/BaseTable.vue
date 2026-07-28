@@ -238,7 +238,11 @@ const getRowActionItems = (row: Row<any>) => {
       label: t("base.view"),
       icon: "lucide:eye",
       onSelect() {
-        console.log("View row");
+        console.log("View row", row.index);
+        if (row.index == undefined) {
+          return;
+        }
+        emit('on-item-click', row.index, 'view');
       },
     });
   }
@@ -247,7 +251,11 @@ const getRowActionItems = (row: Row<any>) => {
       label: t("base.edit"),
       icon: "lucide:pencil",
       onSelect() {
-        console.log("Edit row");
+          console.log("Edit row", row.index);
+        if (row.index == undefined) {
+          return;
+        }
+        emit('on-item-click', row.index, 'edit');
       },
     });
   }
