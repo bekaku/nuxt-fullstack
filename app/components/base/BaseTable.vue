@@ -600,6 +600,7 @@ watch(
                 v-if="isHaveAddPermission && showNewBtn"
                 :label="$t('base.addNew')"
                 icon="lucide:plus"
+                color="primary"
                 @click="$emit('on-new-form')"
               />
               <UDropdownMenu

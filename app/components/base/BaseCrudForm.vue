@@ -20,6 +20,7 @@ const {
   copyButton = false,
   crudAction,
   zodSchema,
+  orientation = "horizontal",
 } = defineProps<{
   crudName?: string;
   listPermission?: RBACProps;
@@ -42,6 +43,7 @@ const {
   canSubmit?: boolean;
   crudEntity?: T;
   zodSchema?: ZodType<any, any, any>;
+  orientation?: "horizontal" | "vertical";
 }>();
 const emit = defineEmits<{
   "on-back": [];
@@ -55,7 +57,7 @@ const { hasPermission } = useRbac();
 
 type Schema = z.output<typeof zodSchema>;
 const state = defineModel<Partial<Schema>>();
-
+const { isMobile } = useAppDevice();
 const isHaveListPermission = computed(() => {
   if (byPassPermission) {
     return true;
@@ -183,11 +185,50 @@ const autoFields = computed(() => {
       }
     }
 
-    // 3. ใช้ Type จาก LabelValue ก่อน ถ้าไม่มีค่อยคำนวณจาก Zod
-    let componentType = uiConfig?.type || "input";
+    const uiProps = uiConfig?.ui || {};
+    const specifiedType = uiProps.type || uiConfig?.type;
+
+    // 2. กำหนดค่าเริ่มต้น
+    let componentType = "input";
     let inputType = "text";
 
-    if (!uiConfig?.type) {
+    // 3. จัดการ Type ตามที่กำหนดมา (ถ้ามี)
+    if (specifiedType) {
+      if (
+        ["text", "date", "password", "email", "number", "search"].includes(
+          specifiedType,
+        )
+      ) {
+        componentType = "input";
+        inputType = specifiedType; // เอาค่า 'text' | 'date' | 'password' | 'email' | 'number' ไปใส่เลย
+      } else if (specifiedType === "textarea") {
+        componentType = "textarea";
+      } else if (specifiedType === "select") {
+        componentType = "select";
+      } else if (specifiedType === "checkbox") {
+        componentType = "checkbox";
+      } else if (specifiedType === "switch") {
+        componentType = "switch";
+      } else if (specifiedType === "checkbox-group") {
+        componentType = "checkbox-group";
+      } else if (specifiedType === "radio-group") {
+        componentType = "radio-group";
+      } else if (specifiedType === "input-menu") {
+        componentType = "input-menu";
+      } else if (specifiedType === "number-step") {
+        componentType = "number-step";
+      } else if (specifiedType === "input-tags") {
+        componentType = "input-tags";
+      } else if (specifiedType === "input-pin") {
+        componentType = "input-pin";
+      } else if (specifiedType === "slider") {
+        componentType = "slider";
+      } else if (specifiedType === "file") {
+        componentType = "file";
+      }
+    }
+    // 4. ถ้าไม่มีการกำหนด ui.type มา ให้ใช้ความฉลาดของ Zod ในการเดา Type
+    else {
       if (typeName === "ZodNumber" || typeName === "number") {
         inputType = "number";
       } else if (typeName === "ZodBoolean" || typeName === "boolean") {
@@ -200,16 +241,16 @@ const autoFields = computed(() => {
       ) {
         componentType = "select";
       }
-    } else {
-      if (["password", "email", "number", "text"].includes(uiConfig.type)) {
-        componentType = "input";
-        inputType = uiConfig.type;
-      }
     }
 
     // 4. จัดการ Options สำหรับ Select
     let options: any[] = [];
-    if (componentType === "select") {
+    if (
+      componentType === "select" ||
+      componentType === "checkbox-group" ||
+      componentType === "radio-group" ||
+      componentType === "input-menu"
+    ) {
       if (uiConfig?.children && uiConfig.children.length > 0) {
         options = uiConfig.children; // ใช้ options ที่แนบมา
       } else {
@@ -219,10 +260,11 @@ const autoFields = computed(() => {
           fieldDef?.values ||
           baseFieldType?.values ||
           [];
-        options = rawValues.map((val: string) => ({
-          label: val.charAt(0).toUpperCase() + val.slice(1).toLowerCase(),
-          value: val,
-        }));
+        options = rawValues;
+        // options = rawValues.map((val: string) => ({
+        //   label: val.charAt(0).toUpperCase() + val.slice(1).toLowerCase(),
+        //   value: val,
+        // }));
       }
     }
 
@@ -244,9 +286,11 @@ const autoFields = computed(() => {
       required: uiConfig?.required || false,
       translateLabel: uiConfig?.translateLabel || false,
       description: uiConfig?.description,
+      avatar: uiConfig?.avatar,
       icon: uiConfig?.icon,
+      trailingIcon: uiConfig?.trailingIcon,
       color: uiConfig?.color,
-      additionalValue: uiConfig?.additionalValue || {},
+      ui: uiProps || {},
       onHandle: uiConfig?.onHandle,
     };
   });
@@ -307,63 +351,302 @@ const onDelete = (event: any) => {
       >
         <slot name="prepend-fields" />
 
-        <!-- ลูป Render ฟิลด์อัตโนมัติ -->
-        <template v-for="field in autoFields" :key="field.name">
-          <!-- ใช้ Dynamic Slot เปิดโอกาสให้ Parent Override ฟิลด์ที่ต้องการ Custom ได้ -->
+        <slot name="auto-fields">
+          <!-- Automatic field rendering loop -->
+          <template v-for="field in autoFields" :key="field.name">
+            <!-- Use Dynamic Slot to allow Parent Override fields that need customization -->
 
-          {{ field }}
-          <slot :name="`field-${field.name}`" :field="field">
-            <UFormField
-              v-if="state"
-              orientation="vertical"
-              :required="field.required"
-              :label="field.label"
-              :name="field.name"
-              :help="field.description"
-              class="w-full"
-            >
-              <!-- Component: Input (Text, Number) -->
-              <UInput
-                v-if="field.componentType === 'input'"
-                v-model="state[field.name]"
-                :type="field.inputType"
-                :placeholder="field.additionalValue?.placeholder"
-                :color="field.color"
-                :variant="field.additionalValue?.variant"
-                :icon="field.icon ? field.icon.name : undefined"
+            <slot :name="`field-${field.name}`" :field="field">
+              <UFormField
+                v-if="state"
+                :orientation="isMobile ? 'vertical' : orientation"
+                :required="field?.ui?.required"
+                :label="field.label"
+                :name="field.name"
+                :help="field.description"
                 class="w-full"
-              />
+                :ui="{
+                  // บังคับให้ Label กว้างประมาณ 1 ใน 3 และ Input กินพื้นที่ที่เหลือทั้งหมด
+                  labelWrapper:
+                    orientation === 'horizontal' ? 'w-48 shrink-0' : '',
+                  container:
+                    orientation === 'horizontal' ? 'flex-1 w-full' : '',
+                }"
+              >
+                <!-- Component: Input (Text, Number) -->
+                <template v-if="field.componentType === 'input'">
+                  <UInput
+                    v-model="state[field.name]"
+                    :loading="loading"
+                    :type="field.inputType"
+                    :placeholder="field.ui?.placeholder"
+                    :color="field.color"
+                    :variant="field.ui?.variant"
+                    :maxlength="field.ui?.maxlength"
+                    :readonly="field.ui?.readonly"
+                    :disabled="field.disable"
+                    :icon="field.icon || undefined"
+                    :trailing-icon="field.trailingIcon || undefined"
+                    :avatar="field.avatar ? { ...field.avatar } : undefined"
+                    :size="field.ui?.size"
+                    :class="['w-full', field.ui?.class || '']"
+                  >
+                    <template #trailing>
+                      <div
+                        v-if="field.ui?.maxlength && field.ui?.maxlength > 0"
+                        id="character-count"
+                        class="text-xs text-muted tabular-nums"
+                        aria-live="polite"
+                        role="status"
+                      >
+                        {{ state[field.name]?.length }}/{{
+                          field.ui?.maxlength
+                        }}
+                      </div>
+                      <UButton
+                        v-if="
+                          field.ui?.clearable === true &&
+                          state[field.name]?.length
+                        "
+                        color="neutral"
+                        variant="link"
+                        size="sm"
+                        icon="i-lucide-circle-x"
+                        aria-label="Clear input"
+                        @click="state[field.name] = ''"
+                      />
+                    </template>
+                  </UInput>
+                </template>
+                <template v-if="field.componentType === 'number-step'">
+                  <UInputNumber
+                    v-model="state[field.name]"
+                    :loading="loading"
+                    :placeholder="field.ui?.placeholder"
+                    :color="field.color"
+                    :variant="field.ui?.variant"
+                    :maxlength="field.ui?.maxlength"
+                    :readonly="field.ui?.readonly"
+                    :disabled="field.disable"
+                    :size="field.ui?.size"
+                    :min="field.ui?.min"
+                    :max="field.ui?.max"
+                    :step="field.ui?.step || 1"
+                    :orientation="field.ui?.orientation || 'horizontal'"
+                    :class="[field.ui?.class || '']"
+                  >
+                  </UInputNumber>
+                </template>
+                <template v-if="field.componentType === 'slider'">
+                  <USlider
+                    v-model="state[field.name]"
+                    :loading="loading"
+                    :color="field.color"
+                    :readonly="field.ui?.readonly"
+                    :size="field.ui?.size"
+                    :min="field.ui?.min"
+                    :max="field.ui?.max"
+                    :step="field.ui?.step || 1"
+                    :orientation="field.ui?.orientation || 'horizontal'"
+                    :tooltip="field.ui?.tooltip"
+                    :class="[field.ui?.class || '']"
+                  >
+                  </USlider>
+                </template>
+                <template v-if="field.componentType === 'input-tags'">
+                  <UInputTags
+                    v-model="state[field.name]"
+                    :loading="loading"
+                    :placeholder="field.ui?.placeholder"
+                    :color="field.color"
+                    :variant="field.ui?.variant"
+                    :readonly="field.ui?.readonly"
+                    :disabled="field.disable"
+                    :size="field.ui?.size"
+                    :icon="field.icon || undefined"
+                    :trailing-icon="field.trailingIcon || undefined"
+                    :avatar="field.avatar ? { ...field.avatar } : undefined"
+                    :max-length="field.ui?.maxlength"
+                    :max="field.ui?.max"
+                    :class="[field.ui?.class || '']"
+                  >
+                  </UInputTags>
+                </template>
+                <template v-if="field.componentType === 'input-pin'">
+                  <UPinInput
+                    v-model="state[field.name]"
+                    :loading="loading"
+                    :placeholder="field.ui?.placeholder"
+                    :color="field.color"
+                    :variant="field.ui?.variant"
+                    :disabled="field.disable"
+                    :size="field.ui?.size"
+                    :length="field.ui?.max"
+                    :separator="field.ui?.separatorLength"
+                    :class="[field.ui?.class || '']"
+                  >
+                  </UPinInput>
+                </template>
 
-              <UTextarea
-                v-else-if="field.componentType === 'textarea'"
-                v-model="state[field.name]"
-                :rows="4"
-                autoresize
-                 :placeholder="field.additionalValue?.placeholder"
-                  :variant="field.additionalValue?.variant"
-                class="w-full"
-              />
+                <template v-else-if="field.componentType === 'textarea'">
+                  <UTextarea
+                    v-model="state[field.name]"
+                    :loading="loading"
+                    :rows="field.ui?.rows || 4"
+                    :icon="field.icon || undefined"
+                    :trailing-icon="field.trailingIcon || undefined"
+                    autoresize
+                    :readonly="field.ui?.readonly"
+                    :disabled="field.disable"
+                    :maxlength="field.ui?.maxlength"
+                    :placeholder="field.ui?.placeholder"
+                    :variant="field.ui?.variant"
+                    :size="field.ui?.size"
+                    :avatar="field.avatar ? { ...field.avatar } : undefined"
+                    :class="['w-full', field.ui?.class || '']"
+                  >
+                    <template #trailing>
+                      <div
+                        v-if="field.ui?.maxlength && field.ui?.maxlength > 0"
+                        id="character-count"
+                        class="text-xs text-muted tabular-nums"
+                        aria-live="polite"
+                        role="status"
+                      >
+                        {{ state[field.name]?.length }}/{{
+                          field.ui?.maxlength
+                        }}
+                      </div>
+                      <UButton
+                        v-if="
+                          field.ui?.clearable === true &&
+                          state[field.name]?.length
+                        "
+                        color="neutral"
+                        variant="link"
+                        size="sm"
+                        icon="i-lucide-circle-x"
+                        aria-label="Clear input"
+                        @click="state[field.name] = ''"
+                      />
+                    </template>
+                  </UTextarea>
+                </template>
 
-              <!-- Component: Checkbox / Toggle (Boolean) -->
-              <UCheckbox
-                v-else-if="field.componentType === 'checkbox'"
-                v-model="state[field.name]"
-                :label="`Enable ${field.label}`"
-              />
+                <!-- Component: Checkbox / Toggle (Boolean) -->
+                <template v-else-if="field.componentType === 'checkbox'">
+                  <UCheckbox
+                    v-model="state[field.name]"
+                    :label="`${$t('base.enable')} (${field.label})`"
+                    :size="field.ui?.size"
+                    :disabled="field.disable"
+                    :color="field.color"
+                    :variant="field.ui?.variant"
+                    :loading="loading"
+                    :class="[field.ui?.class || '']"
+                  />
+                </template>
+                <template v-else-if="field.componentType === 'checkbox-group'">
+                  <UCheckboxGroup
+                    v-model="state[field.name]"
+                    :label="`${$t('base.enable')} (${field.label})`"
+                    :size="field.ui?.size"
+                    :disabled="field.disable"
+                    :color="field.color"
+                    :items="field.options"
+                    :variant="field.ui?.variant"
+                    :loading="loading"
+                    :orientation="field.ui?.orientation"
+                    :class="[field.ui?.class || '']"
+                  />
+                </template>
+                <template v-else-if="field.componentType === 'radio-group'">
+                  <URadioGroup
+                    v-model="state[field.name]"
+                    :label="field.label"
+                    :size="field.ui?.size"
+                    :disabled="field.disable"
+                    :color="field.color"
+                    :items="field.options"
+                    :variant="field.ui?.variant"
+                    :loading="loading"
+                    :orientation="field.ui?.orientation"
+                    :class="[field.ui?.class || '']"
+                  />
+                </template>
+                <template v-else-if="field.componentType === 'switch'">
+                  <USwitch
+                    v-model="state[field.name]"
+                    unchecked-icon="i-lucide-x"
+                    checked-icon="i-lucide-check"
+                    :legend="$t('base.enable')"
+                    :size="field.ui?.size"
+                    :disabled="field.disable"
+                    :color="field.color"
+                    :variant="field.ui?.variant"
+                    :loading="loading"
+                    :class="[field.ui?.class || '']"
+                  />
+                </template>
+                <!-- Component: Select (Enum) -->
+                <template v-else-if="field.componentType === 'input-menu'">
+                  <UInputMenu
+                    v-model="state[field.name]"
+                    :label="`${$t('base.enable')} (${field.label})`"
+                    :size="field.ui?.size"
+                    :disabled="field.disable"
+                    :color="field.color"
+                    :items="field.options"
+                    value-key="value"
+                    :variant="field.ui?.variant"
+                    :icon="field.icon || undefined"
+                    :trailing-icon="field.trailingIcon || undefined"
+                    :multiple="field.ui?.multiple"
+                    :avatar="field.avatar ? { ...field.avatar } : undefined"
+                    :loading="loading"
+                    :placeholder="field.ui?.placeholder"
+                    mode="combobox"
+                    :content="{ hideWhenEmpty: true }"
+                    :class="[field.ui?.class || '']"
+                  />
+                </template>
 
-              <!-- Component: Select (Enum) -->
-              <USelect
-                v-else-if="field.componentType === 'select'"
-                v-model="state[field.name]"
-                :items="field.options"
-                 :variant="field.additionalValue?.variant"
-                class="min-w-[25%]"
-              />
-            </UFormField>
-          </slot>
-        </template>
+                <template v-else-if="field.componentType === 'select'">
+                  <USelect
+                    v-model="state[field.name]"
+                    :loading="loading"
+                    :items="field.options"
+                    :icon="field.icon || undefined"
+                    :trailing-icon="field.trailingIcon || undefined"
+                    :disabled="field.disable"
+                    :avatar="field.avatar ? { ...field.avatar } : undefined"
+                    :variant="field.ui?.variant"
+                    :multiple="field.ui?.multiple"
+                    :size="field.ui?.size"
+                    :color="field.color"
+                    :placeholder="field.ui?.placeholder"
+                    :class="['min-w-[25%]', field.ui?.class || '']"
+                  />
+                </template>
+                <template v-else-if="field.componentType === 'file'">
+                  <LazyBaseFileUpload
+                    :description="field?.description"
+                    :multiple="field.ui?.multiple"
+                    :max-files="field.ui?.max"
+                    :icon="field.icon || 'lucide:paperclip'"
+                    v-model="state[field.name]"
+                    :show-progress="false"
+                    :priview-layout="field.ui?.layout || 'list'"
+                    :class="[field.ui?.class || '']"
+                  />
+                </template>
+              </UFormField>
+            </slot>
+
+            <USeparator v-if="field.ui?.separator === true" />
+          </template>
+        </slot>
         <slot />
-
         <div class="flex justify-center gap-2">
           <slot name="crud-action">
             <UButton
@@ -374,7 +657,7 @@ const onDelete = (event: any) => {
                 crudAction == 'new' ||
                 crudAction == 'copy'
                   ? $t('base.save')
-                  : undefined
+                  : $t('base.okay')
               "
               color="primary"
               type="submit"

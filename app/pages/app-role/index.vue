@@ -73,7 +73,7 @@ const columns = ref<TableColumn<AppRole>[]>([
         UButton,
         {
           variant: "ghost",
-          color: t ? "success" : "neutral",
+          color: t ? "primary" : "neutral",
           icon: t ? "lucide:circle-check" : "lucide:circle-x",
           size: "xl",
           onClick: () => {

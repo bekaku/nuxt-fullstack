@@ -87,6 +87,8 @@ export interface Permission extends Id {
   description?: string | null;
   module?: string | null;
   operationType?: PermissionType;
+  enable?: boolean;
+  themes?: string[];
 }
 export interface AppRole extends Id {
   name: string;

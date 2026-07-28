@@ -5,6 +5,7 @@ import type { FeedItem } from "~/types";
 const props = defineProps<{
   item: FeedItem;
   index?: number;
+  showComment?: boolean;
 }>();
 const { appNavigateTo } = useBase();
 const { t } = useLang();
@@ -117,7 +118,7 @@ const onItemClick = (e: any) => {
         </div>
       </div>
     </div>
-    <div class="px-4 pb-4 pt-1">
+    <div v-if="showComment===true" class="px-4 pb-4 pt-1">
       <ExampleCommentForm />
 
       <div class="flex gap-2 items-center p-2">

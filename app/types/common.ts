@@ -393,11 +393,12 @@ export interface LabelValue<Type> {
   avatar?: AvatarProps;
   border?: boolean;
   children?: LabelValue<Type>[]
-  color?: AppColor | string;
+  color?: AppColor;
   disable?: boolean;
   description?: string;
   fetch?: boolean;
-  icon?: IconProps;
+  icon?: IconProps | string;
+  trailingIcon?: IconProps | string;
   label?: string;
   id?: any;
   noActiveLink?: boolean;
@@ -408,8 +409,27 @@ export interface LabelValue<Type> {
   to?: string;
   value?: Type;
   additionalValue?: any;
-  type?: string;
-  required?: boolean;
+  ui?: {
+    type?: 'text' | 'date' | 'password' | 'email' | 'number' | 'number-step' | 'file' | 'search' | 'select' | 'textarea' | 'checkbox' | 'switch' | 'checkbox-group' | 'radio-group' | 'input-menu' | 'input-tags' | 'input-pin' | 'slider'
+    placeholder?: string
+    variant?: "outline" | "soft" | "subtle" | "ghost" | "none" | 'list' | 'card' | 'table'
+    required?: boolean;
+    size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl'
+    clearable?: boolean
+    readonly?: boolean
+    multiple?: boolean
+    separator?: boolean
+    separatorLength?: number | number[]
+    maxlength?: number
+    rows?: number
+    min?: number
+    max?: number
+    step?: number
+    orientation?: "horizontal" | "vertical",
+    layout?: "list" | "grid",
+    class?: string
+    tooltip?: boolean | string
+  }
   onHandle?: (...params: any[] | []) => void;
 }
 export interface LoginRequest {

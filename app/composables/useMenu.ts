@@ -122,6 +122,11 @@ export const useMenu = () => {
             to: "/example/customers",
           },
           {
+            label: "Forms",
+            icon: "i-lucide-card-sim",
+            to: "/example/form",
+          },
+          {
             label: "Inbox",
             icon: "i-lucide-inbox",
             to: "/example/inbox",

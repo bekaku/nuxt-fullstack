@@ -101,10 +101,10 @@ const columns = ref<TableColumn<Permission>[]>([
       return h(
         UButton,
         {
-          class: "capitalize",
-          variant: "subtle",
+          class: "rounded-full",
+          variant: "soft",
           color: "primary",
-          size: "sm",
+          size: "xs",
           onClick: () => {
             onCellTypeClick(row.index);
           },

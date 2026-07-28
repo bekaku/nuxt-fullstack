@@ -3,9 +3,8 @@ import z from "zod";
 import type { LabelValue } from "~/types/common";
 import type { Permission } from "~/types/models";
 
-definePageMeta({
-  pageName: "model_permission",
-  requiresPermission: ["permission_view", "permission_add", "permission_edit"],
+useSeoMeta({
+  title: "Form page",
 });
 
 const ui = (config: LabelValue<any>) => JSON.stringify(config);
@@ -57,6 +56,21 @@ const schema = z.object({
           maxlength: 500,
           clearable: true,
           separator: true,
+        },
+      }),
+    )
+    .optional(),
+  inputfile: z
+    .any()
+    .describe(
+      ui({
+        label: "Input file",
+        description: "This is help text for input file",
+        ui: {
+          type: "file",
+          layout: "list",
+          multiple: true,
+          max: 5,
         },
       }),
     )
@@ -148,6 +162,37 @@ const schema = z.object({
         label: "Checkbox group",
         ui: {
           type: "checkbox-group",
+          separator: true,
+        },
+        children: [
+          {
+            label: "System",
+            description: "This is the first option.",
+            value: "system",
+          },
+          {
+            label: "Light",
+            description: "This is the second option.",
+            value: "light",
+          },
+          {
+            label: "Dark",
+            description: "This is the third option.",
+            value: "dark",
+          },
+        ],
+      }),
+    )
+    .optional(),
+  radiogroups: z
+    .string()
+    .describe(
+      ui({
+        label: "Radio group",
+        ui: {
+          type: "radio-group",
+          variant: "table",
+          orientation: "horizontal",
         },
         children: [
           {
@@ -180,6 +225,53 @@ const schema = z.object({
       }),
     )
     .optional(),
+  pins: z
+    .array(z.number())
+    .describe(
+      ui({
+        label: "Input Pins",
+        ui: {
+          type: "input-pin",
+          placeholder: "*",
+          max: 7,
+          separatorLength: [3, 4],
+        },
+      }),
+    )
+    .optional(),
+  slider: z
+    .number()
+    .describe(
+      ui({
+        label: "Slider",
+        ui: {
+          type: "slider",
+          orientation: "vertical",
+          class: "h-38",
+          min: 0,
+          max: 100,
+          step: 10,
+          tooltip: true,
+        },
+      }),
+    )
+    .optional(),
+  sliders: z
+    .array(z.number())
+    .describe(
+      ui({
+        label: "Multiple Slider",
+        ui: {
+          type: "slider",
+          min: 0,
+          max: 100,
+          step: 10,
+          tooltip: true,
+          separator: true,
+        },
+      }),
+    )
+    .optional(),
 });
 type Schema = z.output<typeof schema>;
 const state = reactive<Partial<Schema>>({
@@ -189,8 +281,13 @@ const state = reactive<Partial<Schema>>({
   themes: [],
   operationType: "CRUD",
   enable: true,
+  radiogroups: undefined,
   checkgroups: ["system"],
   tags: ["vue"],
+  pins: [],
+  slider: 0,
+  sliders: [25, 75],
+  inputfile: [],
 });
 
 const entity: Permission = Object.freeze<Permission>({
@@ -219,21 +316,18 @@ const {
 const value = ref(5);
 </script>
 <template>
-  <BaseDashboardPanel
-    id="permission-crud-index"
-    :title="$t('model_permission')"
-  >
-    {{ state }}
+  <BaseDashboardPanel id="example-form" title="Form page">
     <BaseCrudForm
       :zod-schema="schema"
       v-model="state"
+      by-pass-permission
       :crud-action="crudAction"
       :loading="loading"
       :crud-entity="crudEntity"
       :crud-name="crudName"
       icon="lucide:shield-cog-corner"
-      :title="$t('model_permission')"
-      description="Permission management"
+      title="Form"
+      description="Form management and auto generate input form"
       orientation="horizontal"
       class="max-w-[1020px]"
       @on-back="onBack"
@@ -241,14 +335,10 @@ const value = ref(5);
       @on-submit="onSubmit"
       @on-delete="onDelete"
     >
-      <!-- <UFormField label="Code" name="code">
-        <UInput v-model="state.code" />
-      </UFormField>
+      <!-- you can override prepend fields here -->
+      <!-- <template #prepend-fields> </template> -->
 
-      <UFormField label="Description" name="description">
-        <UInput v-model="state.description" type="description" />
-      </UFormField> -->
-
+      <!-- you can override form fields here auto generate slot by field-${z.object.id} -->
       <!-- <template #field-code>
         <UFormField label="Password" name="code" class="w-full">
           Override code
@@ -264,6 +354,9 @@ const value = ref(5);
           Override operationType
         </UFormField>
       </template> -->
+
+      <!-- you can override auto-fields here -->
+      <!-- <template #auto-fields> </template> -->
     </BaseCrudForm>
   </BaseDashboardPanel>
 </template>
