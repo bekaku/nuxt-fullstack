@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ULink } from "#components";
 import type { SelectItem } from "@nuxt/ui";
 import type { FeedItem } from "~/types";
 
@@ -56,7 +57,9 @@ const onItemClick = (e: any) => {
             item.time_ago
           }}</span>
         </h4>
-        <p class="text-sm text-muted">{{ item.domain || "" }}</p>
+        <ULink v-if="item.domain" :to="item.url" target="_blank" class="text-sm text-muted">
+          {{ item.domain || "" }}
+        </ULink>
       </div>
       <template #end>
         <UDropdownMenu
