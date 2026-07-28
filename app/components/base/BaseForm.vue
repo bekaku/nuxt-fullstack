@@ -19,7 +19,6 @@ const {
   deleteButton = true,
   canSubmit = true,
   copyButton = false,
-  editMode = true,
   crudAction,
   zodSchema,
   orientation = "horizontal",
@@ -40,7 +39,6 @@ const {
   crudAction?: ICrudAction;
   showActionText?: boolean;
   editButton?: boolean;
-  editMode?: boolean;
   deleteButton?: boolean;
   copyButton?: boolean;
   canSubmit?: boolean;
@@ -400,7 +398,6 @@ const onDelete = async (event: any) => {
                 <!-- Component: Input (Text, Number) -->
                 <template v-if="field.componentType === 'input'">
                   <UInput
-                    v-if="editMode"
                     v-model="state[field.name]"
                     :loading="loading"
                     :type="field.inputType"
@@ -442,25 +439,9 @@ const onDelete = async (event: any) => {
                       />
                     </template>
                   </UInput>
-                  <BaseItem v-else :separator="false">
-                    <template v-if="field.icon || field.avatar" #start>
-                      <UAvatar v-if="field.avatar" v-bind="field.avatar" />
-                      <UIcon v-else-if="field.icon" :name="field.icon" />
-                    </template>
-                    <div class="flex flex-col">
-                      <div v-if="state[field.name]">
-                        {{ state[field.name] }}
-                      </div>
-                    </div>
-
-                    <template v-if="field.trailingIcon" #end>
-                      <UIcon :name="field.trailingIcon" />
-                    </template>
-                  </BaseItem>
                 </template>
                 <template v-if="field.componentType === 'number-step'">
                   <UInputNumber
-                    v-if="editMode"
                     v-model="state[field.name]"
                     :loading="loading"
                     :placeholder="field.ui?.placeholder"
@@ -477,28 +458,13 @@ const onDelete = async (event: any) => {
                     :class="[field.ui?.class || '']"
                   >
                   </UInputNumber>
-                  <BaseItem v-else :separator="false">
-                    <template v-if="field.icon || field.avatar" #start>
-                      <UAvatar v-if="field.avatar" v-bind="field.avatar" />
-                      <UIcon v-else-if="field.icon" :name="field.icon" />
-                    </template>
-                    <div class="flex flex-col">
-                      <div v-if="state[field.name]">
-                        {{ state[field.name] }}
-                      </div>
-                    </div>
-
-                    <template v-if="field.trailingIcon" #end>
-                      <UIcon :name="field.trailingIcon" />
-                    </template>
-                  </BaseItem>
                 </template>
                 <template v-if="field.componentType === 'slider'">
                   <USlider
                     v-model="state[field.name]"
                     :loading="loading"
                     :color="field.color"
-                    :disabled="field.ui?.disable || !editMode"
+                    :disabled="field.ui?.disable"
                     :size="field.ui?.size"
                     :min="field.ui?.min"
                     :max="field.ui?.max"
@@ -511,7 +477,6 @@ const onDelete = async (event: any) => {
                 </template>
                 <template v-if="field.componentType === 'input-tags'">
                   <UInputTags
-                    v-if="editMode"
                     v-model="state[field.name]"
                     :loading="loading"
                     :placeholder="field.ui?.placeholder"
@@ -527,23 +492,6 @@ const onDelete = async (event: any) => {
                     :max="field.ui?.max"
                     :class="[field.ui?.class || '']"
                   />
-                  <BaseItem v-else :separator="false">
-                    <template v-if="field.icon || field.avatar" #start>
-                      <UAvatar v-if="field.avatar" v-bind="field.avatar" />
-                      <UIcon v-else-if="field.icon" :name="field.icon" />
-                    </template>
-                    <div class="flex flex-col">
-                      <div v-if="state[field.name]" class="flex gap-2">
-                        <UBadge v-for="item in state[field.name]" :key="item">
-                          {{ item }}
-                        </UBadge>
-                      </div>
-                    </div>
-
-                    <template v-if="field.trailingIcon" #end>
-                      <UIcon :name="field.trailingIcon" />
-                    </template>
-                  </BaseItem>
                 </template>
                 <template v-if="field.componentType === 'input-pin'">
                   <UPinInput
@@ -552,7 +500,7 @@ const onDelete = async (event: any) => {
                     :placeholder="field.ui?.placeholder"
                     :color="field.color"
                     :variant="field.ui?.variant"
-                    :disabled="field.disable || !editMode"
+                    :disabled="field.disable"
                     :size="field.ui?.size"
                     :length="field.ui?.max"
                     :separator="field.ui?.separatorLength"
@@ -563,7 +511,6 @@ const onDelete = async (event: any) => {
 
                 <template v-else-if="field.componentType === 'textarea'">
                   <UTextarea
-                    v-if="editMode"
                     v-model="state[field.name]"
                     :loading="loading"
                     :rows="field.ui?.rows || 4"
@@ -605,21 +552,6 @@ const onDelete = async (event: any) => {
                       />
                     </template>
                   </UTextarea>
-                  <BaseItem v-else :separator="false">
-                    <template v-if="field.icon || field.avatar" #start>
-                      <UAvatar v-if="field.avatar" v-bind="field.avatar" />
-                      <UIcon v-else-if="field.icon" :name="field.icon" />
-                    </template>
-                    <div class="flex flex-col">
-                      <div v-if="state[field.name]">
-                        {{ state[field.name] }}
-                      </div>
-                    </div>
-
-                    <template v-if="field.trailingIcon" #end>
-                      <UIcon :name="field.trailingIcon" />
-                    </template>
-                  </BaseItem>
                 </template>
 
                 <!-- Component: Checkbox / Toggle (Boolean) -->
@@ -628,7 +560,7 @@ const onDelete = async (event: any) => {
                     v-model="state[field.name]"
                     :label="`${$t('base.enable')} (${field.label})`"
                     :size="field.ui?.size"
-                    :disabled="field.disable || !editMode"
+                    :disabled="field.disable"
                     :color="field.color"
                     :variant="field.ui?.variant"
                     :loading="loading"
@@ -640,7 +572,7 @@ const onDelete = async (event: any) => {
                     v-model="state[field.name]"
                     :label="`${$t('base.enable')} (${field.label})`"
                     :size="field.ui?.size"
-                    :disabled="field.disable || !editMode"
+                    :disabled="field.disable"
                     :color="field.color"
                     :items="field.options"
                     :variant="field.ui?.variant"
@@ -654,7 +586,7 @@ const onDelete = async (event: any) => {
                     v-model="state[field.name]"
                     :label="field.label"
                     :size="field.ui?.size"
-                    :disabled="field.disable || !editMode"
+                    :disabled="field.disable"
                     :color="field.color"
                     :items="field.options"
                     :variant="field.ui?.variant"
@@ -670,7 +602,7 @@ const onDelete = async (event: any) => {
                     checked-icon="i-lucide-check"
                     :legend="$t('base.enable')"
                     :size="field.ui?.size"
-                    :disabled="field.disable || !editMode"
+                    :disabled="field.disable"
                     :color="field.color"
                     :variant="field.ui?.variant"
                     :loading="loading"
@@ -683,7 +615,7 @@ const onDelete = async (event: any) => {
                     v-model="state[field.name]"
                     :label="`${$t('base.enable')} (${field.label})`"
                     :size="field.ui?.size"
-                    :disabled="field.disable || !editMode"
+                    :disabled="field.disable"
                     :color="field.color"
                     :items="field.options"
                     value-key="value"
@@ -707,7 +639,7 @@ const onDelete = async (event: any) => {
                     :items="field.options"
                     :icon="field.icon || undefined"
                     :trailing-icon="field.trailingIcon || undefined"
-                    :disabled="field.disable || !editMode"
+                    :disabled="field.disable"
                     :avatar="field.avatar ? { ...field.avatar } : undefined"
                     :variant="field.ui?.variant"
                     :multiple="field.ui?.multiple"
@@ -719,18 +651,16 @@ const onDelete = async (event: any) => {
                 </template>
                 <template v-else-if="field.componentType === 'file'">
                   <LazyBaseFileUpload
-                    v-if="editMode"
                     :description="field?.description"
                     :multiple="field.ui?.multiple"
                     :max-files="field.ui?.max"
-                    :disabled="field.disable || !editMode"
+                    :disabled="field.disable"
                     :icon="field.icon || 'lucide:paperclip'"
                     v-model="state[field.name]"
                     :show-progress="false"
                     :priview-layout="field.ui?.layout || 'list'"
                     :class="[field.ui?.class || '']"
                   />
-                  <div v-else>File Items Preview here</div>
                 </template>
               </UFormField>
             </slot>
@@ -746,14 +676,6 @@ const onDelete = async (event: any) => {
             <div class="flex justify-center gap-4">
               <template v-if="isHaveAddPermission || isHaveEditPermission">
                 <UButton
-                  v-if="crudAction === 'view'"
-                  icon="lucide:pencil"
-                  :label="$t('base.edit')"
-                  @click.prevent="$emit('on-edit-enable')"
-                >
-                </UButton>
-                <UButton
-                  v-else
                   icon="lucide:save"
                   :label="
                     crudAction == 'edit' ||
