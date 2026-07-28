@@ -408,6 +408,8 @@ export interface LabelValue<Type> {
   to?: string;
   value?: Type;
   additionalValue?: any;
+  type?: string;
+  required?: boolean;
   onHandle?: (...params: any[] | []) => void;
 }
 export interface LoginRequest {

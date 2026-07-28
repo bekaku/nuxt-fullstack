@@ -76,9 +76,9 @@ const items = [
                 </UButton>
               </UTooltip>
 
-              <UDropdownMenu :items="items">
+              <!-- <UDropdownMenu :items="items">
                 <UButton icon="i-lucide-plus" size="md" class="rounded-full" />
-              </UDropdownMenu>
+              </UDropdownMenu> -->
             </slot>
           </template>
         </UDashboardNavbar>

@@ -7,20 +7,13 @@ import {
 import type { Permission } from "~/types/models";
 
 definePageMeta({
+  pageName: "model_permission",
   requiresPermission: ["permission_list"],
   // breadcrumbs: ExampleHomeBreadcrumb,
   // tabs: TabTest,
 });
-useSeoMeta({
-  title: "Permission page",
-});
-const UAvatar = resolveComponent("UAvatar");
 const UButton = resolveComponent("UButton");
-const UBadge = resolveComponent("UBadge");
-const UDropdownMenu = resolveComponent("UDropdownMenu");
-const UCheckbox = resolveComponent("UCheckbox");
 const { t } = useLang();
-const toast = useToast();
 const {
   dataList,
   loading,
@@ -83,7 +76,7 @@ const columns = ref<TableColumn<Permission>[]>([
       options: {
         sortable: true,
         searchable: true,
-        searchType: ICrudListHeaderOptionSearchType.BOOLEAN,
+        searchType: ICrudListHeaderOptionSearchType.TEXT,
         searchOperation: ":",
         searchModel: "",
       } as ICrudFilterOptions,
@@ -97,26 +90,26 @@ const columns = ref<TableColumn<Permission>[]>([
       if (!t) {
         return null;
       }
-      let type = "";
-      if (t === 1) {
-        type = "crud";
-      } else if (t === 2) {
-        type = "report";
-      } else if (t === 3) {
-        type = "other";
-      }
+      // let type = "";
+      // if (t === 1) {
+      //   type = "crud";
+      // } else if (t === 2) {
+      //   type = "report";
+      // } else if (t === 3) {
+      //   type = "other";
+      // }
       return h(
         UButton,
         {
           class: "capitalize",
           variant: "subtle",
-          color: "neutral",
+          color: "primary",
           size: "sm",
           onClick: () => {
             onCellTypeClick(row.index);
           },
         },
-        () => type,
+        () => t,
       );
     },
     // meta: {
@@ -152,7 +145,7 @@ const onCellTypeClick = (index: number) => {
 </script>
 
 <template>
-  <BaseDashboardPanel id="permission-index" title="Permission page">
+  <BaseDashboardPanel id="permission-index" :title="$t('model_permission')">
     <BaseTable
       icon="lucide:shield-cog-corner"
       :title="$t('model_permission')"

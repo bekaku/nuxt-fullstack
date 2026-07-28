@@ -7,6 +7,7 @@ import {
   doublePrecision,
   index,
   integer,
+  pgEnum,
   pgTable,
   primaryKey,
   smallint,
@@ -16,13 +17,20 @@ import {
 } from 'drizzle-orm/pg-core'
 import { sql } from 'drizzle-orm'
 
+
+export const permissionTypeEnum = pgEnum('permission_type_enum', [
+  'CRUD',
+  'REPORT',
+  'OTHER',
+  'FEATURE',
+])
 /**
 * Note regarding Primary Key
 * The original data in starter_postgres.sql uses a Snowflake/TSID bigint (e.g., 350885844724224000).
 * This is not a regular bigserial, so the mode is set to 'bigint' and the app is allowed to generate the ID itself.
 * This is done via server/utils/snowflake.ts (see usage in seed.ts and API routes).
 */
-const id = () => bigint('id', { mode: 'bigint' }).primaryKey()
+const id = () => bigint('id', { mode: 'bigint' }).primaryKey().$defaultFn(() => nextId())
 
 // ---------------------------------------------------------------------------
 // Reference / Location tables
@@ -176,7 +184,7 @@ export const permission = pgTable(
     // app_user_delete, app_user_view, app_user_list
     code: varchar('code', { length: 125 }).notNull(),
     // 0 = READ, 1 = WRITE, 2 = MANAGE (Adjusted to the actual system.)
-    operationType: smallint('operation_type'),
+    operationType: permissionTypeEnum('operation_type'),
     module: varchar('module', { length: 255 }),
     description: text('description'),
   },

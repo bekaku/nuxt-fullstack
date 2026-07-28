@@ -1,4 +1,4 @@
-import { count } from 'drizzle-orm'
+import { AnyColumn, count } from 'drizzle-orm'
 import { ApiResponse, ResponseEntity } from '~/types/common'
 import { Permission } from '~/types/models'
 import { paginate } from '~~/server/utils/dbPaging'
@@ -35,6 +35,7 @@ export default defineEventHandler(async (event): Promise<ResponseEntity<ApiRespo
       operationType: schema.permission.operationType,
       description: schema.permission.description,
     },
+    searchColumns:[schema.permission.code, schema.permission.description],
     defaultSort: schema.permission.id,
     // transform: (item) => ({
     //   ...item,

@@ -1,9 +1,10 @@
-import { count } from 'drizzle-orm'
+import { aliasedTable, count, eq } from 'drizzle-orm'
 import { ApiResponse, ResponseEntity } from '~/types/common'
 import { AppUser } from '~/types/models'
 import { paginate } from '~~/server/utils/dbPaging'
 import { schema, useDb } from '#server/database/client'
 import { requirePermission } from '#server/utils/permission'
+import { mapToAppUser } from '~~/server/utils/modelMapper'
 
 /**
 * Example of a route protected by the "app_user_list" permission.
@@ -14,6 +15,8 @@ export default defineEventHandler(async (event): Promise<ResponseEntity<ApiRespo
   await requirePermission(event, 'app_user_list')
   const db = useDb()
 
+  const avatarTable = aliasedTable(schema.fileManager, 'avatar_table')
+  const coverTable = aliasedTable(schema.fileManager, 'cover_table')
   const dataQuery = db
     .select({
       id: schema.appUser.id,
@@ -21,14 +24,23 @@ export default defineEventHandler(async (event): Promise<ResponseEntity<ApiRespo
       username: schema.appUser.username,
       active: schema.appUser.active,
       createdDate: schema.appUser.createdDate,
+      avatar: avatarTable.filePath,
+      cover: coverTable.filePath
     })
     .from(schema.appUser)
+    .leftJoin(avatarTable, eq(schema.appUser.avatarFileId, avatarTable.id))
+    .leftJoin(coverTable, eq(schema.appUser.coverFileId, coverTable.id))
     .$dynamic()
 
   const countQuery = db
     .select({ value: count() })
     .from(schema.appUser)
+    .leftJoin(avatarTable, eq(schema.appUser.avatarFileId, avatarTable.id))
+    .leftJoin(coverTable, eq(schema.appUser.coverFileId, coverTable.id))
     .$dynamic()
+
+
+  const { public: { cdnBase }} = useRuntimeConfig()
 
   const data = await paginate(event, {
     dataQuery,
@@ -40,10 +52,17 @@ export default defineEventHandler(async (event): Promise<ResponseEntity<ApiRespo
       createdDate: schema.appUser.createdDate,
     },
     defaultSort: schema.appUser.id,
-    transform: (item) => ({
-      ...item,
-      id: item.id.toString(),
-    })
+    // transform: (item) => ({
+    //   ...item,
+    //   id: item.id.toString(),
+    // })
+    transform: (item) => {
+      return mapToAppUser(item, {
+        cdnBase: cdnBase,
+        avatarPath: item.avatar,
+        coverPath: item.cover
+      });
+    }
   })
 
   return {

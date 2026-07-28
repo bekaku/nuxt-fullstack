@@ -30,7 +30,7 @@ async function main() {
     ACTIONS.map((action) => ({
       id: nextId(),
       code: `${resource}_${action}`,
-      operationType: action === 'list' || action === 'view' ? 0 : action === 'delete' ? 2 : 1,
+      operationType: action === 'list' || action === 'add'|| action === 'view' || action === 'delete' ? ('CRUD' as const) : ('OTHER' as const),
       module: resource,
       description: `${action} ${resource}`,
     })),

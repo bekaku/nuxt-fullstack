@@ -79,20 +79,19 @@ export interface ImageDto {
   index?: number;
   id?: number;
   image: string;
-  thumbnail: string;
+  thumbnail?: string;
 }
 export interface Permission extends Id {
   code: string;
   remark?: string | null;
   description?: string | null;
+  module?: string | null;
   operationType?: PermissionType;
 }
 export interface AppRole extends Id {
   name: string;
-  nameEn?: string | null;
   active: boolean;
-  frontEnd: boolean;
-  selectdPermissions: (number | string)[];
+  selectdPermissions: string[];
 }
 export interface AppUser extends Id {
   email: string;

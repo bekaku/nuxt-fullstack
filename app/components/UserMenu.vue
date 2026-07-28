@@ -13,6 +13,7 @@ const user = ref({
   avatar: {
     src: loginedAvatar,
     alt: loginedDisplay,
+    size:'md'
   },
 });
 
@@ -21,7 +22,7 @@ const items = computed<DropdownMenuItem[][]>(() => [
     {
       type: "label",
       label: user.value.name,
-      avatar: user.value.avatar,
+      avatar: user.value.avatar as any,
     },
   ],
   [
@@ -132,7 +133,7 @@ const items = computed<DropdownMenuItem[][]>(() => [
   >
     <UButton
       v-bind="{
-        ...user,
+        ...user as any,
         label: collapsed ? undefined : user?.name,
         trailingIcon: collapsed ? undefined : 'i-lucide-chevrons-up-down',
       }"

@@ -1,16 +1,15 @@
 import type { InferSelectModel } from 'drizzle-orm';
 import { FileMimeType } from '~/types/common';
-import { FileManager } from '~/types/models';
-import { fileManager } from '~~/server/database/schema';
+import { AppUser, FileManager } from '~/types/models';
+import { fileManager, appUser } from '~~/server/database/schema';
 
-type DbFileManager = InferSelectModel<typeof fileManager>;
 
 /**
  * @param record
  * @param optional
  */
 export const mapToFileManager = (
-  record: DbFileManager,
+  record: InferSelectModel<typeof fileManager>,
   optional?: {
     cdnBase?: string;
     fileMime?: string;
@@ -33,4 +32,26 @@ export const mapToFileManager = (
     title: record.title || undefined,
     description: record.description || undefined,
   } as FileManager;
+};
+export const mapToAppUser = (
+  record: InferSelectModel<typeof appUser>,
+  optional?: {
+    cdnBase?: string;
+    avatarPath?: string;
+    coverPath?: string;
+  }
+): AppUser => {
+  return {
+    id: record.id,
+    email: record.email,
+    username: record.username,
+    active: record.active,
+    createdDate: record.createdDate ? record.createdDate.toISOString() : undefined,
+    avatar: optional?.avatarPath ? {
+      image: optional?.cdnBase ? `${optional.cdnBase}/${optional.avatarPath}` : optional.avatarPath
+    } : null,
+    cover: optional?.coverPath ? {
+      image: optional?.coverPath ? `${optional.coverPath}/${optional.coverPath}` : optional.coverPath
+    } : null
+  };
 };

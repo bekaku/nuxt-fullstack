@@ -12,7 +12,7 @@ interface PaginateConfig<T> {
   defaultSort: AnyColumn;
   searchColumns?: AnyColumn[];
   where?: SQL;
-  transform?: (item: any) => T;
+  transform?: (item: any) => T | Promise<T>;
 }
 
 export async function paginate<T>(
@@ -29,9 +29,6 @@ export async function paginate<T>(
   // --- Sorting ---
   const orderByClause = []
   const sortQuery = query.sort
-
-  console.log('sortQuery', sortQuery)
-
 
   if (sortQuery) {
     const sorts = Array.isArray(sortQuery) ? sortQuery : [sortQuery]
@@ -98,7 +95,9 @@ export async function paginate<T>(
   }
 
   // --- Manage Global Search (Search for a single word across multiple columns)
-  const keywordStr = query.keyword as string //Suppose the client sends ?keyword=...
+  const keywordStr = query._keyword as string //Suppose the client sends ?_keyword=...
+
+  console.log('keywordStr', keywordStr)
   if (keywordStr && config.searchColumns && config.searchColumns.length > 0) {
     // Create an ILIKE condition for all columns specified in searchColumns.
     const searchOrConditions = config.searchColumns.map((col) =>
@@ -111,6 +110,10 @@ export async function paginate<T>(
       conditions.push(globalSearchCondition)
     }
   }
+
+
+  console.log('conditions', conditions)
+
   const finalWhere = conditions.length > 0 ? and(...conditions) : undefined
 
   // --- Execute Query ---
@@ -130,7 +133,7 @@ export async function paginate<T>(
   const totalPages = Math.ceil(totalElements / size)
   const last = currentPage >= totalPages - 1 || totalElements === 0
 
-  const dataList = config.transform ? items.map(config.transform) : items
+  const dataList = config.transform ? await Promise.all(items.map(config.transform)) : items
 
   return {
     totalPages,

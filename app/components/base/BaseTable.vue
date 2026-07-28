@@ -2,6 +2,7 @@
 import type { TableColumn, TableRow } from "@nuxt/ui";
 import type { Row } from "@tanstack/table-core";
 import { upperFirst } from "scule";
+import { SearchOperation } from "~/libs/constants";
 import {
   ICrudListHeaderOptionSearchType,
   type ICrudAction,
@@ -9,6 +10,7 @@ import {
   type IPagination,
   type ISort,
   type ISortModeType,
+  type ITextValue,
 } from "~/types/common";
 import type { RBACProps } from "~/types/props";
 
@@ -85,14 +87,27 @@ const sortingColumns = defineModel<any[]>("sorting-columns", {
 
 const filterItems = ref<ICrudFilterOptions[]>([]);
 const operationOptions = [
-  { label: ":", value: ":" },
-  { label: ">", value: ">" },
-  { label: ">=", value: ">=" },
-  { label: "<", value: "<" },
-  { label: "<=", value: "<=" },
-  { label: "=", value: "=" },
-  { label: "!=", value: "!=" },
+  { label: t("base.match"), value: SearchOperation.MATCH },
+  { label: t("base.equa"), value: SearchOperation.EQUA },
+  { label: t("base.notEqua"), value: SearchOperation.NOT_EQUA },
+  { label: t("base.greaterThan"), value: SearchOperation.GREATER_THAN },
+  {
+    label: t("base.greaterThanEqua"),
+    value: SearchOperation.GREATER_THAN_EQUA,
+  },
+  { label: t("base.lessThan"), value: SearchOperation.LESS_THAN },
+  { label: t("base.lessThanEqua"), value: SearchOperation.LESS_THAN_EQUA },
 ];
+
+// const operationOptions = [
+//   { label: ":", value: ":" },
+//   { label: ">", value: ">" },
+//   { label: ">=", value: ">=" },
+//   { label: "<", value: "<" },
+//   { label: "<=", value: "<=" },
+//   { label: "=", value: "=" },
+//   { label: "!=", value: "!=" },
+// ];
 const showSearch = ref(false);
 const confirm = useConfirmDialog();
 const { writeToClipboard, inputSanitizeHtml } = useBase();
@@ -488,6 +503,11 @@ watch(
           searchColunm:
             col.meta.options.searchColunm || col.accessorKey || col.id,
           searchModel: col.meta.options.searchModel || "",
+          searchOperation:
+            col.meta.options.searchType ===
+            ICrudListHeaderOptionSearchType.BOOLEAN
+              ? "="
+              : col.meta.options.searchOperation || ":",
           label:
             typeof col.header === "string"
               ? col.header
@@ -522,14 +542,33 @@ watch(
         <slot name="table-header">
           <div>
             <slot name="table-header-start">
-              <UForm class="space-y-4" @submit="onKeywordSearch">
-                <UInput
-                  v-if="showKewordSearch && !showSearch"
-                  v-model="filterText"
-                  class="max-w-sm"
-                  icon="i-lucide-search"
-                  :placeholder="$t('base.searchHelp3')"
-                />
+              <UForm
+                v-if="showKewordSearch && !showSearch"
+                class="space-y-4"
+                @submit="onKeywordSearch"
+              >
+                <div class="flex gap-2 items-center">
+                  <UTooltip :text="$t('base.searchHelp3')">
+                    <UInput
+                      v-model="filterText"
+                      class="max-w-lg"
+                      icon="i-lucide-search"
+                      :placeholder="$t('base.searchHelp3')"
+                    />
+                  </UTooltip>
+                  <UButton
+                    v-if="filterText"
+                    icon="lucide:eraser"
+                    variant="outline"
+                    @click="
+                      () => {
+                        clearFilters();
+                        filterText = '';
+                      }
+                    "
+                    >{{ $t("base.clear") }}</UButton
+                  >
+                </div>
               </UForm>
             </slot>
           </div>
@@ -600,9 +639,10 @@ watch(
       </div>
       <div v-if="showSearch" class="flex flex-col flex-wrap gap-2 pb-4">
         <div
-          class="p-4 bg-neutral-50 dark:bg-neutral-950 rounded-lg mb-4 border border-default/80"
+          class="p-4 bg-neutral-50 dark:bg-neutral-900 rounded-lg mb-4 border border-default/80"
         >
           <div class="text-xl font-bold pb-2">{{ $t("base.search") }}</div>
+          <slot name="search-inner-top" />
           <div
             class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
           >
@@ -621,9 +661,12 @@ watch(
                 <USelect
                   v-model="item.searchOperation"
                   :items="operationOptions"
-                  :disabled="item.searchOperationReadonly"
+                  :disabled="
+                    item.searchOperationReadonly ||
+                    item.searchType === ICrudListHeaderOptionSearchType.BOOLEAN
+                  "
                   value-key="value"
-                  class="w-18.75 shrink-0"
+                  class="min-w-28.75 max-w-41.25 shrink-0"
                 />
 
                 <UInput
@@ -680,7 +723,7 @@ watch(
                     item.searchType === ICrudListHeaderOptionSearchType.OPTIONS
                   "
                   v-model="item.searchModel"
-                  :items="item.selectOption?.items || []"
+                  :items="item.selectOption?.items as any || []"
                   :multiple="item.selectOption?.multiple"
                   value-attribute="value"
                   option-attribute="label"
@@ -689,9 +732,11 @@ watch(
                 />
               </div>
             </div>
+            <slot name="search-inner" />
           </div>
-
+          <slot name="search-inner-bottom" />
           <div class="mt-4 flex justify-end gap-2">
+            <slot name="search-actions-start" />
             <UButton
               icon="i-lucide-x"
               variant="ghost"
@@ -711,6 +756,7 @@ watch(
               @click="handleSearch"
               >{{ $t("base.search") }}
             </UButton>
+            <slot name="search-actions-end" />
           </div>
         </div>
       </div>

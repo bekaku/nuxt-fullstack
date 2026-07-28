@@ -13,9 +13,8 @@ export const useAuth = () => {
   const auth = useState<AppUser | null>('auth:user', () => null);
   const appNavigations = useState<AppNavigationMenuItem[]>('auth:navigations', () => []);
   const isLoggedIn = computed(() => !!auth.value);
-  const loginedAvatar = computed(() => getMockAvatarByIndex(19));
+  const loginedAvatar = computed(() => auth.value?.avatar? auth.value?.avatar.image : '/images/user.png');
   const loginedDisplay = computed(() => auth.value?.username || auth.value?.email);
-  const ttlDays = Number(refreshTokenDays) || 7;
   const setAuth = (payload: AppUser) => {
     auth.value = payload;
   };
@@ -80,7 +79,6 @@ export const useAuth = () => {
       return;
     }
 
-    const { appNavigateTo } = useBase();
     const confirm = useConfirmDialog();
     const loader = useLoader();
 
@@ -98,7 +96,7 @@ export const useAuth = () => {
       clearAuth();
       await sendBroradcastChanelReload();
       loader.close();
-      appNavigateTo('/auth/login', { replace: true });
+      navigateTo('/auth/login', { replace: true });
     }
     return true;
   };

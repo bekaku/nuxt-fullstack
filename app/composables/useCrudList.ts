@@ -3,7 +3,6 @@ import type { ApiResponse, CrudListApiOptions, ICrudAction, ICrudListHeader, ISo
 
 export const useCrudList = <T>(options: CrudListApiOptions) => {
   const { inputSanitizeHtml, getPageQuery, getCurrentPath, appNavigateTo, onReplaceUrl } = useBase();
-  const confirm = useConfirmDialog();
   const loader = useLoader();
   const { t } = useLang();
   const api = useApi();
