@@ -20,43 +20,43 @@ export default defineEventHandler(async (event): Promise<ResponseEntity<AppRole>
 
   const db = useDb()
 
-  try {
-    const role = await db.query.appRole.findFirst({
-      where: eq(schema.appRole.id, BigInt(id)),
-      columns: {
-        id: true,
-        name: true,
-        active: true,
-      },
-      with: {
-        rolePermissions: {
-          columns: { permission: true }
-        }
-      }
-    })
-
-    // ถ้าไม่พบข้อมูลให้พ่น Error 404
-    if (!role) {
-      throw createError({
-        statusCode: 404,
-        statusMessage: 'Role not found'
+  const rows = await db
+      .select({
+        roleId: schema.appRole.id,
+        roleName: schema.appRole.name,
+        roleActive: schema.appRole.active,
+        permissionId: schema.rolePermission.permission, // ดึง id ของสิทธิ์มา
       })
+      .from(schema.appRole)
+      .leftJoin(
+        schema.rolePermission,
+        eq(schema.appRole.id, schema.rolePermission.appRole)
+      )
+      .where(eq(schema.appRole.id, BigInt(id)))
+
+    // 2. ถ้าไม่พบข้อมูล (rows ว่างเปล่า)
+    if (!rows || rows.length === 0) {
+      throw createError({ statusCode: 404, statusMessage: 'Role not found' })
     }
+
+    // 3. แปลงข้อมูล (Mapping) กลับเป็น Object ก้อนเดียว
+    const role = rows[0]
+    if(!role) {
+      throw createError({ statusCode: 404, statusMessage: 'Role not found' })
+    }
+
+    // ดึงเฉพาะ permissionId ที่ไม่เป็น null มาใส่ Array
+    const selectedPermissions = rows
+      .map(row => row.permissionId?.toString())
+      .filter(Boolean) as string[] // กรองค่า null/undefined ทิ้ง
 
     return {
       status: 200,
       data: {
-        id: role.id,
-        name: role.name,
-        active: role.active || false,
-        selectdPermissions: role.rolePermissions.map(rp => rp.permission.toString())
+        id: role.roleId,
+        name: role.roleName,
+        active: role.roleActive || false,
+        selectdPermissions: selectedPermissions
       }
     }
-
-  } catch (error) {
-    throw createError({
-      statusCode: 500,
-      statusMessage: 'Internal Server Error'
-    })
-  }
 })

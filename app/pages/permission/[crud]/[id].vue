@@ -74,9 +74,9 @@ const schema = z.object({
 });
 type Schema = z.output<typeof schema>;
 const state = ref<Partial<Schema>>({
-  code: "",
-  description: "",
-  module: "",
+  code: "test-code",
+  description: "test permission",
+  module: "test",
   operationType: "CRUD",
 });
 
@@ -92,6 +92,8 @@ const {
 } = useCrudForm<Permission>(
   {
     crudName: "Permission",
+    methodPutIncludeId: false,
+    methodPut: "POST",
   },
   state,
 );
@@ -112,7 +114,6 @@ const {
       :title="$t('model_permission')"
       description="Permission management"
       orientation="horizontal"
-      class="max-w-[1020px]"
       @on-back="onBack"
       @on-edit-enable="onEnableEditForm"
       @on-submit="onSubmit"

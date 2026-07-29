@@ -316,7 +316,9 @@
     "enterDetails": "Please enter your details.",
     "addLinkTitle": "Message to display (Title)",
     "addLinkLink": "URL (eg. https://...)",
-     "copyID": "Copy ID"
+     "copyID": "Copy ID",
+     "setPermissions": " Define user permissions.",
+      "searchModuleOrPermission": "Search for the module or permission name."
   },
   "drive": {
     "title": "My Files",

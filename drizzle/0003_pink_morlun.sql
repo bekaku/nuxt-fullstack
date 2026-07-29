@@ -1,0 +1,1 @@
+ALTER TABLE "permission" DROP CONSTRAINT "permission_operation_type_check";

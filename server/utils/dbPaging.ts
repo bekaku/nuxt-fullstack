@@ -10,6 +10,7 @@ interface PaginateConfig<T> {
   // 2. A map that points to which column in which table each string refers to.
   columns: Record<string, AnyColumn>;
   defaultSort: AnyColumn;
+  defaultSortDirection?: 'asc' | 'desc';
   searchColumns?: AnyColumn[];
   where?: SQL;
   transform?: (item: any) => T | Promise<T>;
@@ -46,7 +47,8 @@ export async function paginate<T>(
   }
 
   if (orderByClause.length === 0) {
-    orderByClause.push(desc(config.defaultSort))
+    const defaultDiretionDesc = config.defaultSortDirection === 'desc' ? true : false
+    orderByClause.push(defaultDiretionDesc ? desc(config.defaultSort) : asc(config.defaultSort))
   }
 
   // --- Filter & Search ---

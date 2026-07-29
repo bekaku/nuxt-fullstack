@@ -46,7 +46,8 @@ const items = [
   >
     <template #header>
       <slot name="header">
-        <UDashboardNavbar :title="title" :ui>
+        <!-- class="bg-default" -->
+        <UDashboardNavbar :title="title" :ui >
           <template #leading>
             <slot name="leading">
               <UDashboardSidebarCollapse />

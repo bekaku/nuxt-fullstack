@@ -314,7 +314,6 @@ const {
   onBack,
   onEnableEditForm,
   onSubmit,
-  test,
 } = useCrudForm<Permission>(
   {
     crudName: "Permission",
@@ -325,7 +324,6 @@ const {
 </script>
 <template>
   <BaseDashboardPanel id="example-form" title="Form page">
-    <UButton @click="test">Test</UButton>
     <BaseForm
       :zod-schema="schema"
       v-model="state"

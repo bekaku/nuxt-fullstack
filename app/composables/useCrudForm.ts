@@ -40,19 +40,15 @@ export const useCrudForm = <T>(options: CrudFormApiOptions, entity: Ref<Partial<
     crudAction.value = 'edit';
   }
   const apiEnpoint = computed(() => {
-
     //springboot: pascalToCamelCase(crudName.value), pascalToKebab(crudName.value)
-    if (!options.apiEndpoint || !options.crudName) {
-      return;
-    }
     if (crudAction.value === CrudAction.EDIT) {
       return options.actionPut
         ? options.actionPut
-        : (options.apiEndpoint || '/api') + '/' + pascalToKebab(options.crudName) + (options.methodPutIncludeId === undefined || options.methodPutIncludeId === true ? '/' + entity.value.id : '');
+        : options.crudName ? `${options.apiEndpoint || '/api'}/${pascalToKebab(options.crudName)}${(options.methodPutIncludeId === undefined || options.methodPutIncludeId === true ? '/' + entity.value.id : '')}` : '';
     }
     return options.actionPost
       ? options.actionPost
-      : (options.apiEndpoint || '/api') + '/' + pascalToKebab(options.crudName);
+      : options.crudName ? `${options.apiEndpoint || '/api'}/${pascalToKebab(options.crudName)}` : '';
   });
 
   const deleteApiEndpoint = computed(() => {
@@ -63,21 +59,17 @@ export const useCrudForm = <T>(options: CrudFormApiOptions, entity: Ref<Partial<
         }`
         : '';
   });
-  // const getFetchDataLink = computed(() => {
-  //   if (fetchDataLink.value) {
-  //     return fetchDataLink.value;
-  //   }
-  //   return `${options.apiEndpoint || '/api'}/${pascalToKebab(options.crudName ? options.crudName : '')}/${crudId.value}`;
-  // });
   const getFetchDataLink = computed(() => {
     if (fetchDataLink.value) {
       return fetchDataLink.value;
     }
-    const basePath = `${options.apiEndpoint || '/api'}/${pascalToKebab(options.crudName || '')}`;
-    return crudId.value ? `${basePath}/${crudId.value}` : basePath;
+    if (!crudId.value) {
+      return;
+    }
+    return `${options.apiEndpoint || '/api'}/${pascalToKebab(options.crudName ? options.crudName : '')}/${crudId.value}`;
   });
   const fetchDataById = async (): Promise<ResponseEntity<T> | null> => {
-    if (!crudId.value && !options.crudName) {
+    if (!getFetchDataLink.value) {
       return null
     }
     loading.value = true;
@@ -136,20 +128,16 @@ export const useCrudForm = <T>(options: CrudFormApiOptions, entity: Ref<Partial<
       appNavigateTo(backLink);
     }
   };
-  const onSubmit = async () => {
-    if (!options.apiEndpoint || !options.crudName || !apiEnpoint.value) {
-      return new Promise((resolve) => resolve(false))
+  const onSubmit = async (): Promise<void> => {
+
+    if (!entity.value || !apiEnpoint.value) {
+      return
     }
     await onSubmitProcess<T>(
       entity.value,
-      'POST',
+      (crudAction.value === CrudAction.VIEW || crudAction.value === CrudAction.EDIT) ? (options.methodPut || 'PUT') : 'POST',
       apiEnpoint.value
     )
-    // await onSubmitProcess<T>(
-    //   entity.value,
-    //   crudAction.value === CrudAction.VIEW ? 'PUT' : 'POST',
-    //   apiEnpoint.value
-    // )
   }
   const onSubmitProcess = async <E>(
     data: any,
@@ -158,6 +146,17 @@ export const useCrudForm = <T>(options: CrudFormApiOptions, entity: Ref<Partial<
     jsonRootName: string | undefined = undefined,
   ): Promise<void> => {
 
+
+    if (import.meta.dev) {
+      console.log(
+        'useCrudFrom > onSubmit',
+        {
+          enpoint,
+          methodType,
+          data
+        }
+      );
+    }
     if (!enpoint) {
       return
     }
@@ -171,26 +170,12 @@ export const useCrudForm = <T>(options: CrudFormApiOptions, entity: Ref<Partial<
     //   requestItem = data
     // }
 
-    const requestItem = data as any
-
-    if (import.meta.dev) {
-      console.log(
-        'useCrudFrom > onSubmit',
-        methodType,
-        requestItem
-      );
-    }
-
     loading.value = true;
     try {
       const response = await api<ResponseEntity<T>>(enpoint, {
         method: methodType,
-        body: requestItem
+        body: data
       });
-      if (import.meta.dev) {
-        console.log('useCrudFrom > onSubmit > response', response);
-      }
-
 
       if (response.status != 200) {
         return
@@ -201,7 +186,7 @@ export const useCrudForm = <T>(options: CrudFormApiOptions, entity: Ref<Partial<
           crudAction.value === CrudAction.COPY
         ) {
           showToast({
-            message: t('success.createSuccesfull'),
+            message: t('success.insertSuccesfull'),
             status: response.status
           });
 
@@ -219,12 +204,12 @@ export const useCrudForm = <T>(options: CrudFormApiOptions, entity: Ref<Partial<
       }
     } catch (error: any) {
       console.error('useCrudForm>onSubmit', error);
-      if (error.message) {
-        showToast({
-          message: error.message,
-          status: 500
-        });
-      }
+      // if (error.message) {
+      //   showToast({
+      //     message: error.message,
+      //     status: 500
+      //   });
+      // }
     } finally {
       loading.value = false;
     }
@@ -280,11 +265,6 @@ export const useCrudForm = <T>(options: CrudFormApiOptions, entity: Ref<Partial<
   if (options?.fectchDataOnLoad === undefined || options?.fectchDataOnLoad) {
     preFectData();
   }
-  //test
-  const test = () => {
-    entity.value.code = '55555'
-    console.log('entity', entity.value)
-  }
   onBeforeUnmount(() => {
     resetEntity();
   });
@@ -299,7 +279,6 @@ export const useCrudForm = <T>(options: CrudFormApiOptions, entity: Ref<Partial<
     fetchDataLink,
     firstLoaded,
     isEditMode,
-    test
   };
 
 }

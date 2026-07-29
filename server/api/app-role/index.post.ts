@@ -26,6 +26,8 @@ export default defineEventHandler(async (event): Promise<ResponseEntity<AppRole>
     })
   }
 
+  const auth = getAuthUser(event)
+
   const db = useDb()
 
   try {
@@ -57,7 +59,7 @@ export default defineEventHandler(async (event): Promise<ResponseEntity<AppRole>
         currentRoleId = BigInt(id);
         await tx
           .update(schema.appRole)
-          .set({ name, active })
+          .set({ name, active, updatedUser: BigInt(auth.sub) })
           .where(eq(schema.appRole.id, currentRoleId));
 
         // Clear all existing permissions first to prepare for installing new ones.
@@ -71,7 +73,9 @@ export default defineEventHandler(async (event): Promise<ResponseEntity<AppRole>
           .insert(schema.appRole)
           .values({
             name,
-            active
+            active,
+            createdUser: BigInt(auth.sub),
+            updatedUser: BigInt(auth.sub)
           })
           .returning({ id: schema.appRole.id }); // Have PostgreSQL return the newly created ID.
 

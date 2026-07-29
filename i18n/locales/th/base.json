@@ -317,7 +317,9 @@
     "enterDetails": "โปรดกรอกรายละเอียดของคุณ",
     "addLinkTitle": "ข้อความที่ต้องการแสดง (Title)",
     "addLinkLink": "URL (เช่น https://...)",
-    "copyID": "คัดลอก ID"
+    "copyID": "คัดลอก ID",
+    "setPermissions": " กำหนดสิทธิ์การใช้งาน (Permissions)",
+    "searchModuleOrPermission": "ค้นหาโมดูล หรือชื่อสิทธิ์"
   },
   "drive": {
     "title": "ไฟล์ของฉัน",

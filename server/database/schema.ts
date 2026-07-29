@@ -32,30 +32,31 @@ export const permissionTypeEnum = pgEnum('permission_type_enum', [
 */
 const id = () => bigint('id', { mode: 'bigint' }).primaryKey().$defaultFn(() => nextId())
 
+export const auditFieldsSoftDelete = () => ({
+  deleted: boolean('deleted').default(false),
+  // createdDate: timestamp('created_date', { precision: 6 }).defaultNow(),
+  createdDate: timestamp('created_date', { precision: 6 }).$defaultFn(() => new Date()),
+  createdUser: bigint('created_user', { mode: 'bigint' }),
+  updatedDate: timestamp('updated_date', { precision: 6 }).$onUpdate(() => new Date()), // อัปเดตเวลาให้อัตโนมัติเมื่อมีการแก้ไข
+  updatedUser: bigint('updated_user', { mode: 'bigint' }),
+})
+
 // ---------------------------------------------------------------------------
 // Reference / Location tables
 // ---------------------------------------------------------------------------
 
 export const province = pgTable('province', {
   id: id(),
-  deleted: boolean('deleted'),
-  createdDate: timestamp('created_date', { precision: 6 }),
-  createdUser: bigint('created_user', { mode: 'bigint' }),
-  updatedDate: timestamp('updated_date', { precision: 6 }),
-  updatedUser: bigint('updated_user', { mode: 'bigint' }),
   name: varchar('name', { length: 255 }),
   nameEn: varchar('name_en', { length: 255 }),
+  ...auditFieldsSoftDelete()
 })
 
 export const district = pgTable('district', {
   id: id(),
-  deleted: boolean('deleted'),
-  createdDate: timestamp('created_date', { precision: 6 }),
-  createdUser: bigint('created_user', { mode: 'bigint' }),
-  updatedDate: timestamp('updated_date', { precision: 6 }),
-  updatedUser: bigint('updated_user', { mode: 'bigint' }),
   name: varchar('name', { length: 255 }).notNull(),
   nameEn: varchar('name_en', { length: 255 }),
+  ...auditFieldsSoftDelete(),
   province: bigint('province', { mode: 'bigint' })
     .notNull()
     .references(() => province.id),
@@ -63,11 +64,7 @@ export const district = pgTable('district', {
 
 export const subDistrict = pgTable('sub_district', {
   id: id(),
-  deleted: boolean('deleted'),
-  createdDate: timestamp('created_date', { precision: 6 }),
-  createdUser: bigint('created_user', { mode: 'bigint' }),
-  updatedDate: timestamp('updated_date', { precision: 6 }),
-  updatedUser: bigint('updated_user', { mode: 'bigint' }),
+ ...auditFieldsSoftDelete(),
   latitude: doublePrecision('latitude'),
   longitude: doublePrecision('longitude'),
   name: varchar('name', { length: 255 }).notNull(),
@@ -89,10 +86,6 @@ export const fileMime = pgTable('file_mime', {
 
 export const filesDirectory = pgTable('files_directory', {
   id: id(),
-  createdDate: timestamp('created_date', { precision: 6 }),
-  createdUser: bigint('created_user', { mode: 'bigint' }),
-  updatedDate: timestamp('updated_date', { precision: 6 }),
-  updatedUser: bigint('updated_user', { mode: 'bigint' }),
   active: boolean('active').notNull(),
   name: varchar('name', { length: 125 }),
   filesDirectoryParent: bigint('files_directory_parent', { mode: 'bigint' }),
@@ -100,7 +93,7 @@ export const filesDirectory = pgTable('files_directory', {
   latestUpdated: timestamp('latest_updated', { precision: 6 }),
   owner: bigint('owner', { mode: 'bigint' }),
   fileCount: bigint('file_count', { mode: 'bigint' }).notNull().default(sql`0`),
-  deleted: boolean('deleted').default(false),
+  ...auditFieldsSoftDelete(),
 })
 
 export const filesDirectoryPath = pgTable(
@@ -115,9 +108,6 @@ export const filesDirectoryPath = pgTable(
 
 export const fileManager = pgTable('file_manager', {
   id: id(),
-  deleted: boolean('deleted'),
-  createdDate: timestamp('created_date', { precision: 6 }),
-  createdUser: bigint('created_user', { mode: 'bigint' }),
   fileName: varchar('file_name', { length: 255 }),
   filePath: varchar('file_path', { length: 255 }),
   fileSize: bigint('file_size', { mode: 'bigint' }),
@@ -135,8 +125,7 @@ export const fileManager = pgTable('file_manager', {
   thumbnailFile: bigint('thumbnail_file', { mode: 'bigint' })
     .references((): AnyPgColumn => fileManager.id),
   useThumbnail: boolean('use_thumbnail').default(false),
-  updatedDate: timestamp('updated_date', { precision: 6 }),
-  updatedUser: bigint('updated_user', { mode: 'bigint' }),
+  ...auditFieldsSoftDelete(),
 })
 
 // ---------------------------------------------------------------------------
@@ -147,11 +136,6 @@ export const appUser = pgTable(
   'app_user',
   {
     id: id(),
-    deleted: boolean('deleted'),
-    createdDate: timestamp('created_date', { precision: 6 }),
-    createdUser: bigint('created_user', { mode: 'bigint' }),
-    updatedDate: timestamp('updated_date', { precision: 6 }),
-    updatedUser: bigint('updated_user', { mode: 'bigint' }),
     active: boolean('active').notNull().default(true),
     // 0 = th, 1 = en (Adjusted to the actual system.)
     defaultLocale: smallint('default_locale'),
@@ -159,21 +143,19 @@ export const appUser = pgTable(
     password: varchar('password', { length: 255 }),
     salt: varchar('salt', { length: 255 }),
     username: varchar('username', { length: 100 }),
+    ...auditFieldsSoftDelete(),
     avatarFileId: bigint('avatar_file_id', { mode: 'bigint' }).references(() => fileManager.id),
     coverFileId: bigint('cover_file_id', { mode: 'bigint' }).references(() => fileManager.id),
+
   },
   (t) => [check('app_user_default_locale_check', sql`${t.defaultLocale} >= 0 AND ${t.defaultLocale} <= 1`)],
 )
 
 export const appRole = pgTable('app_role', {
   id: id(),
-  deleted: boolean('deleted'),
-  createdDate: timestamp('created_date', { precision: 6 }),
-  createdUser: bigint('created_user', { mode: 'bigint' }),
-  updatedDate: timestamp('updated_date', { precision: 6 }),
-  updatedUser: bigint('updated_user', { mode: 'bigint' }),
   active: boolean('active'),
   name: varchar('name', { length: 125 }).notNull(),
+  ...auditFieldsSoftDelete(),
 })
 
 export const permission = pgTable(
@@ -188,7 +170,6 @@ export const permission = pgTable(
     module: varchar('module', { length: 255 }),
     description: text('description'),
   },
-  (t) => [check('permission_operation_type_check', sql`${t.operationType} >= 0 AND ${t.operationType} <= 2`)],
 )
 
 export const appUserRole = pgTable(
@@ -223,27 +204,21 @@ export const rolePermission = pgTable(
 
 export const apiClient = pgTable('api_client', {
   id: id(),
-  createdDate: timestamp('created_date', { precision: 6 }),
-  createdUser: bigint('created_user', { mode: 'bigint' }),
-  updatedDate: timestamp('updated_date', { precision: 6 }),
-  updatedUser: bigint('updated_user', { mode: 'bigint' }),
   apiName: varchar('api_name', { length: 100 }).notNull(),
   apiToken: varchar('api_token', { length: 255 }),
   byPass: boolean('by_pass'),
   status: boolean('status'),
+  ...auditFieldsSoftDelete(),
 })
 
 export const apiClientIp = pgTable('api_client_ip', {
   id: id(),
-  createdDate: timestamp('created_date', { precision: 6 }),
-  createdUser: bigint('created_user', { mode: 'bigint' }),
-  updatedDate: timestamp('updated_date', { precision: 6 }),
-  updatedUser: bigint('updated_user', { mode: 'bigint' }),
   ipAddress: varchar('ip_address', { length: 50 }),
   status: boolean('status'),
   apiClient: bigint('api_client', { mode: 'bigint' })
     .notNull()
     .references(() => apiClient.id, { onDelete: 'cascade' }),
+    ...auditFieldsSoftDelete(),
 })
 
 export const userAgent = pgTable('user_agent', {
@@ -330,14 +305,10 @@ export const aiDocumentMeta = pgTable(
   'ai_document_meta',
   {
     id: id(),
-    deleted: boolean('deleted'),
-    createdDate: timestamp('created_date', { precision: 6 }),
-    createdUser: bigint('created_user', { mode: 'bigint' }),
-    updatedDate: timestamp('updated_date', { precision: 6 }),
-    updatedUser: bigint('updated_user', { mode: 'bigint' }),
     documentType: varchar('document_type', { length: 255 }),
     fileName: varchar('file_name', { length: 255 }),
     isActive: boolean('is_active').notNull(),
+    ...auditFieldsSoftDelete(),
   },
   (t) => [
     check(

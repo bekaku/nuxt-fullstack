@@ -299,12 +299,9 @@ const autoFields = computed(() => {
   });
 });
 const onSubmit = async (event: FormSubmitEvent<Schema>) => {
-  console.log(event.data);
+  emit("on-submit");
 };
 
-const onEditBtnClick = (type: ICrudAction) => {
-  emit("on-item-click", type);
-};
 const onDelete = async (event: any) => {
   const conf = await confirm({
     title: t("base.deleteCountConfirm", { count: 1 }),
@@ -405,7 +402,7 @@ const onDelete = async (event: any) => {
                     :color="field.color"
                     :variant="field.ui?.variant"
                     :maxlength="field.ui?.maxlength"
-                    :readonly="field.ui?.readonly"
+                    :readonly="field.ui?.readonly || loading"
                     :disabled="field.disable"
                     :icon="field.icon || undefined"
                     :trailing-icon="field.trailingIcon || undefined"
@@ -448,7 +445,7 @@ const onDelete = async (event: any) => {
                     :color="field.color"
                     :variant="field.ui?.variant"
                     :maxlength="field.ui?.maxlength"
-                    :readonly="field.ui?.readonly"
+                    :readonly="field.ui?.readonly || loading"
                     :disabled="field.disable"
                     :size="field.ui?.size"
                     :min="field.ui?.min"
@@ -464,7 +461,7 @@ const onDelete = async (event: any) => {
                     v-model="state[field.name]"
                     :loading="loading"
                     :color="field.color"
-                    :disabled="field.ui?.disable"
+                    :disabled="field.ui?.disable || loading"
                     :size="field.ui?.size"
                     :min="field.ui?.min"
                     :max="field.ui?.max"
@@ -483,7 +480,7 @@ const onDelete = async (event: any) => {
                     :color="field.color"
                     :variant="field.ui?.variant"
                     :readonly="field.ui?.readonly"
-                    :disabled="field.disable"
+                    :disabled="field.disable || loading"
                     :size="field.ui?.size"
                     :icon="field.icon || undefined"
                     :trailing-icon="field.trailingIcon || undefined"
@@ -500,7 +497,7 @@ const onDelete = async (event: any) => {
                     :placeholder="field.ui?.placeholder"
                     :color="field.color"
                     :variant="field.ui?.variant"
-                    :disabled="field.disable"
+                    :disabled="field.disable || loading"
                     :size="field.ui?.size"
                     :length="field.ui?.max"
                     :separator="field.ui?.separatorLength"
@@ -517,7 +514,7 @@ const onDelete = async (event: any) => {
                     :icon="field.icon || undefined"
                     :trailing-icon="field.trailingIcon || undefined"
                     autoresize
-                    :readonly="field.ui?.readonly"
+                    :readonly="field.ui?.readonly || loading"
                     :disabled="field.disable"
                     :maxlength="field.ui?.maxlength"
                     :placeholder="field.ui?.placeholder"
@@ -559,8 +556,8 @@ const onDelete = async (event: any) => {
                   <UCheckbox
                     v-model="state[field.name]"
                     :label="`${$t('base.enable')} (${field.label})`"
-                    :size="field.ui?.size"
-                    :disabled="field.disable"
+                    :size="field.ui?.size || 'lg'"
+                    :disabled="field.disable || loading"
                     :color="field.color"
                     :variant="field.ui?.variant"
                     :loading="loading"
@@ -571,8 +568,8 @@ const onDelete = async (event: any) => {
                   <UCheckboxGroup
                     v-model="state[field.name]"
                     :label="`${$t('base.enable')} (${field.label})`"
-                    :size="field.ui?.size"
-                    :disabled="field.disable"
+                    :size="field.ui?.size || 'lg'"
+                    :disabled="field.disable || loading"
                     :color="field.color"
                     :items="field.options"
                     :variant="field.ui?.variant"
@@ -586,7 +583,7 @@ const onDelete = async (event: any) => {
                     v-model="state[field.name]"
                     :label="field.label"
                     :size="field.ui?.size"
-                    :disabled="field.disable"
+                    :disabled="field.disable || loading"
                     :color="field.color"
                     :items="field.options"
                     :variant="field.ui?.variant"
@@ -602,7 +599,7 @@ const onDelete = async (event: any) => {
                     checked-icon="i-lucide-check"
                     :legend="$t('base.enable')"
                     :size="field.ui?.size"
-                    :disabled="field.disable"
+                    :disabled="field.disable || loading"
                     :color="field.color"
                     :variant="field.ui?.variant"
                     :loading="loading"
@@ -615,7 +612,7 @@ const onDelete = async (event: any) => {
                     v-model="state[field.name]"
                     :label="`${$t('base.enable')} (${field.label})`"
                     :size="field.ui?.size"
-                    :disabled="field.disable"
+                    :disabled="field.disable || loading"
                     :color="field.color"
                     :items="field.options"
                     value-key="value"
@@ -639,7 +636,7 @@ const onDelete = async (event: any) => {
                     :items="field.options"
                     :icon="field.icon || undefined"
                     :trailing-icon="field.trailingIcon || undefined"
-                    :disabled="field.disable"
+                    :disabled="field.disable || loading"
                     :avatar="field.avatar ? { ...field.avatar } : undefined"
                     :variant="field.ui?.variant"
                     :multiple="field.ui?.multiple"
@@ -654,7 +651,7 @@ const onDelete = async (event: any) => {
                     :description="field?.description"
                     :multiple="field.ui?.multiple"
                     :max-files="field.ui?.max"
-                    :disabled="field.disable"
+                    :disabled="field.disable || loading"
                     :icon="field.icon || 'lucide:paperclip'"
                     v-model="state[field.name]"
                     :show-progress="false"
@@ -677,6 +674,7 @@ const onDelete = async (event: any) => {
               <template v-if="isHaveAddPermission || isHaveEditPermission">
                 <UButton
                   icon="lucide:save"
+                  :loading
                   :label="
                     crudAction == 'edit' ||
                     crudAction == 'new' ||
@@ -693,6 +691,7 @@ const onDelete = async (event: any) => {
                 v-if="
                   deleteButton && crudAction == 'edit' && isHaveDeletePermission
                 "
+                :loading
                 icon="lucide:trash"
                 :label="$t('base.delete')"
                 color="error"

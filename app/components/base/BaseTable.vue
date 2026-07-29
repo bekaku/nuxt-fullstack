@@ -233,7 +233,7 @@ const getRowActionItems = (row: Row<any>) => {
     },
   ];
 
-  if (isHaveViewPermission.value) {
+  if (isHaveViewPermission.value && !isHaveEditPermission.value) {
     items.push({
       label: t("base.view"),
       icon: "lucide:eye",
@@ -242,7 +242,7 @@ const getRowActionItems = (row: Row<any>) => {
         if (row.index == undefined) {
           return;
         }
-        emit('on-item-click', row.index, 'view');
+        emit("on-item-click", row.index, "view");
       },
     });
   }
@@ -251,11 +251,11 @@ const getRowActionItems = (row: Row<any>) => {
       label: t("base.edit"),
       icon: "lucide:pencil",
       onSelect() {
-          console.log("Edit row", row.index);
+        console.log("Edit row", row.index);
         if (row.index == undefined) {
           return;
         }
-        emit('on-item-click', row.index, 'edit');
+        emit("on-item-click", row.index, "edit");
       },
     });
   }
@@ -264,7 +264,11 @@ const getRowActionItems = (row: Row<any>) => {
       label: t("base.copy"),
       icon: "lucide:copy",
       onSelect() {
-        console.log("Copy row");
+        console.log("Copy row", row.index);
+        if (row.index == undefined) {
+          return;
+        }
+        emit("on-item-copy", row.index);
       },
     });
   }
@@ -732,7 +736,7 @@ watch(
                     item.searchType === ICrudListHeaderOptionSearchType.OPTIONS
                   "
                   v-model="item.searchModel"
-                  :items="item.selectOption?.items as any || []"
+                  :items="(item.selectOption?.items as any) || []"
                   :multiple="item.selectOption?.multiple"
                   value-attribute="value"
                   option-attribute="label"

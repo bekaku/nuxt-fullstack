@@ -111,6 +111,8 @@ const onUnFav = async (e: any, item: AppNavigationMenuItem) => {
 
 <template>
   <UDashboardGroup unit="rem">
+    <!-- class="bg-elevated/25" -->
+     <!-- bg-default -->
     <UDashboardSidebar
       id="default"
       v-model:open="open"

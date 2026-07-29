@@ -214,6 +214,7 @@ export interface CrudFormApiOptions {
   preventRedirectToList?: boolean;
   requestEntityName?: string;
   methodPutIncludeId?: boolean;
+  methodPut?: IMethod;
   entity?: any;
 }
 export interface DefaultAxiosInstance {
