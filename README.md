@@ -121,7 +121,8 @@ Or, if you've modified schema.ts and need to generate a new migration:
 
 ```bash
 pnpm db:generate   #Create a new SQL file from schema.ts.
-pnpm db:migrate    # apply to DB
+pnpm db:migrate    # This command is responsible for executing the SQL file generated from the `generate` function and inserting it into the database.
+pnpm db:push #This command is a speed-oriented shortcut; its function is to immediately push the schema.ts file into the actual database without creating an SQL file.
 ```
 
 ### 5) Seed - Initial Information
