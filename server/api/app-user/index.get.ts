@@ -1,4 +1,4 @@
-import { aliasedTable, count, eq } from 'drizzle-orm'
+import { aliasedTable, and, count, eq } from 'drizzle-orm'
 import { ApiResponse, ResponseEntity } from '~/types/common'
 import { AppUser } from '~/types/models'
 import { paginate } from '~~/server/utils/dbPaging'
@@ -40,7 +40,7 @@ export default defineEventHandler(async (event): Promise<ResponseEntity<ApiRespo
     .$dynamic()
 
 
-  const { public: { cdnBase }} = useRuntimeConfig()
+  const { public: { cdnBase } } = useRuntimeConfig()
 
   const data = await paginate(event, {
     dataQuery,
@@ -52,10 +52,9 @@ export default defineEventHandler(async (event): Promise<ResponseEntity<ApiRespo
       createdDate: schema.appUser.createdDate,
     },
     defaultSort: schema.appUser.id,
-    // transform: (item) => ({
-    //   ...item,
-    //   id: item.id.toString(),
-    // })
+    where: and(
+      eq(schema.appUser.deleted, false),
+    ),
     transform: (item) => {
       return mapToAppUser(item, {
         cdnBase: cdnBase,
@@ -109,6 +108,10 @@ export default defineEventHandler(async (event) => {
    // You can use columns across tables.
    //Global Search: Suppose the client sends ?keyword=example.com. Create an ILIKE condition for all columns specified in searchColumns.
     searchColumns: [schema.appUser.email, schema.appRole.name],
+    where: and(
+      eq(schema.appUser.id, userId),
+      eq(schema.appUser.active, true) // ใช้ active ตาม schema ที่มี
+    ),
     transform: (item) => ({
       ...item,
       id: item.id.toString(),

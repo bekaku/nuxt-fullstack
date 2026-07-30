@@ -5,7 +5,7 @@ export default defineAppConfig({
   ui: {
     colors: {
       primary: 'teal',
-      neutral: 'neutral',
+      neutral: 'slate',
       info: 'sky',
       secondary: 'slate',
       success: 'success',
@@ -31,7 +31,8 @@ export default defineAppConfig({
           },
         },
       },
-
+      compoundVariants: [
+      ],
       defaultVariants: {
         variant: 'subtle',
         color: 'neutral',
@@ -50,6 +51,24 @@ export default defineAppConfig({
         root: 'overflow-visible',
         header: 'p-4 sm:px-4',
         body: 'p-4! sm:p-4!',
+      },
+      variants: {
+        variant: {
+          solid: {
+            root: 'bg-inverted text-inverted',
+            title: 'text-inverted',
+            description: 'text-dimmed'
+          },
+          outline: {
+            root: 'bg-default'
+          },
+          soft: {
+            root: 'bg-elevated/40 '
+          },
+          subtle: {
+            root: 'bg-elevated/40'
+          }
+        }
       }
     },
     fileUpload: {

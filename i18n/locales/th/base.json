@@ -319,7 +319,12 @@
     "addLinkLink": "URL (เช่น https://...)",
     "copyID": "คัดลอก ID",
     "setPermissions": " กำหนดสิทธิ์การใช้งาน (Permissions)",
-    "searchModuleOrPermission": "ค้นหาโมดูล หรือชื่อสิทธิ์"
+    "searchModuleOrPermission": "ค้นหาโมดูล หรือชื่อสิทธิ์",
+    "enterPassword": "ป้อนรหัสผ่าน",
+    "waeakPassword": "รหัสผ่านที่เดาง่าย",
+    "mediumPassword": "รหัสผ่านระดับปานกลาง",
+    "strongPassword": "รหัสผ่านที่เดายาก",
+    "mustContain": "ต้องประกอบด้วย"
   },
   "drive": {
     "title": "ไฟล์ของฉัน",

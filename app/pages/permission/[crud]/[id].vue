@@ -8,14 +8,13 @@ definePageMeta({
   requiresPermission: ["permission_view", "permission_add", "permission_edit"],
 });
 
-const ui = (config: LabelValue<any>) => JSON.stringify(config);
 const { t } = useLang();
 const schema = z.object({
   code: z
     .string()
     .min(1, t("error.validateRequireField"))
     .describe(
-      ui({
+      uiConfig({
         label: t("model_permission_name"),
         description: "This is help text for Permission code",
         icon: "lucide:key",
@@ -31,7 +30,7 @@ const schema = z.object({
   module: z
     .any()
     .describe(
-      ui({
+      uiConfig({
         label: "Module",
         ui: {
           type: "text",
@@ -42,7 +41,7 @@ const schema = z.object({
   description: z
     .string()
     .describe(
-      ui({
+      uiConfig({
         label: t("model_permission_description"),
         ui: {
           type: "textarea",
@@ -56,7 +55,7 @@ const schema = z.object({
   operationType: z
     .enum(["CRUD", "REPORT", "OTHER", "FEATURE"])
     .describe(
-      ui({
+      uiConfig({
         label: "Permission type",
         icon: "lucide:settings",
         ui: {
@@ -74,9 +73,9 @@ const schema = z.object({
 });
 type Schema = z.output<typeof schema>;
 const state = ref<Partial<Schema>>({
-  code: "test-code",
-  description: "test permission",
-  module: "test",
+  code: "",
+  description: "",
+  module: "",
   operationType: "CRUD",
 });
 
@@ -114,6 +113,7 @@ const {
       :title="$t('model_permission')"
       description="Permission management"
       orientation="horizontal"
+      class="max-w-[1020px]"
       @on-back="onBack"
       @on-edit-enable="onEnableEditForm"
       @on-submit="onSubmit"

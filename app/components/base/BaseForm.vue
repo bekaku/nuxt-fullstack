@@ -155,7 +155,6 @@ const autoFields = computed(() => {
     return [];
   }
 
-  // ดึง shape ออกมา (อิงจากภาพ: baseSchema.def.shape)
   const shape = baseSchema.shape || def?.shape;
 
   if (!shape) return [];
@@ -167,20 +166,17 @@ const autoFields = computed(() => {
     const fieldDef = baseFieldType?._def || baseFieldType?.def;
     const typeName = fieldDef?.typeName || baseFieldType?.type;
 
-    // 1. ดึง description ออกมาจาก Zod
     const fieldDescription =
       rawDef?.description ||
       rawType?.description ||
       fieldDef?.description ||
       baseFieldType?.description;
 
-    // 2. แปลง String กลับเป็น LabelValue Object
     let uiConfig: Record<string, any> = {};
     if (fieldDescription) {
       try {
         uiConfig = JSON.parse(fieldDescription);
       } catch (e) {
-        // Fallback: ถ้าเผลอใส่ .describe("textarea") มาตรงๆ ก็ยังรองรับอยู่
         uiConfig = {
           type: fieldDescription === "textarea" ? "textarea" : "input",
           description: fieldDescription,
@@ -191,19 +187,17 @@ const autoFields = computed(() => {
     const uiProps = uiConfig?.ui || {};
     const specifiedType = uiProps.type || uiConfig?.type;
 
-    // 2. กำหนดค่าเริ่มต้น
     let componentType = "input";
     let inputType = "text";
 
-    // 3. จัดการ Type ตามที่กำหนดมา (ถ้ามี)
     if (specifiedType) {
       if (
-        ["text", "date", "password", "email", "number", "search"].includes(
-          specifiedType,
-        )
+        ["text", "date", "email", "number", "search"].includes(specifiedType)
       ) {
         componentType = "input";
-        inputType = specifiedType; // เอาค่า 'text' | 'date' | 'password' | 'email' | 'number' ไปใส่เลย
+        inputType = specifiedType;
+      } else if (specifiedType === "password") {
+        componentType = "password";
       } else if (specifiedType === "textarea") {
         componentType = "textarea";
       } else if (specifiedType === "select") {
@@ -229,9 +223,7 @@ const autoFields = computed(() => {
       } else if (specifiedType === "file") {
         componentType = "file";
       }
-    }
-    // 4. ถ้าไม่มีการกำหนด ui.type มา ให้ใช้ความฉลาดของ Zod ในการเดา Type
-    else {
+    } else {
       if (typeName === "ZodNumber" || typeName === "number") {
         inputType = "number";
       } else if (typeName === "ZodBoolean" || typeName === "boolean") {
@@ -246,7 +238,6 @@ const autoFields = computed(() => {
       }
     }
 
-    // 4. จัดการ Options สำหรับ Select
     let options: any[] = [];
     if (
       componentType === "select" ||
@@ -255,9 +246,8 @@ const autoFields = computed(() => {
       componentType === "input-menu"
     ) {
       if (uiConfig?.children && uiConfig.children.length > 0) {
-        options = uiConfig.children; // ใช้ options ที่แนบมา
+        options = uiConfig.children;
       } else {
-        // ใช้ options จาก Zod ถ้าไม่ได้แนบมา
         const rawValues =
           baseFieldType?.options ||
           fieldDef?.values ||
@@ -271,7 +261,6 @@ const autoFields = computed(() => {
       }
     }
 
-    // 5. จัดการ Label
     const defaultLabel = key
       .replace(/([A-Z])/g, " $1")
       .replace(/^./, (str) => str.toUpperCase());
@@ -283,8 +272,6 @@ const autoFields = computed(() => {
       componentType,
       inputType,
       options,
-
-      // ดึงค่าอื่นๆ จาก LabelValue ออกมาให้หมดเพื่อส่งไป Template
       disable: uiConfig?.disable || false,
       required: uiConfig?.required || false,
       translateLabel: uiConfig?.translateLabel || false,
@@ -365,7 +352,7 @@ const onDelete = async (event: any) => {
       <UForm
         :schema="zodSchema"
         :state="state"
-        class="space-y-4"
+        class="space-y-4 p-4"
         @submit="onSubmit"
       >
         <slot name="prepend-fields" />
@@ -410,7 +397,10 @@ const onDelete = async (event: any) => {
                     :size="field.ui?.size"
                     :class="['w-full', field.ui?.class || '']"
                   >
-                    <template #trailing>
+                    <template
+                      v-if="field.ui?.maxlength || field.ui?.clearable"
+                      #trailing
+                    >
                       <div
                         v-if="field.ui?.maxlength && field.ui?.maxlength > 0"
                         id="character-count"
@@ -436,6 +426,13 @@ const onDelete = async (event: any) => {
                       />
                     </template>
                   </UInput>
+                </template>
+                <template v-if="field.componentType === 'password'">
+                  <BaseInputPassword
+                    v-model="state[field.name]"
+                    :icon="field.icon || undefined"
+                    :placeholder="field.ui?.placeholder"
+                  />
                 </template>
                 <template v-if="field.componentType === 'number-step'">
                   <UInputNumber
@@ -657,7 +654,8 @@ const onDelete = async (event: any) => {
                     :show-progress="false"
                     :priview-layout="field.ui?.layout || 'list'"
                     :class="[field.ui?.class || '']"
-                  />
+                  >
+                  </LazyBaseFileUpload>
                 </template>
               </UFormField>
             </slot>
@@ -669,7 +667,7 @@ const onDelete = async (event: any) => {
 
         <div class="flex flex-col gap-4 mt-4">
           <slot name="crud-action">
-            <USeparator class="mt-4" type="dashed" />
+            <USeparator v-if="isHaveAddPermission || isHaveEditPermission || isHaveDeletePermission" class="mt-4" type="dashed" />
             <div class="flex justify-center gap-4">
               <template v-if="isHaveAddPermission || isHaveEditPermission">
                 <UButton

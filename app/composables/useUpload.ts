@@ -205,7 +205,7 @@ export const useUpload = () => {
 
             if (thumbnailResponse && thumbnailResponse.id) {
               metaData = {
-                thumbnailFileId: thumbnailResponse.id,
+                thumbnailFileId: thumbnailResponse.id.toString(),
                 duration: f.duration || 0,
                 title: f.title || null,
                 description: f.description || null,
@@ -223,7 +223,7 @@ export const useUpload = () => {
               uploadFileSucess.value = 0;
             }
             uploadFileSucess.value++
-            fileUploadedIdItems.value.push(response.id)
+            fileUploadedIdItems.value.push(response.id.toString())
           }
         }
       }

@@ -3,19 +3,14 @@ import { eq } from 'drizzle-orm'
 import { schema, useDb } from '~~/server/database/client'
 import { ResponseEntity } from '~/types/common'
 import { Permission } from '~/types/models'
+import { validateID } from '~~/server/utils/validate'
 
 export default defineEventHandler(async (event): Promise<ResponseEntity<Permission>> => {
 
   await requirePermission(event, 'permission_view')
 
-  const id = getRouterParam(event, 'id')
+  const id = validateID(event)
 
-  if (!id) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Permission ID is required'
-    })
-  }
 
   const db = useDb()
 

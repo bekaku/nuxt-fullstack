@@ -58,6 +58,11 @@
     "userNameDuplicateInDevice": "This user already exists on this device. Please change the user.",
     "passwordRequired": "Password is required.",
     "menuAlreadyInFavorite": "This item is now on my favorites list.",
-    "requiredAmountCharacters": "Must be at least {0} characters."
+    "requiredAmountCharacters": "Must be at least {0} characters.",
+     "requiredMinString": "Too small: expected string to have >={count} characters",
+     "atLeastCharacters": "At least {0} characters",
+     "atLeastUppercase": "At least {0} uppercase letter",
+     "atLeastLowercase": "At least {0} lowercase letter",
+     "atLeastNumbers": "At least {0} number"
   }
 }

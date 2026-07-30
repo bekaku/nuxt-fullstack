@@ -64,7 +64,7 @@ export const useMenu = () => {
     ],
     [
       {
-        label: "Settings",
+        label: t("base.setting"),
         to: "/settings",
         icon: "i-lucide-settings",
         defaultOpen: true,
@@ -72,7 +72,7 @@ export const useMenu = () => {
         slot: 'settings-label' as const,
         children: [
           {
-            label: "General",
+            label: t('base.general'),
             to: "/settings",
             exact: true,
           },
@@ -81,11 +81,11 @@ export const useMenu = () => {
             to: "/settings/members",
           },
           {
-            label: "Notifications",
+            label: t('base.notification'),
             to: "/settings/notifications",
           },
           {
-            label: "Security",
+            label: t('base.security'),
             to: "/settings/security",
           },
         ],

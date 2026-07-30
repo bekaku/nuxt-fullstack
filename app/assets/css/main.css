@@ -44,6 +44,64 @@
   --color-warning-900: #7e3010;
   --color-warning-950: #441506;
 
+  /* best
+  --color-dark-50: #f4f7fb;
+  --color-dark-100: #e7edf5;
+  --color-dark-200: #ced8e6;
+  --color-dark-300: #aebcd0;
+  --color-dark-400: #889ab4;
+  --color-dark-500: #64748b;
+  --color-dark-600: #4b596d;
+  --color-dark-700: #374151;
+  --color-dark-800: #1f2937;
+  --color-dark-900: #111827;
+  --color-dark-950: #090f18;
+  */
+
+  --color-graphite-50: #f4f5f7;
+  --color-graphite-100: #e4e6eb;
+  --color-graphite-200: #c9cdd6;
+  --color-graphite-300: #a3a9b8;
+  --color-graphite-400: #7a8296;
+  --color-graphite-500: #5c657a;
+  --color-graphite-600: #474f63;
+  --color-graphite-700: #393f50;
+  --color-graphite-800: #2c3140;
+  --color-graphite-900: #1f232e;
+  --color-graphite-950: #13151c;
+
+  --color-umbra-50: #f5f4f2;
+  --color-umbra-100: #e8e5e1;
+  --color-umbra-200: #d3cdc6;
+  --color-umbra-300: #b5aba0;
+  --color-umbra-400: #94877a;
+  --color-umbra-500: #7a6e63;
+  --color-umbra-600: #635952;
+  --color-umbra-700: #514943;
+  --color-umbra-800: #3f3935;
+  --color-umbra-900: #2d2926;
+  --color-umbra-950: #1a1816;
+
+  --color-slate-50: oklch(98.4% 0.003 247.858);
+  --color-slate-100: oklch(96.8% 0.007 247.896);
+  --color-slate-200: oklch(92.9% 0.013 255.508);
+  --color-slate-300: oklch(86.9% 0.022 252.894);
+  --color-slate-400: oklch(70.4% 0.04 256.788);
+  --color-slate-500: oklch(50.7% 0.035 266.9);
+  --color-slate-600: oklch(42.8% 0.035 267.9);
+  --color-slate-700: oklch(36.9% 0.03 269.7);
+  --color-slate-800: oklch(31.5% 0.028 270.4);
+  --color-slate-900: oklch(25.7% 0.022 269.2);
+  --color-slate-950: oklch(19.7% 0.014 272.5);
+  /*
+    --color-slate-500: oklch(55.4% 0.046 257.417);
+  --color-slate-600: oklch(44.6% 0.043 257.281);
+  --color-slate-700: oklch(37.2% 0.044 257.287);
+  --color-slate-800: oklch(27.9% 0.041 260.031);
+  --color-slate-900: oklch(20.8% 0.042 265.755);
+  --color-slate-950: oklch(12.9% 0.042 264.695);
+  */
+
   --ui-text-dimmed: var(--ui-color-neutral-400);
   --ui-text-muted: var(--ui-color-neutral-500);
   --ui-text-toned: var(--ui-color-neutral-600);

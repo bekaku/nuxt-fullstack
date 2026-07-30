@@ -99,9 +99,9 @@ export interface AppUser extends Id {
   password?: string | null;
   token?: string | null;
   fcmToken?: string | null;
-  avatarFileId?: number | null;
-  coverFileId?: number | null;
-  accessTokenId?: number | null;
+  avatarFileId?: IdType;
+  coverFileId?: IdType;
+  accessTokenId?: IdType;
   avatar?: ImageDto | null;
   cover?: ImageDto | null;
   active?: boolean;

@@ -24,7 +24,6 @@ const COOKIE_BASE = {
 
 export default defineEventHandler(async (event): Promise<ResponseEntity<AppUser>> => {
 
-
   const body = await readValidatedBody(event, bodySchema.parse)
   const db = useDb()
 

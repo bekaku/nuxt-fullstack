@@ -1,20 +1,18 @@
 <script setup lang="ts">
 import z from "zod";
-import type { LabelValue } from "~/types/common";
 import type { Permission } from "~/types/models";
 
 useSeoMeta({
   title: "Form page",
 });
 
-const ui = (config: LabelValue<any>) => JSON.stringify(config);
 const { t } = useLang();
 const schema = z.object({
   code: z
     .string()
     .min(1, t("error.validateRequireField"))
     .describe(
-      ui({
+      uiConfig({
         label: t("model_permission_name"),
         description: "This is help text for Permission code",
         icon: "lucide:key",
@@ -34,7 +32,7 @@ const schema = z.object({
   module: z
     .any()
     .describe(
-      ui({
+      uiConfig({
         label: "Module",
         ui: {
           type: "text",
@@ -45,7 +43,7 @@ const schema = z.object({
   description: z
     .string()
     .describe(
-      ui({
+      uiConfig({
         label: t("model_permission_description"),
         avatar: {
           src: "https://github.com/nuxt.png",
@@ -63,7 +61,7 @@ const schema = z.object({
   inputfile: z
     .array(z.any())
     .describe(
-      ui({
+      uiConfig({
         label: "Input file",
         description: "This is help text for input file",
         ui: {
@@ -78,7 +76,7 @@ const schema = z.object({
   operationType: z
     .enum(["CRUD", "REPORT", "OTHER", "FEATURE"])
     .describe(
-      ui({
+      uiConfig({
         label: "Permission type",
         icon: "lucide:settings",
         ui: {
@@ -96,7 +94,7 @@ const schema = z.object({
   enable: z
     .boolean()
     .describe(
-      ui({
+      uiConfig({
         description: "Enable permission",
         label: t("base.status"),
         icon: "lucide:toggle-right",
@@ -110,7 +108,7 @@ const schema = z.object({
   checkbox: z
     .boolean()
     .describe(
-      ui({
+      uiConfig({
         description: "Checkbox",
         label: "Checkbox",
         ui: {
@@ -123,7 +121,7 @@ const schema = z.object({
   id: z
     .number()
     .describe(
-      ui({
+      uiConfig({
         label: "Number step",
         ui: {
           type: "number-step",
@@ -138,7 +136,7 @@ const schema = z.object({
   themes: z
     .any()
     .describe(
-      ui({
+      uiConfig({
         label: "Test Input Menu",
         ui: {
           type: "input-menu",
@@ -171,7 +169,7 @@ const schema = z.object({
   checkgroups: z
     .array(z.string())
     .describe(
-      ui({
+      uiConfig({
         label: "Checkbox group",
         ui: {
           type: "checkbox-group",
@@ -200,7 +198,7 @@ const schema = z.object({
   radiogroups: z
     .string()
     .describe(
-      ui({
+      uiConfig({
         label: "Radio group",
         ui: {
           type: "radio-group",
@@ -230,7 +228,7 @@ const schema = z.object({
   tags: z
     .array(z.string())
     .describe(
-      ui({
+      uiConfig({
         label: "Input Tags",
         ui: {
           type: "input-tags",
@@ -241,7 +239,7 @@ const schema = z.object({
   pins: z
     .array(z.number())
     .describe(
-      ui({
+      uiConfig({
         label: "Input Pins",
         ui: {
           type: "input-pin",
@@ -255,7 +253,7 @@ const schema = z.object({
   slider: z
     .number()
     .describe(
-      ui({
+      uiConfig({
         label: "Slider",
         ui: {
           type: "slider",
@@ -272,7 +270,7 @@ const schema = z.object({
   sliders: z
     .array(z.number())
     .describe(
-      ui({
+      uiConfig({
         label: "Multiple Slider",
         ui: {
           type: "slider",

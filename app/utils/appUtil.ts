@@ -1,8 +1,10 @@
+import { type ClassValue, clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
 import { Snowflake } from "~/libs/Snowflake";
-import { type ClassValue, clsx } from "clsx"
-import { twMerge } from "tailwind-merge"
-import type { AppException, ApiResponse, IHrefTarget, IMenuPageItem, ISortModeType, LabelValue, ResponseMessage, ServerException } from "~/types/common";
+import type { ApiResponse, AppException, IHrefTarget, IMenuPageItem, LabelValue, ResponseMessage, ServerException } from "~/types/common";
 const snowflakeIdGenerator = new Snowflake(1, 1);
+
+export const uiConfig = (config: LabelValue<any>) => JSON.stringify(config);
 export function cssMerge(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }

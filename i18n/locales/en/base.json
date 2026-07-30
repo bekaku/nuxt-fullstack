@@ -316,9 +316,14 @@
     "enterDetails": "Please enter your details.",
     "addLinkTitle": "Message to display (Title)",
     "addLinkLink": "URL (eg. https://...)",
-     "copyID": "Copy ID",
-     "setPermissions": " Define user permissions.",
-      "searchModuleOrPermission": "Search for the module or permission name."
+    "copyID": "Copy ID",
+    "setPermissions": " Define user permissions.",
+    "searchModuleOrPermission": "Search for the module or permission name.",
+    "enterPassword": "Enter a password",
+    "waeakPassword": "Weak password",
+    "mediumPassword": "Medium password",
+    "strongPassword": "Strong password",
+    "mustContain": "Must contain"
   },
   "drive": {
     "title": "My Files",

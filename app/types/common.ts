@@ -432,6 +432,7 @@ export interface LabelValue<Type> {
     layout?: "list" | "grid",
     class?: string
     tooltip?: boolean | string
+    progress?: boolean | number
   }
   onHandle?: (...params: any[] | []) => void;
 }

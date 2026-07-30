@@ -139,10 +139,10 @@ export const appUser = pgTable(
     active: boolean('active').notNull().default(true),
     // 0 = th, 1 = en (Adjusted to the actual system.)
     defaultLocale: smallint('default_locale'),
-    email: varchar('email', { length: 125 }).notNull(),
+    email: varchar('email', { length: 125 }).notNull().unique(),
     password: varchar('password', { length: 255 }),
     salt: varchar('salt', { length: 255 }),
-    username: varchar('username', { length: 100 }),
+    username: varchar('username', { length: 100 }).unique(),
     ...auditFieldsSoftDelete(),
     avatarFileId: bigint('avatar_file_id', { mode: 'bigint' }).references(() => fileManager.id),
     coverFileId: bigint('cover_file_id', { mode: 'bigint' }).references(() => fileManager.id),

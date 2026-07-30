@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import type { NavigationMenuItem } from "@nuxt/ui";
 
+const { t } = useLang();
 const links = [
   [
     {
-      label: "General",
+      label: t('base.general'),
       icon: "i-lucide-user",
       to: "/settings",
       exact: true,
@@ -15,12 +16,12 @@ const links = [
       to: "/settings/members",
     },
     {
-      label: "Notifications",
+      label: t('base.notification'),
       icon: "i-lucide-bell",
       to: "/settings/notifications",
     },
     {
-      label: "Security",
+      label:t('base.security'),
       icon: "i-lucide-shield",
       to: "/settings/security",
     },
@@ -37,7 +38,11 @@ const links = [
 </script>
 
 <template>
-  <BaseDashboardPanel id="settings" title="Settings" :ui="{ body: 'lg:py-12' }">
+  <BaseDashboardPanel
+    id="settings"
+    :title="$t('base.setting')"
+    :ui="{ body: 'lg:py-12' }"
+  >
     <template #toolbar>
       <UDashboardToolbar>
         <!-- NOTE: The `-mx-1` class is used to align with the `DashboardSidebarCollapse` button here. -->

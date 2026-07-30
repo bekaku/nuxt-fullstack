@@ -11,11 +11,13 @@ export const useApi = () => {
   const event = import.meta.server ? useRequestEvent() : null;
   const requestHeaders = import.meta.server ? useRequestHeaders(['cookie']) : {};
   const responseCookies = new Map<string, string>();
-  const toast = import.meta.client ? useToast() : null
+  // const { $toast } = useNuxtApp()
+
+  const toast = import.meta.client ? useToast() : null;
   const { refreshTokenDays } = useConfiguration()
   const ttlDays = Number(refreshTokenDays) || 7;
-
   const nuxtApp = useNuxtApp();
+
   const getBaseHeaders = () => {
     return {
       // 'X-User-ID': currentUserId.value + '',
@@ -55,7 +57,8 @@ export const useApi = () => {
         console.log("[fetch response]", { request, options, response });
       }
       if (response.status != 401 && response.status != 403) {
-        exeptionNotify(response);
+        // exeptionNotify(response);
+        nuxtApp.runWithContext(() => exeptionNotify(response));
       }
     },
   })
@@ -86,15 +89,14 @@ export const useApi = () => {
   // };
 
   const notifyServerMessage = (response: ResponseEntity<any>): void => {
-    if (import.meta.server || !response?.message ||!toast) {
-      return;
+    // if (import.meta.server || !response?.message || !toast) {
+    if (import.meta.client && response?.message && toast) {
+      toast.add({
+        description: response.message,
+        icon: response.status < 400 ? 'lucide:circle-check' : 'i-lucide-alert-circle',
+        color: response.status < 400 ? 'success' : 'error',
+      })
     }
-
-    toast.add({
-      description: response.message,
-      icon: response.status < 400 ? 'lucide:circle-check' : 'i-lucide-alert-circle',
-      color: response.status < 400 ? 'success' : 'error',
-    })
   }
 
   // A central function for handling both normal and raw requests.

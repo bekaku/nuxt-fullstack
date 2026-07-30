@@ -6,14 +6,14 @@ defineProps<{
 }>();
 
 const colorMode = useColorMode();
-const { locale, onSwitchLocale } = useLang();
+const { t, locale, onSwitchLocale } = useLang();
 const { signout, loginedAvatar, loginedDisplay } = useAuth();
 const user = ref({
   name: loginedDisplay,
   avatar: {
     src: loginedAvatar,
     alt: loginedDisplay,
-    size:'md'
+    size: "md",
   },
 });
 
@@ -21,7 +21,7 @@ const items = computed<DropdownMenuItem[][]>(() => [
   [
     {
       type: "label",
-      label: user.value.name,
+      label: user.value.name || "",
       avatar: user.value.avatar as any,
     },
   ],
@@ -35,14 +35,14 @@ const items = computed<DropdownMenuItem[][]>(() => [
       icon: "i-lucide-credit-card",
     },
     {
-      label: "Settings",
+      label: t("base.setting") || "Settings",
       icon: "i-lucide-settings",
       to: "/settings",
     },
   ],
   [
     {
-      label: "Appearance",
+      label: t("base.themeSetting") || "Apperance",
       icon: "i-lucide-sun-moon",
       children: [
         {
@@ -73,7 +73,7 @@ const items = computed<DropdownMenuItem[][]>(() => [
       ],
     },
     {
-      label: "Languge",
+      label: t("base.translations") || "Translations",
       icon: "lucide:globe",
       children: [
         {
@@ -111,7 +111,7 @@ const items = computed<DropdownMenuItem[][]>(() => [
       target: "_blank",
     },
     {
-      label: "Log out",
+      label: t("base.logout") || "Logout",
       icon: "i-lucide-log-out",
       color: "error",
       onSelect(e: Event) {
@@ -133,7 +133,7 @@ const items = computed<DropdownMenuItem[][]>(() => [
   >
     <UButton
       v-bind="{
-        ...user as any,
+        ...(user as any),
         label: collapsed ? undefined : user?.name,
         trailingIcon: collapsed ? undefined : 'i-lucide-chevrons-up-down',
       }"

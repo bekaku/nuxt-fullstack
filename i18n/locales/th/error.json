@@ -58,6 +58,11 @@
     "userNameDuplicateInDevice": "มีผู้ใช้งานนี้แล้วในอุปกรณ์นี้ กรุณาเปลี่ยนผู้ใช้งานใหม่",
     "passwordRequired": "ต้องใส่รหัสผ่าน",
     "menuAlreadyInFavorite": "เมนูนี้อยู่ในรายการเมนูโปรดแล้ว",
-    "requiredAmountCharacters": "ต้องมีอย่างน้อย {0} ตัวอักษร"
+    "requiredAmountCharacters": "ต้องมีอย่างน้อย {0} ตัวอักษร",
+    "requiredMinString": "ต้องมีอักขระอย่างน้อย {count} ตัวอักษร",
+    "atLeastCharacters": "อย่างน้อย {0} ตัวอักษร",
+    "atLeastUppercase": "อย่างน้อย {0} ตัวอักษรพิมพ์ใหญ่",
+    "atLeastLowercase": "อย่างน้อย {0} ตัวอักษรพิมพ์เล็ก",
+    "atLeastNumbers": "อย่างน้อย {0} ตัวเลข"
   }
 }

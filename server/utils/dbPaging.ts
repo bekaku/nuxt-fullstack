@@ -99,7 +99,6 @@ export async function paginate<T>(
   // --- Manage Global Search (Search for a single word across multiple columns)
   const keywordStr = query._keyword as string //Suppose the client sends ?_keyword=...
 
-  console.log('keywordStr', keywordStr)
   if (keywordStr && config.searchColumns && config.searchColumns.length > 0) {
     // Create an ILIKE condition for all columns specified in searchColumns.
     const searchOrConditions = config.searchColumns.map((col) =>
@@ -114,7 +113,6 @@ export async function paginate<T>(
   }
 
 
-  console.log('conditions', conditions)
 
   const finalWhere = conditions.length > 0 ? and(...conditions) : undefined
 
