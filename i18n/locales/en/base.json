@@ -323,7 +323,11 @@
     "waeakPassword": "Weak password",
     "mediumPassword": "Medium password",
     "strongPassword": "Strong password",
-    "mustContain": "Must contain"
+    "mustContain": "Must contain",
+    "settingProfileDescription": "These informations will be displayed publicly.",
+    "settingEmailDescription": "Used to sign in, for email receipts and product updates.",
+    "settingUsernameDescription": "Your unique username for logging in and your profile URL.",
+    "updatePasswordSub": "Confirm your current password before setting a new one."
   },
   "drive": {
     "title": "My Files",

@@ -400,7 +400,7 @@ export interface LabelValue<Type> {
   disable?: boolean;
   description?: string;
   fetch?: boolean;
-  icon?: IconProps | string;
+  icon?: IconProps | string;//typeof item.icon === 'string' ? item.icon : item.icon.name
   trailingIcon?: IconProps | string;
   label?: string;
   id?: any;
@@ -413,7 +413,7 @@ export interface LabelValue<Type> {
   value?: Type;
   additionalValue?: any;
   ui?: {
-    type?: 'text' | 'date' | 'password' | 'email' | 'number' | 'number-step' | 'file' | 'search' | 'select' | 'textarea' | 'checkbox' | 'switch' | 'checkbox-group' | 'radio-group' | 'input-menu' | 'input-tags' | 'input-pin' | 'slider'
+    type?: 'text' | 'date' | 'date-range' | 'password' | 'email' | 'number' | 'number-step' | 'file' | 'search' | 'select' | 'textarea' | 'checkbox' | 'switch' | 'checkbox-group' | 'radio-group' | 'input-menu' | 'input-tags' | 'input-pin' | 'slider'
     placeholder?: string
     variant?: "outline" | "soft" | "subtle" | "ghost" | "none" | 'list' | 'card' | 'table'
     required?: boolean;
@@ -433,6 +433,7 @@ export interface LabelValue<Type> {
     class?: string
     tooltip?: boolean | string
     progress?: boolean | number
+    numberOfMonths?: number
   }
   onHandle?: (...params: any[] | []) => void;
 }

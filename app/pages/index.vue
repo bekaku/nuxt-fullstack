@@ -142,7 +142,11 @@ const { data: dashBaordRecentSalseItems } = await useFetch<
           title-bold
         >
           <template #start>
-            <UAvatar v-if="item.icon" :icon="item.icon.name" size="3xl" />
+            <UAvatar
+              v-if="item.icon"
+              :icon="typeof item.icon === 'string' ? item.icon : item.icon.name"
+              size="3xl"
+            />
           </template>
 
           <template #end>
@@ -168,7 +172,7 @@ const { data: dashBaordRecentSalseItems } = await useFetch<
           <template #end>
             <UIcon
               v-if="item.icon"
-              v-bind="item.icon"
+              v-bind="item.icon as any"
               class="text-muted"
               size="20px"
             />

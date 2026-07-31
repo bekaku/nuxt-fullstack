@@ -39,7 +39,7 @@ const {
   headers,
 } = useCrudList<AppRole>({
   crudName: "AppRole", //PascalCase only eg: User, AppRole
-  apiEndpoint: "/api/app-role", //KebabCase only eg: app-role
+  apiEndpoint: "/api/appRole",
   headers: [],
   itemsPerPage: 10,
   defaultSorts: [

@@ -1,49 +1,109 @@
 <script setup lang="ts">
-import * as z from 'zod'
-import type { FormSubmitEvent } from '@nuxt/ui'
+import * as z from "zod";
+import type { FormSubmitEvent } from "@nuxt/ui";
+import type { ResponseEntity } from "~/types/common";
+import type { AppUser, FileManager } from "~/types/models";
 
-const fileRef = ref<HTMLInputElement>()
-
+const { t } = useLang();
+const api = useApi();
+const { auth, loginedAvatar } = useAuth();
+const { onUploadChunk } = useUpload();
+const toast = useToast();
+const loading = ref(false);
+const avatarFiles = ref<FileManager[]>([]);
 const profileSchema = z.object({
-  name: z.string().min(2, 'Too short'),
-  email: z.string().email('Invalid email'),
-  username: z.string().min(2, 'Too short'),
+  name: z.string().min(2, t("error.atLeastCharacters", [2])),
+  email: z
+    .email(t("error.emailFormat"))
+    .min(1, t("error.validateRequireField")),
+  username: z
+    .string()
+    .min(4, { message: t("helper.username1") })
+    .max(20, { message: t("helper.username1") })
+    .regex(/^[a-zA-Z0-9]([._]?[a-zA-Z0-9]+)*$/, {
+      message: `${t("helper.username2")}, ${t("helper.username3")}, ${t("helper.username4")}, ${t("helper.username5")}`,
+    }),
   avatar: z.string().optional(),
-  bio: z.string().optional()
-})
+  bio: z.string().optional(),
+});
 
-type ProfileSchema = z.output<typeof profileSchema>
+type ProfileSchema = z.output<typeof profileSchema>;
 
-const profile = reactive<Partial<ProfileSchema>>({
-  name: 'Benjamin Canac',
-  email: 'ben@nuxtlabs.com',
-  username: 'benjamincanac',
+const profile = reactive<Partial<ProfileSchema> & Record<string, any>>({
+  name: "Benjamin Canac",
+  email: auth.value?.email,
+  username: auth.value?.username || "",
+  avatarFileId: undefined,
   avatar: undefined,
-  bio: undefined
-})
-const toast = useToast()
-async function onSubmit(event: FormSubmitEvent<ProfileSchema>) {
-  toast.add({
-    title: 'Success',
-    description: 'Your settings have been updated.',
-    icon: 'i-lucide-check',
-    color: 'success'
-  })
-  console.log(event.data)
-}
+  bio: undefined,
+});
 
-function onFileChange(e: Event) {
-  const input = e.target as HTMLInputElement
+const getAvatar = computed(() => {
+  if (avatarFiles.value && avatarFiles.value.length > 0) {
+    return avatarFiles.value[0]?.filePath;
+  }
+  return loginedAvatar.value;
+});
 
-  if (!input.files?.length) {
-    return
+
+const uploadAvatar = async () => {
+  if (!avatarFiles.value || avatarFiles.value.length === 0) {
+    return;
   }
 
-  profile.avatar = URL.createObjectURL(input.files[0]!)
-}
+  const f = avatarFiles.value[0];
+  if (!f || !f.file) {
+    return;
+  }
 
-function onFileClick() {
-  fileRef.value?.click()
+  loading.value = true;
+  const response = await onUploadChunk(f.file, {
+    setProgress: false,
+  });
+  avatarFiles.value = [];
+  if (response && response.id) {
+    profile.avatarFileId = response.id;
+  }
+};
+async function onSubmit(event: FormSubmitEvent<ProfileSchema>) {
+  await uploadAvatar();
+  // console.log(event.data);
+  try {
+    const response = await api<ResponseEntity<AppUser>>(
+      "/api/appUser/profile",
+      {
+        method: "POST",
+        body: {
+          name: profile.name,
+          email: profile.email,
+          username: profile.username,
+          avatarFileId: profile.avatarFileId,
+          bio: profile.bio,
+        },
+      },
+    );
+
+    if (response && response.status == 200 && response.data) {
+      auth.value = {
+        ...auth.value,
+        email: response.data.email,
+        username: response.data.username,
+        avatar: response.data.avatar,
+      };
+      toast.add({
+        description: t("success.updateSuccesfull"),
+        icon: "i-lucide-check",
+        color: "success",
+      });
+    }
+
+    return response.data || null;
+  } catch (error) {
+    console.error("Failed to fetch profile", error);
+    return null;
+  } finally {
+    loading.value = false;
+  }
 }
 </script>
 
@@ -55,18 +115,19 @@ function onFileClick() {
     @submit="onSubmit"
   >
     <UPageCard
-      title="Profile"
-      description="These informations will be displayed publicly."
+      :title="$t('base.profile')"
+      :description="$t('base.settingProfileDescription')"
       variant="naked"
       orientation="horizontal"
       class="mb-4"
     >
       <UButton
         form="settings"
-        label="Save changes"
-        color="neutral"
+        :label="$t('base.save')"
+        color="primary"
         type="submit"
         class="w-fit lg:ms-auto"
+        :loading="loading"
       />
     </UPageCard>
 
@@ -78,20 +139,18 @@ function onFileClick() {
         required
         class="flex max-sm:flex-col justify-between items-start gap-4"
       >
-        <UInput
-          v-model="profile.name"
-          autocomplete="off"
-        />
+        <UInput :loading="loading" v-model="profile.name" autocomplete="off" />
       </UFormField>
       <USeparator />
       <UFormField
         name="email"
-        label="Email"
-        description="Used to sign in, for email receipts and product updates."
+        :label="$t('model_user_email')"
+        :description="$t('base.settingEmailDescription')"
         required
         class="flex max-sm:flex-col justify-between items-start gap-4"
       >
         <UInput
+          :loading="loading"
           v-model="profile.email"
           type="email"
           autocomplete="off"
@@ -100,12 +159,13 @@ function onFileClick() {
       <USeparator />
       <UFormField
         name="username"
-        label="Username"
-        description="Your unique username for logging in and your profile URL."
+        :label="$t('model_user_username')"
+        :description="$t('base.settingUsernameDescription')"
         required
         class="flex max-sm:flex-col justify-between items-start gap-4"
       >
         <UInput
+          :loading="loading"
           v-model="profile.username"
           type="username"
           autocomplete="off"
@@ -114,28 +174,30 @@ function onFileClick() {
       <USeparator />
       <UFormField
         name="avatar"
-        label="Avatar"
+        :label="$t('base.changeAvatar')"
         description="JPG, GIF or PNG. 1MB Max."
         class="flex max-sm:flex-col justify-between sm:items-center gap-4"
       >
         <div class="flex flex-wrap items-center gap-3">
-          <UAvatar
-            :src="profile.avatar"
-            :alt="profile.name"
-            size="lg"
-          />
-          <UButton
-            label="Choose"
-            color="neutral"
-            @click="onFileClick"
-          />
-          <input
-            ref="fileRef"
-            type="file"
-            class="hidden"
-            accept=".jpg, .jpeg, .png, .gif"
-            @change="onFileChange"
+          <UAvatar :src="getAvatar" :alt="profile.name" size="lg" />
+          <BaseFileUpload
+            :multiple="false"
+            :max-files="1"
+            v-model="avatarFiles"
           >
+            <template #default="{ open, removeFile }">
+              <UButton
+                :label="$t('base.imgChoose')"
+                color="neutral"
+                :loading="loading"
+                @click="
+                  () => {
+                    open();
+                  }
+                "
+              />
+            </template>
+          </BaseFileUpload>
         </div>
       </UFormField>
       <USeparator />
@@ -147,6 +209,7 @@ function onFileClick() {
         :ui="{ container: 'w-full' }"
       >
         <UTextarea
+          :loading="loading"
           v-model="profile.bio"
           :rows="5"
           autoresize

@@ -63,6 +63,7 @@
     "atLeastCharacters": "อย่างน้อย {0} ตัวอักษร",
     "atLeastUppercase": "อย่างน้อย {0} ตัวอักษรพิมพ์ใหญ่",
     "atLeastLowercase": "อย่างน้อย {0} ตัวอักษรพิมพ์เล็ก",
-    "atLeastNumbers": "อย่างน้อย {0} ตัวเลข"
+    "atLeastNumbers": "อย่างน้อย {0} ตัวเลข",
+    "passwordMustDefferent": "รหัสผ่านใหม่ต้องแตกต่างจากรหัสผ่านเดิม"
   }
 }

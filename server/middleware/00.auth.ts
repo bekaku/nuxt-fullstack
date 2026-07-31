@@ -1,5 +1,6 @@
 import { verifyAccessToken } from '#server/utils/jwt'
-
+import { schema, useDb } from '../database/client';
+import { eq, and } from 'drizzle-orm'
 /**
 * Nitro Middleware intercepts all requests at /api/**
 * - Reads the Access Token (JWT) from an HTTP-Only Cookie.
@@ -9,7 +10,7 @@ import { verifyAccessToken } from '#server/utils/jwt'
 * - If a cookie exists but is invalid/expired -> clears the cookie and immediately returns a 401 error.
 * To allow the client to continue calling /api/auth/refresh (see app/composables/useApi.ts).
 */
-export default defineEventHandler((event) => {
+export default defineEventHandler(async (event) => {
   const path = (event.path || event.node.req.url || '').split('?')[0]
 
   if (!path) {
@@ -37,11 +38,40 @@ export default defineEventHandler((event) => {
   // }
   if (!token) { return } // anonymous — Let the destination route decide for itself.
 
+  //get refresh token
+  const refreshToken = getCookie(event, publicConfig.refreshJwtKeyName)
+
   try {
     const payload = verifyAccessToken(token)
+    if (payload.sub) {
+      if (!refreshToken) {
+        // If an Access Token is present but there is no Refresh Token, this is abnormal and the user should be removed.
+        throw new Error('Refresh token missing from cookie')
+      }
+      const db = useDb()
+      // Search in the accessToken table (referencing the field names you previously submitted)
+      const [existingSession] = await db
+        .select({ id: schema.accessToken.id })
+        .from(schema.accessToken)
+        .where(
+          and(
+            eq(schema.accessToken.appUser, BigInt(payload.sub)), // Matches the User
+            eq(schema.accessToken.token, refreshToken),          // This matches the Refresh Token of this device.
+            eq(schema.accessToken.revoked, false)                // Not suspended.
+          )
+        )
+        .limit(1)
+      // If it can't be found (deleted during password change) or has been revoked.
+      if (!existingSession) {
+        throw new Error('Session revoked or not found in database')
+      }
+    }
     event.context.user = payload
   } catch {
     deleteCookie(event, publicConfig.jwtKeyName)
+    if (refreshToken) {
+      deleteCookie(event, publicConfig.refreshJwtKeyName)
+    }
     throw createError({ statusCode: 401, statusMessage: 'Access token expired or invalid' })
   }
 })

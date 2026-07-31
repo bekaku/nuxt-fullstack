@@ -137,7 +137,7 @@ export const useUpload = () => {
         for (let attempt = 0; attempt < maxRetries; attempt++) {
           try {
             console.log(`Uploading chunk ${chunkIndex + 1}/${totalChunks} (Attempt ${attempt + 1})`);
-            const chunkRespone = await api<ResponseEntity<FileManager | void>>("/api/file-manager", {
+            const chunkRespone = await api<ResponseEntity<FileManager | void>>("/api/fileManager", {
               method: "POST",
               body: formData,
             });

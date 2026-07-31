@@ -13,8 +13,8 @@ export const useAuth = () => {
   const auth = useState<AppUser | null>('auth:user', () => null);
   const appNavigations = useState<AppNavigationMenuItem[]>('auth:navigations', () => []);
   const isLoggedIn = computed(() => !!auth.value);
-  const loginedAvatar = computed(() => auth.value?.avatar? auth.value?.avatar.image : '/images/user.png');
-  const loginedDisplay = computed(() =>  auth.value?.email || auth.value?.username);
+  const loginedAvatar = computed(() => auth.value?.avatar ? auth.value?.avatar.image : '/images/user.png');
+  const loginedDisplay = computed(() => auth.value?.email || auth.value?.username);
   const setAuth = (payload: AppUser) => {
     auth.value = payload;
   };
@@ -34,7 +34,7 @@ export const useAuth = () => {
     }
     auth.value.favoriteMenus.push(item);
   };
-    const removeFavoriteMenus = (index: number) => {
+  const removeFavoriteMenus = (index: number) => {
     if (!auth.value || !auth.value.favoriteMenus) {
       return
     }
@@ -80,7 +80,7 @@ export const useAuth = () => {
     }
 
     const confirm = useConfirmDialog();
-    const loader = useLoader();
+
 
     const conf = await confirm({
       title: t("app.monogram"),
@@ -88,18 +88,22 @@ export const useAuth = () => {
     });
 
     if (conf) {
-      loader.open();
-      await api<ResponseEntity<void>>('/api/auth/logout', {
-        method: 'POST',
-      });
-
-      clearAuth();
-      await sendBroradcastChanelReload();
-      loader.close();
-      navigateTo('/auth/login', { replace: true });
+      await signoutProcess()
     }
-    return true;
   };
+
+  const signoutProcess = async (): Promise<void> => {
+    const loader = useLoader();
+    loader.open();
+    await api<ResponseEntity<void>>('/api/auth/logout', {
+      method: 'POST',
+    });
+
+    clearAuth();
+    await sendBroradcastChanelReload();
+    loader.close();
+    navigateTo('/auth/login', { replace: true });
+  }
 
   const fetchMe = async (): Promise<AppUser | null> => {
     try {
@@ -122,6 +126,7 @@ export const useAuth = () => {
     loading,
     signin,
     signout,
+    signoutProcess,
     fetchMe,
     setAuth,
     clearAuth,

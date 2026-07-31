@@ -45,6 +45,7 @@ const {
   crudEntity?: T;
   zodSchema?: ZodType<any, any, any>;
   orientation?: "horizontal" | "vertical";
+  variant?: "solid" | "outline" | "soft" | "subtle";
 }>();
 const emit = defineEmits<{
   "on-back": [];
@@ -191,11 +192,13 @@ const autoFields = computed(() => {
     let inputType = "text";
 
     if (specifiedType) {
-      if (
-        ["text", "date", "email", "number", "search"].includes(specifiedType)
-      ) {
+      if (["text", "email", "number", "search"].includes(specifiedType)) {
         componentType = "input";
         inputType = specifiedType;
+      } else if (specifiedType === "date") {
+        componentType = "date";
+      } else if (specifiedType === "date-range") {
+        componentType = "date-range";
       } else if (specifiedType === "password") {
         componentType = "password";
       } else if (specifiedType === "textarea") {
@@ -306,7 +309,7 @@ const onDelete = async (event: any) => {
 </script>
 <template>
   <div :class="['w-full  mx-auto', $attrs.class]">
-    <UCard :ui="{ header: 'p-2' }">
+    <UCard :ui="{ header: 'p-2' }" :variant="variant">
       <template #header>
         <slot name="header">
           <div class="flex flex-col">
@@ -426,6 +429,24 @@ const onDelete = async (event: any) => {
                       />
                     </template>
                   </UInput>
+                </template>
+                <template v-if="field.componentType === 'date'">
+                  <BaseDate
+                    v-model="state[field.name]"
+                    :icon="field.icon || undefined"
+                    :color="field.color"
+                    :variant="field.ui?.variant"
+                    :number-of-months="field.ui?.numberOfMonths"
+                  />
+                </template>
+                <template v-if="field.componentType === 'date-range'">
+                  <BaseDateRange
+                    v-model="state[field.name]"
+                    :icon="field.icon || undefined"
+                    :color="field.color"
+                    :variant="field.ui?.variant"
+                    :number-of-months="field.ui?.numberOfMonths"
+                  />
                 </template>
                 <template v-if="field.componentType === 'password'">
                   <BaseInputPassword
@@ -579,7 +600,7 @@ const onDelete = async (event: any) => {
                   <URadioGroup
                     v-model="state[field.name]"
                     :label="field.label"
-                    :size="field.ui?.size"
+                    :size="field.ui?.size || 'lg'"
                     :disabled="field.disable || loading"
                     :color="field.color"
                     :items="field.options"
@@ -667,11 +688,20 @@ const onDelete = async (event: any) => {
 
         <div class="flex flex-col gap-4 mt-4">
           <slot name="crud-action">
-            <USeparator v-if="isHaveAddPermission || isHaveEditPermission || isHaveDeletePermission" class="mt-4" type="dashed" />
+            <USeparator
+              v-if="
+                isHaveAddPermission ||
+                isHaveEditPermission ||
+                isHaveDeletePermission
+              "
+              class="mt-4"
+              type="dashed"
+            />
             <div class="flex justify-center gap-4">
               <template v-if="isHaveAddPermission || isHaveEditPermission">
                 <UButton
                   icon="lucide:save"
+                  :disabled="canSubmit"
                   :loading
                   :label="
                     crudAction == 'edit' ||

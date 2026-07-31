@@ -6,6 +6,42 @@ defineProps<{
 }>();
 
 const colorMode = useColorMode();
+const appConfig = useAppConfig();
+
+const colors = [
+  "red",
+  "orange",
+  "amber",
+  "yellow",
+  "lime",
+  "green",
+  "emerald",
+  "teal",
+  "cyan",
+  "sky",
+  "blue",
+  "indigo",
+  "violet",
+  "purple",
+  "fuchsia",
+  "pink",
+  "rose",
+];
+const neutrals = [
+  "slate",
+  "gray",
+  "zinc",
+  "neutral",
+  "stone",
+  "taupe",
+  "mauve",
+  "mist",
+  "olive",
+];
+const _safelistColors = [
+  ...colors.map((c) => `var(--color-${c}-500) var(--color-${c}-400)`),
+  ...neutrals.map((n) => `var(--color-${n}-500) var(--color-${n}-400)`),
+];
 const { t, locale, onSwitchLocale } = useLang();
 const { signout, loginedAvatar, loginedDisplay } = useAuth();
 const user = ref({
@@ -42,11 +78,64 @@ const items = computed<DropdownMenuItem[][]>(() => [
   ],
   [
     {
+      label: "Theme",
+      icon: "i-lucide-palette",
+      children: [
+        {
+          label: "Primary",
+          slot: "chip",
+          chip: appConfig.ui.colors.primary,
+          content: {
+            align: "center",
+            collisionPadding: 16,
+          },
+          children: colors.map((color) => ({
+            label: color,
+            chip: color,
+            slot: "chip",
+            checked: appConfig.ui.colors.primary === color,
+            type: "checkbox",
+            onSelect: (e) => {
+              e.preventDefault();
+
+              appConfig.ui.colors.primary = color;
+            },
+          })),
+        },
+        {
+          label: "Neutral",
+          slot: "chip",
+          chip:
+            appConfig.ui.colors.neutral === "neutral"
+              ? "old-neutral"
+              : appConfig.ui.colors.neutral,
+          content: {
+            align: "end",
+            collisionPadding: 16,
+          },
+          children: neutrals.map((color) => ({
+            label: color,
+            chip: color === "neutral" ? "old-neutral" : color,
+            slot: "chip",
+            type: "checkbox",
+            checked: appConfig.ui.colors.neutral === color,
+            onSelect: (e) => {
+              e.preventDefault();
+
+              appConfig.ui.colors.neutral = color;
+            },
+          })),
+        },
+      ],
+    },
+  ],
+  [
+    {
       label: t("base.themeSetting") || "Apperance",
       icon: "i-lucide-sun-moon",
       children: [
         {
-          label: "Light",
+          label: t("theme.light") || "Light",
           icon: "i-lucide-sun",
           type: "checkbox",
           checked: colorMode.value === "light",
@@ -57,7 +146,7 @@ const items = computed<DropdownMenuItem[][]>(() => [
           },
         },
         {
-          label: "Dark",
+          label: t("theme.dark") || "Dark",
           icon: "i-lucide-moon",
           type: "checkbox",
           checked: colorMode.value === "dark",
@@ -121,6 +210,7 @@ const items = computed<DropdownMenuItem[][]>(() => [
     },
   ],
 ]);
+
 </script>
 
 <template>
@@ -143,7 +233,7 @@ const items = computed<DropdownMenuItem[][]>(() => [
       :square="collapsed"
       class="data-[state=open]:bg-elevated"
       :ui="{
-        trailingIcon: 'text-dimmed',
+        trailingIcon: 'text-muted',
       }"
     />
 

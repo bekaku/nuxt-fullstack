@@ -1,10 +1,33 @@
-import type { FetchResponse } from 'ofetch';
-import type { AppException, ResponseEntity, ResponseMessage } from '~/types/common';
-import type { AppUser } from '~/types/models';
 import { parse, parseSetCookie } from 'cookie-es';
+import type { FetchResponse } from 'ofetch';
+import type { ResponseEntity } from '~/types/common';
+import type { AppUser } from '~/types/models';
 
 // let refreshPromise: Promise<ResponseEntity<AppUser>> | null = null
+/*
+ try {
+      const response = await api<ResponseEntity<AppUser>>('/api/auth/login', {
+        method: 'POST',
+        body: {
+          emailOrUsername: req.emailOrUsername,
+          password: req.password,
+          loginFrom: 'WEB',
+          deviceId: deviceId,
+        }
+      });
 
+      if (response && response.status == 200 && response.data) {
+        setAuth(response.data);
+      }
+
+      return response.data || null;
+    } catch (error) {
+      console.error('Failed to fetch profile', error);
+      return null;
+    } finally {
+      loading.value = false;
+    }
+*/
 export const useApi = () => {
   const { apiBase, apiClient, isDevMode, isServer } = useConfiguration()
   const localeCookie = useCookie('locale');
@@ -56,7 +79,7 @@ export const useApi = () => {
       if (isDevMode() && !isServer()) {
         console.log("[fetch response]", { request, options, response });
       }
-      if (response.status != 401 && response.status != 403) {
+      if (response.status != 401) {
         // exeptionNotify(response);
         nuxtApp.runWithContext(() => exeptionNotify(response));
       }
@@ -88,14 +111,19 @@ export const useApi = () => {
   //   })
   // };
 
-  const notifyServerMessage = (response: ResponseEntity<any>): void => {
+  const notifyServerMessage = (response: any): void => {
     // if (import.meta.server || !response?.message || !toast) {
-    if (import.meta.client && response?.message && toast) {
-      toast.add({
-        description: response.message,
-        icon: response.status < 400 ? 'lucide:circle-check' : 'i-lucide-alert-circle',
-        color: response.status < 400 ? 'success' : 'error',
-      })
+    if (import.meta.client && toast) {
+      const status = response?.status || response?.statusCode;
+      const message = response?.message || response?.statusMessage;
+      if (message) {
+        toast.add({
+          description: message,
+          icon: status < 400 ? 'lucide:circle-check' : 'lucide:octagon-alert',
+          color: status < 400 ? 'success' : 'error',
+        })
+      }
+
     }
   }
 

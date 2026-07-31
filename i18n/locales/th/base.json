@@ -324,7 +324,11 @@
     "waeakPassword": "รหัสผ่านที่เดาง่าย",
     "mediumPassword": "รหัสผ่านระดับปานกลาง",
     "strongPassword": "รหัสผ่านที่เดายาก",
-    "mustContain": "ต้องประกอบด้วย"
+    "mustContain": "ต้องประกอบด้วย",
+    "settingProfileDescription": "ข้อมูลเหล่านี้จะถูกแสดงต่อสาธารณะ",
+    "settingEmailDescription": "ใช้สำหรับเข้าสู่ระบบ รับอีเมลแจ้งเตือน และรับข้อมูลอัปเดตผลิตภัณฑ์",
+    "settingUsernameDescription": "ชื่อผู้ใช้เฉพาะของคุณสำหรับการเข้าสู่ระบบและ URL โปรไฟล์ของคุณ",
+    "updatePasswordSub": "ตรวจสอบรหัสผ่านปัจจุบันของคุณก่อนตั้งรหัสผ่านใหม่"
   },
   "drive": {
     "title": "ไฟล์ของฉัน",

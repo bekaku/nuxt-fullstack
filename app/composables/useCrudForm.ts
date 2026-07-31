@@ -44,18 +44,18 @@ export const useCrudForm = <T>(options: CrudFormApiOptions, entity: Ref<Partial<
     if (crudAction.value === CrudAction.EDIT) {
       return options.actionPut
         ? options.actionPut
-        : options.crudName ? `${options.apiEndpoint || '/api'}/${pascalToKebab(options.crudName)}${(options.methodPutIncludeId === undefined || options.methodPutIncludeId === true ? '/' + entity.value.id : '')}` : '';
+        : options.crudName ? `${options.apiEndpoint || '/api'}/${pascalToCamelCase(options.crudName)}${(options.methodPutIncludeId === undefined || options.methodPutIncludeId === true ? '/' + entity.value.id : '')}` : '';
     }
     return options.actionPost
       ? options.actionPost
-      : options.crudName ? `${options.apiEndpoint || '/api'}/${pascalToKebab(options.crudName)}` : '';
+      : options.crudName ? `${options.apiEndpoint || '/api'}/${pascalToCamelCase(options.crudName)}` : '';
   });
 
   const deleteApiEndpoint = computed(() => {
     return options.actionDelete
       ? options.actionDelete
       : options.crudName
-        ? `${options.apiEndpoint || '/api'}/${pascalToKebab(options.crudName)}/${crudId.value
+        ? `${options.apiEndpoint || '/api'}/${pascalToCamelCase(options.crudName)}/${crudId.value
         }`
         : '';
   });
@@ -66,7 +66,7 @@ export const useCrudForm = <T>(options: CrudFormApiOptions, entity: Ref<Partial<
     if (!crudId.value) {
       return;
     }
-    return `${options.apiEndpoint || '/api'}/${pascalToKebab(options.crudName ? options.crudName : '')}/${crudId.value}`;
+    return `${options.apiEndpoint || '/api'}/${pascalToCamelCase(options.crudName ? options.crudName : '')}/${crudId.value}`;
   });
   const fetchDataById = async (): Promise<ResponseEntity<T> | null> => {
     if (!getFetchDataLink.value) {

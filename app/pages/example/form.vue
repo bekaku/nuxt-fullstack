@@ -8,12 +8,12 @@ useSeoMeta({
 
 const { t } = useLang();
 const schema = z.object({
-  code: z
+  text: z
     .string()
     .min(1, t("error.validateRequireField"))
     .describe(
       uiConfig({
-        label: t("model_permission_name"),
+        label: "Text",
         description: "This is help text for Permission code",
         icon: "lucide:key",
         trailingIcon: "lucide:search",
@@ -29,22 +29,22 @@ const schema = z.object({
         },
       }),
     ),
-  module: z
+  text2: z
     .any()
     .describe(
       uiConfig({
-        label: "Module",
+        label: "Text",
         ui: {
           type: "text",
         },
       }),
     )
     .optional(),
-  description: z
+  textarea: z
     .string()
     .describe(
       uiConfig({
-        label: t("model_permission_description"),
+        label: "Textarea",
         avatar: {
           src: "https://github.com/nuxt.png",
           loading: "lazy",
@@ -54,6 +54,37 @@ const schema = z.object({
           maxlength: 500,
           clearable: true,
           separator: true,
+        },
+      }),
+    )
+    .optional(),
+  date: z
+    .string()
+    .describe(
+      uiConfig({
+        label: "Date",
+        ui: {
+          type: "date",
+          numberOfMonths: 2,
+        },
+      }),
+    )
+    .optional(),
+  dateRange: z
+    .object({
+      start: z
+        .string()
+        .regex(/^\d{4}-\d{2}-\d{2}$/, { message: t("error.validateDate") }),
+      end: z
+        .string()
+        .regex(/^\d{4}-\d{2}-\d{2}$/, { message: t("error.validateDate") }),
+    })
+    .describe(
+      uiConfig({
+        label: "Date range",
+        ui: {
+          type: "date-range",
+          numberOfMonths: 2,
         },
       }),
     )
@@ -73,11 +104,11 @@ const schema = z.object({
       }),
     )
     .optional(),
-  operationType: z
+  enum: z
     .enum(["CRUD", "REPORT", "OTHER", "FEATURE"])
     .describe(
       uiConfig({
-        label: "Permission type",
+        label: "Enum",
         icon: "lucide:settings",
         ui: {
           type: "select",
@@ -96,7 +127,7 @@ const schema = z.object({
     .describe(
       uiConfig({
         description: "Enable permission",
-        label: t("base.status"),
+        label: "Switch",
         icon: "lucide:toggle-right",
         ui: {
           type: "switch",
@@ -118,7 +149,7 @@ const schema = z.object({
       }),
     )
     .optional(),
-  id: z
+  number: z
     .number()
     .describe(
       uiConfig({
@@ -133,11 +164,11 @@ const schema = z.object({
       }),
     )
     .optional(),
-  themes: z
+  inputMenu: z
     .any()
     .describe(
       uiConfig({
-        label: "Test Input Menu",
+        label: "Input Menu",
         ui: {
           type: "input-menu",
           // type: "checkbox-group",
@@ -202,7 +233,7 @@ const schema = z.object({
         label: "Radio group",
         ui: {
           type: "radio-group",
-          variant: "table",
+          variant: "list",
           orientation: "horizontal",
         },
         children: [
@@ -286,21 +317,26 @@ const schema = z.object({
 });
 type Schema = z.output<typeof schema>;
 const state = ref<Partial<Schema>>({
-  code: "test",
-  description: "test",
-  module: "test",
-  themes: 'system',
-  operationType: "CRUD",
+  text: "test",
+  textarea: "test",
+  text2: "test",
+  inputMenu: "system",
+  enum: "CRUD",
   enable: true,
   checkbox: false,
-  radiogroups: 'system',
+  radiogroups: "system",
   checkgroups: ["system"],
   tags: ["vue"],
   pins: [1, 2, 3, 4, 5, 6, 7],
   slider: 0,
   sliders: [25, 75],
   inputfile: [],
-  id:999
+  number: 999,
+  date: "2026-01-01",
+  dateRange: {
+    start: "2026-01-01",
+    end: "2026-01-02",
+  },
 });
 
 const {
@@ -311,14 +347,20 @@ const {
   onDelete,
   onBack,
   onEnableEditForm,
-  onSubmit,
+  onSubmit: onSubmitBase,
 } = useCrudForm<Permission>(
   {
     crudName: "Permission",
-    preValidate:false
+    preValidate: false,
   },
   state,
 );
+
+const onSubmit = () => {
+  console.log("onSubmit", state.value);
+};
+
+const orientation = ref<"horizontal" | "vertical">("horizontal");
 </script>
 <template>
   <BaseDashboardPanel id="example-form" title="Form page">
@@ -334,13 +376,21 @@ const {
       icon="lucide:shield-cog-corner"
       title="Form"
       description="Form management and auto generate input form"
-      orientation="horizontal"
+      :orientation="orientation || 'horizontal'"
       class="max-w-[1020px]"
       @on-back="onBack"
       @on-edit-enable="onEnableEditForm"
       @on-submit="onSubmit"
       @on-delete="onDelete"
     >
+      <template #header-end>
+        <URadioGroup
+          v-model="orientation"
+          :items="['horizontal', 'vertical']"
+          orientation="horizontal"
+        />
+      </template>
+
       <!-- you can override prepend fields here -->
       <!-- <template #prepend-fields> </template> -->
 

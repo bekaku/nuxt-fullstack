@@ -131,8 +131,8 @@ const schema = computed(() => {
 type Schema = z.output<typeof schema.value>;
 const state = ref<Partial<Schema> & Record<string, any>>({
   avatarFile: [],
-  email: "baekaku@gmail.com",
-  password: "CH789162be",
+  email: "",
+  password: "",
   active: true,
   selectedRoles: [],
   avatarFileId: undefined,
@@ -161,7 +161,7 @@ const { data: roles, pending } = await useAsyncData<AppRole[]>(
   "app-role-all",
   async () => {
     const response = await api<ResponseEntity<AppRole[]>>(
-      "/api/app-role/findAll",
+      "/api/appRole/findAll",
     );
     return response.data || [];
   },

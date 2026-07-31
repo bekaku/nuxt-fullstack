@@ -34,7 +34,7 @@ const {
   onPerPageChange,
   sorts,
 } = usePagefecth<FileManager>({
-  apiEndpoint: "/api/file-manager",
+  apiEndpoint: "/api/fileManager",
   defaultSorts: [{ column: "createdDate", mode: "desc" }],
   itemsPerPage: 8,
 });
@@ -68,11 +68,10 @@ const onDeleteFile = async (index: number) => {
   }
   try {
     loader.open();
-    const response = await api<ResponseEntity<void>>(`/api/file-manager`, {
+    const response = await api<ResponseEntity<void>>(`/api/fileManager`, {
       method: "DELETE",
       query: { id: item.id },
     });
-    loader.close();
     if (response && response.status == 200) {
       dataList.value.splice(index, 1);
     }
@@ -80,6 +79,8 @@ const onDeleteFile = async (index: number) => {
     console.log("onDeleteFile:", response);
   } catch (error) {
     console.error("An error occurred while deleting the file.:", error);
+  }finally{
+    loader.close();
   }
 };
 

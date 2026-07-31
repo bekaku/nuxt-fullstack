@@ -34,7 +34,7 @@ export default defineEventHandler(async (event): Promise<ResponseEntity<AppUser>
     .limit(1)
 
   if (!user || !user.password || user.deleted) {
-    throw createError({ statusCode: 401, statusMessage: 'The email address/username or password is incorrect.' })
+    throw createError({ statusCode: 403, statusMessage: 'The email address/username or password is incorrect.' })
   }
 
   if (!user.active) {
@@ -43,7 +43,7 @@ export default defineEventHandler(async (event): Promise<ResponseEntity<AppUser>
 
   const validPassword = await verifyPassword(body.password, user.password)
   if (!validPassword) {
-    throw createError({ statusCode: 401, statusMessage: 'The email address/username or password is incorrect.' })
+    throw createError({ statusCode: 403, statusMessage: 'The email address/username or password is incorrect.' })
   }
 
   const { roles, permissions } = await loadUserPermissions(user.id)

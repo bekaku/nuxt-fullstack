@@ -1,32 +1,73 @@
 <script setup lang="ts">
-import * as z from 'zod'
-import type { FormError } from '@nuxt/ui'
+import * as z from "zod";
+import type { FormError, FormSubmitEvent } from "@nuxt/ui";
+import type { ResponseEntity } from "~/types/common";
 
+const { t } = useLang();
+const { signoutProcess } = useAuth();
+const api = useApi();
+const toast = useToast();
+const loading = ref(false);
 const passwordSchema = z.object({
-  current: z.string().min(8, 'Must be at least 8 characters'),
-  new: z.string().min(8, 'Must be at least 8 characters')
-})
+  password: z.string().min(8, t("error.requiredMinString", { count: 8 })),
+  newPassword: z.string().min(8, t("error.requiredMinString", { count: 8 })),
+  logoutAllDevices: z.boolean().optional(),
+});
 
-type PasswordSchema = z.output<typeof passwordSchema>
+type PasswordSchema = z.output<typeof passwordSchema>;
 
 const password = reactive<Partial<PasswordSchema>>({
-  current: '',
-  new: ''
-})
+  password: "",
+  newPassword: "",
+  logoutAllDevices: true,
+});
 
 const validate = (state: Partial<PasswordSchema>): FormError[] => {
-  const errors: FormError[] = []
-  if (state.current && state.new && state.current === state.new) {
-    errors.push({ name: 'new', message: 'Passwords must be different' })
+  const errors: FormError[] = [];
+  if (
+    state.password &&
+    state.newPassword &&
+    state.password === state.newPassword
+  ) {
+    errors.push({
+      name: "newPassword",
+      message: t("error.passwordMustDefferent"),
+    });
   }
-  return errors
+  return errors;
+};
+async function onSubmit(event: FormSubmitEvent<PasswordSchema>) {
+  try {
+    const response = await api<ResponseEntity<void>>("/api/appUser/password", {
+      method: "POST",
+      body: password,
+    });
+
+    if (response && response.status == 200) {
+      toast.add({
+        description: t("success.changePasswordOk"),
+        icon: "i-lucide-check",
+        color: "success",
+      });
+      setTimeout(async () => {
+        await signoutProcess();
+      }, 1000);
+    }
+
+    return response.data || null;
+  } catch (error) {
+    console.error("Failed to fetch profile", error);
+    return null;
+  } finally {
+    loading.value = false;
+  }
 }
 </script>
 
 <template>
   <UPageCard
-    title="Password"
-    description="Confirm your current password before setting a new one."
+    :title="t('updatePassword')"
+    :description="$t('base.updatePasswordSub')"
     variant="subtle"
   >
     <UForm
@@ -34,26 +75,29 @@ const validate = (state: Partial<PasswordSchema>): FormError[] => {
       :state="password"
       :validate="validate"
       class="flex flex-col gap-4 max-w-xs"
+      @submit="onSubmit"
     >
-      <UFormField name="current">
+      <UFormField name="password">
         <UInput
-          v-model="password.current"
+          v-model="password.password"
           type="password"
-          placeholder="Current password"
+          :placeholder="$t('authen.currentPassword')"
           class="w-full"
+          :loading="loading"
         />
       </UFormField>
 
-      <UFormField name="new">
+      <UFormField name="newPassword">
         <UInput
-          v-model="password.new"
+          v-model="password.newPassword"
           type="password"
-          placeholder="New password"
+          :placeholder="$t('authen.newPassword')"
           class="w-full"
+          :loading="loading"
         />
       </UFormField>
 
-      <UButton label="Update" class="w-fit" type="submit" />
+      <UButton :loading="loading" :label="$t('updatePassword')" class="w-fit" type="submit" />
     </UForm>
   </UPageCard>
 

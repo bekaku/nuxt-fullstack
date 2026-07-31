@@ -34,7 +34,7 @@ const {
   headers,
 } = useCrudList<Permission>({
   crudName: "Permission", //PascalCase only eg: User, AppRole
-  apiEndpoint: "/api/permission", //KebabCase only eg: app-role
+  apiEndpoint: "/api/permission",
   headers: [],
   itemsPerPage: 10,
   defaultSorts: [
