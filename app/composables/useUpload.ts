@@ -12,7 +12,7 @@ export const useUpload = () => {
   const MAX_RETRIES = 3;
 
   const uploadFileTotal = ref<number>(0)
-  const uploadFileSucess = ref<number>(0)
+  const uploadFileSuccess = ref<number>(0)
   const fileUploadedIdItems = ref<(string | number)[]>([])
 
   // Track uploaded chunks for resume support
@@ -22,10 +22,10 @@ export const useUpload = () => {
 
 
   const uploadSuccessPercent = computed<number>(() => {
-    if (uploadFileTotal.value === 0 || uploadFileSucess.value === 0) {
+    if (uploadFileTotal.value === 0 || uploadFileSuccess.value === 0) {
       return 0;
     }
-    const percent = (uploadFileSucess.value / uploadFileTotal.value) * 100;
+    const percent = (uploadFileSuccess.value / uploadFileTotal.value) * 100;
     return Math.round(percent);
   });
 
@@ -33,7 +33,7 @@ export const useUpload = () => {
     fileUploadedIdItems.value = []
     if (clearFileItems) {
       files.value = []
-      uploadFileSucess.value = 0
+      uploadFileSuccess.value = 0
       uploadFileTotal.value = 0
     }
   }
@@ -44,7 +44,7 @@ export const useUpload = () => {
     status.value = undefined;
     uploadedChunks.clear()
   }
-  const setDownloadProgress = (index: number, statusParam: UploadStatus, uploading: boolean, progressParam?: number | undefined): Promise<void> => {
+  const setUploadProgress = (index: number, statusParam: UploadStatus, uploading: boolean, progressParam?: number | undefined): Promise<void> => {
     const item = files.value[index]
     if (item && item.uploadProgress) {
       item.uploadProgress = {
@@ -60,7 +60,7 @@ export const useUpload = () => {
     status.value = statusParam
     return Promise.resolve();
   }
-  const setDownloadStatus = (): Promise<void> => {
+  const setUploadStatus = (): Promise<void> => {
     const item = files.value[currentFileIndex.value]
     if (item) {
       item.uploadProgress = {
@@ -161,19 +161,19 @@ export const useUpload = () => {
 
         if (setProgress) {
           const progressPercent = (chunkIndex + 1) / totalChunks;
-          await setDownloadProgress(currentFileIndex.value, 'UPLOADING', true, progressPercent);
+          await setUploadProgress(currentFileIndex.value, 'UPLOADING', true, progressPercent);
         }
       }
 
       if (setProgress) {
-        await setDownloadProgress(currentFileIndex.value, 'COMPLETED', false, 1);
+        await setUploadProgress(currentFileIndex.value, 'COMPLETED', false, 1);
       }
       console.log("Upload Complete!");
       return responseFile;
 
     } catch (error) {
       if (setProgress) {
-        await setDownloadProgress(currentFileIndex.value, 'FAILED', false);
+        await setUploadProgress(currentFileIndex.value, 'FAILED', false);
       }
       console.error("Upload failed:", error);
       return null;
@@ -195,7 +195,7 @@ export const useUpload = () => {
         if (f && f.file) {
           let metaData: FileManagerMetaData | undefined = undefined;
           currentFileIndex.value = index;
-          await setDownloadStatus();
+          await setUploadStatus();
 
           if (f.thumbnailFile) {
             const thumbnailResponse = await onUploadChunk(f.thumbnailFile, {
@@ -219,10 +219,10 @@ export const useUpload = () => {
             metaData
           });
           if (response && response.id) {
-            if (uploadFileSucess.value == undefined || uploadFileSucess.value ==null) {
-              uploadFileSucess.value = 0;
+            if (uploadFileSuccess.value == undefined || uploadFileSuccess.value ==null) {
+              uploadFileSuccess.value = 0;
             }
-            uploadFileSucess.value++
+            uploadFileSuccess.value++
             fileUploadedIdItems.value.push(response.id.toString())
           }
         }
@@ -238,7 +238,7 @@ export const useUpload = () => {
     status,
     fileUploadedIdItems,
     uploadFileTotal,
-    uploadFileSucess,
+    uploadFileSuccess,
     uploadSuccessPercent,
     onClearFileUpload
   }
