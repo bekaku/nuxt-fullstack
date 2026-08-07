@@ -155,7 +155,7 @@ loadData();
                 class="absolute top-2 right-2 z-20 flex items-center justify-center w-7 h-7 rounded-full bg-black/60 text-white hover:bg-red-600 transition-colors shadow-md"
                 label="Remove image"
               >
-                <UIcon name="lucide:x" />
+                <Icon name="lucide:x" />
               </UButton>
             </BaseImage> -->
 

@@ -1,6 +1,7 @@
 allowBuilds:
   '@parcel/watcher': false
   '@tailwindcss/oxide': false
+  core-js: true
   esbuild: false
   maplibre-gl: false
   sharp: false

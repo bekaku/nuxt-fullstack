@@ -64,35 +64,36 @@ onBeforeUnmount(() => {
 });
 </script>
 <template>
-  <div class="login-layout">
+  <div class="flex flex-col md:flex-row min-h-dvh">
     <!-- Left: Hero Image Panel -->
-    <div class="hero-panel">
+    <div class="relative flex-none h-65 mx-3 mt-3 md:m-4 md:h-auto md:basis-1/2 overflow-hidden rounded-3xl">
       <img
-        src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=1200&q=80"
-        alt="Mountain landscape at sunset"
-        class="hero-image"
+        src="https://images.pexels.com/photos/34804011/pexels-photo-34804011.jpeg"
+        alt="hero image"
+        class="w-full h-full object-cover block"
       />
+
       <!-- Review Card Overlay -->
-      <div class="review-card">
-        <div class="reviewer-info">
-          <UAvatar text="CR" size="md" class="reviewer-avatar" />
+      <div class="absolute bottom-6 left-6 right-6 bg-[#1e1e1e]/85 backdrop-blur-md rounded-2xl p-5 text-white">
+        <div class="flex items-center gap-3 mb-2">
+          <UAvatar text="CR" size="md" class="bg-amber-500! font-bold shrink-0" />
           <div>
-            <p class="reviewer-name">Claudia Ramirez</p>
-            <div class="reviewer-source">
-              <UIcon name="flat-color-icons:google" class="mr-1 w-4 h-4" />
+            <p class="font-semibold text-[15px] leading-tight">Claudia Ramirez</p>
+            <div class="flex items-center gap-1.5 text-xs text-gray-300 mt-0.5">
+              <Icon name="flat-color-icons:google" class="mr-1 w-4 h-4" />
               <span>Google Reviews</span>
             </div>
           </div>
         </div>
-        <div class="star-rating">
-          <UIcon
+        <div class="flex gap-0.5 mb-2.5">
+          <Icon
             v-for="i in 5"
             :key="i"
             name="ic:sharp-star"
-            class="star-icon"
+            class="text-amber-500 w-4 h-4"
           />
         </div>
-        <p class="review-text">
+        <p class="text-[13px] text-gray-200 leading-[1.55]">
           "Absolutely love the interface! It's incredibly intuitive and the
           attention to detail is just stunning. 5 stars!"
         </p>
@@ -100,9 +101,9 @@ onBeforeUnmount(() => {
     </div>
 
     <!-- Right: Login Form -->
-    <div class="form-panel">
-      <div class="form-container">
-        <div class="form-header">
+    <div class="flex-1 flex items-center justify-center py-8 px-5 md:py-12 md:px-8">
+      <div class="w-full max-w-100">
+        <div class="mb-7">
           <div class="w-full flex justify-center py-4">
             <div>
               <NuxtImg
@@ -115,7 +116,7 @@ onBeforeUnmount(() => {
           <div class="text-3xl font-bold text-black dark:text-white">
             {{ $t("base.welcomeText") }}
           </div>
-          <p class="text-muted">{{ $t("base.enterDetails") }}</p>
+          <p class="text-muted text-sm">{{ $t("base.enterDetails") }}</p>
         </div>
 
         <!-- Google Login -->
@@ -125,11 +126,11 @@ onBeforeUnmount(() => {
           size="xl"
           block
           :disabled="loading"
-          class="google-btn"
+          class="justify-center font-medium border-gray-200! dark:border-gray-700!"
           @click="loginWithGoogle"
         >
           <template #leading>
-            <UIcon name="flat-color-icons:google" class="mr-2 h-6 w-6" />
+            <Icon name="flat-color-icons:google" class="mr-2 h-6 w-6" />
           </template>
           {{ $t("authen.googleLogin") }}
         </UButton>
@@ -141,7 +142,7 @@ onBeforeUnmount(() => {
         <UForm
           :schema="schema"
           :state="state"
-          class="login-form"
+          class="flex flex-col gap-3.5"
           @submit="onSubmit"
         >
           <UFormField name="email">
@@ -184,14 +185,14 @@ onBeforeUnmount(() => {
           </UFormField>
 
           <!-- Remember & Forgot -->
-          <div class="remember-row">
+          <div class="flex items-center justify-between">
             <UCheckbox v-model="remember" label="Remember for 30 days" />
             <UButton
               variant="link"
               color="neutral"
               size="sm"
               :disabled="loading"
-              class="forgot-btn"
+              class="text-sm! p-0!"
               @click="forgotPassword"
             >
               {{ $t("authen.forgetPassword") }}?
@@ -204,16 +205,18 @@ onBeforeUnmount(() => {
             size="xl"
             block
             :loading="loading"
-           color="neutral" variant="solid"
+            color="neutral"
+            variant="solid"
+            class="bg-gray-900! text-white! font-semibold rounded-full! mt-1 dark:bg-white! dark:text-gray-900!"
           >
             {{ $t("authen.login") }}
           </UButton>
         </UForm>
 
         <!-- Sign Up -->
-        <p class="signup-text text-muted">
+        <p class="text-center mt-5 text-sm text-muted">
           Don't have an account?
-          <NuxtLink v-if="!loading" class="signup-link">Sign Up</NuxtLink>
+          <NuxtLink v-if="!loading" class="font-bold no-underline text-black dark:text-white hover:underline cursor-pointer">Sign Up</NuxtLink>
         </p>
         <div class="flex gap-2 justify-center py-4">
           <BaseLangugeSwitcher />
@@ -223,180 +226,3 @@ onBeforeUnmount(() => {
     </div>
   </div>
 </template>
-<style scoped>
-.login-layout {
-  display: flex;
-  min-height: 100dvh;
-  /* background: #fff; */
-}
-
-/* ── Left Panel ── */
-.hero-panel {
-  position: relative;
-  flex: 0 0 50%;
-  overflow: hidden;
-  border-radius: 24px;
-  margin: 16px;
-}
-
-.hero-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-.review-card {
-  position: absolute;
-  bottom: 24px;
-  left: 24px;
-  right: 24px;
-  background: rgba(30, 30, 30, 0.85);
-  backdrop-filter: blur(12px);
-  border-radius: 16px;
-  padding: 20px;
-  color: #fff;
-}
-
-.reviewer-info {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 8px;
-}
-
-.reviewer-avatar {
-  background: #f59e0b !important;
-  font-weight: 700;
-  flex-shrink: 0;
-}
-
-.reviewer-name {
-  font-weight: 600;
-  font-size: 15px;
-  line-height: 1.2;
-}
-
-.reviewer-source {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  color: #d1d5db;
-  margin-top: 2px;
-}
-
-.star-rating {
-  display: flex;
-  gap: 2px;
-  margin-bottom: 10px;
-}
-
-.star-icon {
-  color: #f59e0b;
-  width: 16px;
-  height: 16px;
-}
-
-.review-text {
-  font-size: 13px;
-  color: #e5e7eb;
-  line-height: 1.55;
-}
-
-/* ── Right Panel ── */
-.form-panel {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 48px 32px;
-}
-
-.form-container {
-  width: 100%;
-  max-width: 400px;
-}
-
-.form-header {
-  margin-bottom: 28px;
-}
-
-.form-title {
-  font-size: 28px;
-  font-weight: 700;
-  /* color: #111827; */
-  line-height: 1.2;
-  margin-bottom: 6px;
-}
-
-.form-subtitle {
-  font-size: 14px;
-  color: #6b7280;
-}
-
-.google-btn {
-  justify-content: center;
-  font-weight: 500;
-  border-color: #e5e7eb !important;
-}
-
-.login-form {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.remember-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.forgot-btn {
-  font-size: 14px !important;
-  /* color: #374151 !important; */
-  padding: 0 !important;
-}
-
-.login-submit-btn {
-  background: #111827 !important;
-  color: #fff !important;
-  font-weight: 600;
-  border-radius: 9999px !important;
-  margin-top: 4px;
-}
-
-.signup-text {
-  text-align: center;
-  margin-top: 20px;
-  font-size: 14px;
-}
-.signup-link {
-  font-weight: 700;
-  text-decoration: none;
-  color: #000;
-}
-.dark .signup-link {
-  color: #fff;
-}
-.signup-link:hover {
-  text-decoration: underline;
-}
-
-/* ── Responsive ── */
-@media (max-width: 768px) {
-  .login-layout {
-    flex-direction: column;
-  }
-
-  .hero-panel {
-    flex: 0 0 260px;
-    margin: 12px 12px 0;
-  }
-
-  .form-panel {
-    padding: 32px 20px;
-  }
-}
-</style>

@@ -72,7 +72,7 @@ const { data: dashBaordRecentSalseItems } = await useFetch<
       class="mb-4"
     >
       <template #start>
-        <UIcon name="lucide:layout-dashboard" class="w-8 h-8" />
+        <Icon name="lucide:layout-dashboard" class="w-8 h-8" />
       </template>
 
       <template #end>
@@ -170,7 +170,7 @@ const { data: dashBaordRecentSalseItems } = await useFetch<
             <p class="text-sm text-muted font-light">{{ item.description }}</p>
           </div>
           <template #end>
-            <UIcon
+            <Icon
               v-if="item.icon"
               v-bind="item.icon as any"
               class="text-muted"

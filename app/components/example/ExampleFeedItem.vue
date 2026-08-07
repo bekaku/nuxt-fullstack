@@ -101,21 +101,21 @@ const onItemClick = (e: any) => {
         class="flex flex-row w-full overflow-hidden rounded-bl-lg rounded-br-lg"
       >
         <UButton variant="ghost" class="rounded-none py-3">
-          <UIcon name="lucide:heart" class="text-muted" />
+          <Icon name="lucide:heart" class="text-muted" />
           <span class="text-muted">{{ item.points || 0 }}</span>
         </UButton>
         <UButton variant="ghost" class="rounded-none">
-          <UIcon name="lucide:message-circle-more" class="text-muted" />
+          <Icon name="lucide:message-circle-more" class="text-muted" />
           <span class="text-muted">{{ item.comments_count || 0 }}</span>
         </UButton>
 
         <div class="flex flex-row flex-1 justify-end w-full">
           <UButton variant="ghost" class="rounded-none">
             <div class="flex gap-1">
-              <UIcon name="lucide:thumbs-up" class="text-primary" />
-              <UIcon name="lucide:heart" class="text-rose-500" />
-              <UIcon name="lucide:laugh" class="text-amber-500" />
-              <UIcon name="lucide:angry" class="text-amber-500" />
+              <Icon name="lucide:thumbs-up" class="text-primary" />
+              <Icon name="lucide:heart" class="text-rose-500" />
+              <Icon name="lucide:laugh" class="text-amber-500" />
+              <Icon name="lucide:angry" class="text-amber-500" />
             </div>
           </UButton>
         </div>

@@ -1,0 +1,154 @@
+<script setup lang="ts">
+import type { FileType } from "~/types/common";
+import type { FileManager } from "~/types/models";
+
+const {
+  title,
+  imageList,
+  item,
+  selectIndex,
+  showArrow = true,
+  fetch = false,
+  isBlob = false,
+} = defineProps<{
+  title?: string;
+  item: FileManager;
+  imageList?: FileManager[];
+  selectIndex?: number;
+  fetch?: boolean;
+  showArrow?: boolean;
+  isBlob?: boolean;
+}>();
+const show = defineModel<boolean>("show", { default: false });
+const { isLinkFromApi } = useConfiguration();
+const showView = ref(false);
+const fileType = ref<FileType | undefined>(undefined);
+const pdfSrc = ref<any>();
+const imageItems = ref<FileManager[]>([]);
+const imageSelectIndex = ref(0);
+const loader = useLoader();
+onMounted(async () => {
+  loader.open();
+  await detechFile();
+  if (selectIndex != undefined && selectIndex >= 0) {
+    imageSelectIndex.value = selectIndex;
+  }
+  if (fileType.value == "pdf") {
+    if (item.file) {
+      const b = await fileToBlob(item.file);
+      if (b) {
+        pdfSrc.value = b;
+      }
+    } else {
+      pdfSrc.value = item.filePath;
+    }
+    showView.value = true;
+  } else if (fileType.value == "image") {
+    //show image
+    if (imageList && imageList.length > 0) {
+      imageItems.value.push(...imageList);
+    } else {
+      imageItems.value.push(item);
+    }
+    showView.value = true;
+  } else if (fileType.value == "video") {
+    //show video
+    showView.value = true;
+  } else {
+    //download file
+    await onDownloadFile();
+    onClose();
+  }
+  loader.close();
+});
+const onDownloadFile = async (): Promise<void> => {
+  const file = item;
+  if (!file || !file.filePath) {
+    onClose();
+    return;
+  }
+
+  const fileExtension = getExtensionFromFileManager(file);
+  const fileGenerateName = generateFileNameByExtesnsion(fileExtension);
+  if (fileExtension && fileGenerateName) {
+    if (isBlob) {
+      try {
+        if (isBlobUrl(file.filePath)) {
+          downloadFromBlobUrl(file.filePath, file.fileName || fileGenerateName);
+        } else {
+          downloadFromBlob(file.filePath, file.fileName || fileGenerateName);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    } else {
+      try {
+        if (isBlobUrl(file.filePath)) {
+          downloadFromBlobUrl(file.filePath, file.fileName || fileGenerateName);
+        } else {
+          if (fetch) {
+            if (isLinkFromApi(pdfSrc.value)) {
+              // await downloadCdnData(file.filePath, file.fileName || title)
+              console.log("downloadCdnData");
+            } else {
+              downloadFileFromUrl(
+                file.filePath,
+                file.fileName || fileGenerateName,
+              );
+            }
+          } else {
+            downloadFileFromUrl(
+              file.filePath,
+              file.fileName || fileGenerateName,
+            );
+          }
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+  }
+  return;
+};
+const detechFile = async () => {
+  return new Promise((resolve) => {
+    if (!item) {
+      onClose();
+    }
+    fileType.value = getFileType(item.fileMime);
+    resolve(true);
+  });
+};
+const onClose = () => {
+  show.value = false;
+};
+</script>
+<template>
+  <LazyBasePdfViewDialog
+    v-if="showView && fileType == 'pdf' && pdfSrc"
+    v-model="showView"
+    :src="pdfSrc"
+    :fetch-to-server="fetch"
+    :title="item.fileName || title"
+    @on-close="onClose"
+  />
+  <LazyBaseImageViewDialog
+    v-else-if="fileType == 'image' && showView"
+    v-model="showView"
+    :files="imageItems"
+    :selected-index="imageSelectIndex"
+    :show-delete-image="false"
+    :maximized="false"
+    :fetch="fetch"
+    :show-arrow="showArrow"
+    @on-close="onClose"
+  />
+  <LazyBaseVideoPlayerDialog
+    v-else-if="fileType == 'video' && showView"
+    v-model:show="showView"
+    :file="item"
+    :replace-url="false"
+    :options="{ autoSetSource: true, autoplay: false }"
+    @on-close="onClose"
+  />
+</template>

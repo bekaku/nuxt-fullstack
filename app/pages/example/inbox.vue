@@ -81,7 +81,7 @@ const isMobile = breakpoints.smaller("lg");
     @close="selectedMail = null"
   />
   <div v-else class="hidden lg:flex flex-1 items-center justify-center">
-    <UIcon name="i-lucide-inbox" class="size-32 text-dimmed" />
+    <Icon name="lucide:inbox" class="size-32 text-dimmed" />
   </div>
 
   <ClientOnly>

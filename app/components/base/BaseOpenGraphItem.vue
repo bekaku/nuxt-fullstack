@@ -59,7 +59,7 @@ const {
           />
         </div>
         <template #end>
-          <UIcon name="lucide:square-arrow-out-up-right" />
+          <Icon name="lucide:square-arrow-out-up-right" />
         </template>
       </BaseItem>
     </ULink>

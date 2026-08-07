@@ -4,10 +4,9 @@ import DOMPurify from 'isomorphic-dompurify';
 import type { RouteLocationRaw } from "vue-router";
 import type { AppNuxtError, IPageMeta, NavigateToOptions } from "~/types/common";
 export const useBase = () => {
-
+  const nuxtApp = useNuxtApp();
   const { t } = useLang();
   const confirm = useConfirmDialog()
-  const toast = useToast();
   const getCurrentPath = (fullPath = true) => {
     const route = useRoute();
     return fullPath ? route.fullPath : route.path;
@@ -146,9 +145,11 @@ export const useBase = () => {
       return;
     }
     navigator.clipboard.writeText(text);
-    toast.add({
-      description: t('success.copy')
-    })
+     if (nuxtApp.$toast) {
+      nuxtApp.$toast.add({
+        description: t('success.copy')
+      })
+    }
   }
   return {
     getPageMeta,

@@ -113,7 +113,7 @@ function onSubmit() {
     <div class="pb-4 px-4 sm:px-6 shrink-0">
       <UCard variant="subtle" class="mt-auto" :ui="{ header: 'flex items-center gap-1.5 text-dimmed' }">
         <template #header>
-          <UIcon name="i-lucide-reply" class="size-5" />
+          <Icon name="lucide:reply" class="size-5" />
 
           <span class="text-sm truncate">
             Reply to {{ mail.from.name }} ({{ mail.from.email }})

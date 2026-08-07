@@ -143,9 +143,19 @@ export const useMenu = () => {
             to: "/example/infinite-scroll-page",
           },
           {
+            label: "File viewer",
+            icon: 'lucide:square-play',
+            to: "/example/file-viewer",
+          },
+          {
             label: "Modal",
             icon: 'lucide:copy',
             to: "/example/modal",
+          },
+          {
+            label: "Markdown editor",
+            icon: 'bi:markdown',
+            to: "/example/markdown-editor",
           },
           {
             label: "RBAC",

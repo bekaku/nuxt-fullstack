@@ -66,12 +66,12 @@ const items: NavigationMenuItem[][] = [
 
       <template #right>
         <!-- Show only small device -->
-        <UIcon name="i-lucide-search" class="block md:hidden size-5 shrink-0" />
+        <Icon name="lucide:search" class="block md:hidden size-5 shrink-0" />
         <UChip color="error" inset>
-          <UIcon name="i-lucide-message-circle" class="size-5 shrink-0" />
+          <Icon name="lucide:message-circle" class="size-5 shrink-0" />
         </UChip>
         <UChip color="error" inset>
-          <UIcon name="i-lucide-bell" class="size-5 shrink-0" />
+          <Icon name="lucide:bell" class="size-5 shrink-0" />
         </UChip>
         <UserMenu class="w-48" />
       </template>

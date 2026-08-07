@@ -45,6 +45,8 @@ export default defineNuxtConfig({
         'tailwind-merge',
         'vue3-apexcharts',
         'zod',
+        '@tato30/vue-pdf',
+        'pdf-lib',
       ]
     }
   },
@@ -187,9 +189,9 @@ export default defineNuxtConfig({
       codeVersion: 0,
       webUrl: '',
       defaultLocale: 'th',
-      jwtKeyName: '_token',
-      refreshJwtKeyName: '_refresh_token',
-      currentUserKeyName: '_current_user',
+      jwtKeyName: '_session_',
+      refreshJwtKeyName: '_slid_',
+      currentUserKeyName: '_sid',
       jwtAges: 7,//days
       jwtAgesSecond: 604800,//7 days = 7 * 24 * 60 * 60 = 604800 seconds
       refreshTokenDays: 7,

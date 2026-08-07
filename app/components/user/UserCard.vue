@@ -59,7 +59,7 @@ const {
               <h3 class="font-bold">
                 {{ name }}
               </h3>
-              <UIcon name="lucide:badge-check" class="text-primary" />
+              <Icon name="lucide:badge-check" class="text-primary" />
             </div>
 
             <p class="text-xs text-gray-500" v-if="description">
@@ -71,21 +71,21 @@ const {
             <div class="w-full flex flex-col items-center">
               <div class="font-bold">78</div>
               <div class="text-xs text-muted flex items-center gap-1">
-                <UIcon name="lucide:gift" /> Gifts
+                <Icon name="lucide:gift" /> Gifts
               </div>
             </div>
 
             <div class="w-full flex flex-col items-center">
               <div class="font-bold">1.2k</div>
               <div class="text-xs text-muted flex items-center gap-1">
-                <UIcon name="lucide:pencil" /> Posts
+                <Icon name="lucide:pencil" /> Posts
               </div>
             </div>
 
             <div class="w-full flex flex-col items-center">
               <div class="font-bold">7.5k</div>
               <div class="text-xs text-muted flex items-center gap-1">
-                <UIcon name="lucide:message-square-more" /> Comments
+                <Icon name="lucide:message-square-more" /> Comments
               </div>
             </div>
           </div>

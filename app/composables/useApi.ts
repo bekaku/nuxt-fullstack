@@ -34,9 +34,8 @@ export const useApi = () => {
   const event = import.meta.server ? useRequestEvent() : null;
   const requestHeaders = import.meta.server ? useRequestHeaders(['cookie']) : {};
   const responseCookies = new Map<string, string>();
-  // const { $toast } = useNuxtApp()
 
-  const toast = import.meta.client ? useToast() : null;
+  // const toast = import.meta.client ? useToast() : null;
   const { refreshTokenDays } = useConfiguration()
   const ttlDays = Number(refreshTokenDays) || 7;
   const nuxtApp = useNuxtApp();
@@ -113,11 +112,11 @@ export const useApi = () => {
 
   const notifyServerMessage = (response: any): void => {
     // if (import.meta.server || !response?.message || !toast) {
-    if (import.meta.client && toast) {
+    if (import.meta.client && nuxtApp.$toast) {
       const status = response?.status || response?.statusCode;
       const message = response?.message || response?.statusMessage;
       if (message) {
-        toast.add({
+         nuxtApp.$toast.add({
           description: message,
           icon: status < 400 ? 'lucide:circle-check' : 'lucide:octagon-alert',
           color: status < 400 ? 'success' : 'error',

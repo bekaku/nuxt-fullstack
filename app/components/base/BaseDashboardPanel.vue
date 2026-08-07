@@ -72,7 +72,7 @@ const items = [
                   "
                 >
                   <UChip color="error" inset>
-                    <UIcon name="i-lucide-bell" class="size-5 shrink-0" />
+                    <Icon name="lucide:bell" class="size-5 shrink-0" />
                   </UChip>
                 </UButton>
               </UTooltip>

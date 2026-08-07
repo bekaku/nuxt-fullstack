@@ -15,7 +15,7 @@ function checkStrength(str: string) {
     { regex: /.{8,}/, text: t("error.atLeastCharacters", [8]) },
     { regex: /\d/, text: t("error.atLeastNumbers", [1]) },
     { regex: /[a-z]/, text: t("error.atLeastLowercase", [1]) },
-    { regex: /[A-Z]/, text: t("error.atLeastNumbers", [1]) },
+    { regex: /[A-Z]/, text: t("error.atLeastUppercase", [1]) },
   ];
 
   return requirements.map((req) => ({
@@ -92,8 +92,8 @@ const text = computed(() => {
           class="flex items-center gap-0.5"
           :class="req.met ? 'text-success' : 'text-muted'"
         >
-          <UIcon
-            :name="req.met ? 'i-lucide-circle-check' : 'i-lucide-circle-x'"
+          <Icon
+            :name="req.met ? 'lucide:circle-check' : 'lucide:circle-x'"
             class="size-4 shrink-0"
           />
 
