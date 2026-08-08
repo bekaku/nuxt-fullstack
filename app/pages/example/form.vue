@@ -22,7 +22,6 @@ const schema = z.object({
           type: "text",
           required: true,
           placeholder: "Enter code...",
-          variant: "subtle",
           size: "xl",
           clearable: true,
           maxlength: 50,

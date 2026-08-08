@@ -88,12 +88,10 @@ async function onSubmit(event: FormSubmitEvent<PasswordSchema>) {
       </UFormField>
 
       <UFormField name="newPassword">
-        <UInput
+        <BaseInputPassword
           v-model="password.newPassword"
-          type="password"
           :placeholder="$t('authen.newPassword')"
           class="w-full"
-          :loading="loading"
         />
       </UFormField>
 

@@ -29,12 +29,12 @@ definePageMeta({
 
         <h1>Unequal division</h1>
         <div class="w-full grid grid-cols-1 md:grid-cols-12 gap-4">
-          <div class="md:col-span-4 bg-gray-200 p-4">
+          <div class="md:col-span-4">
             Column 1 (4/12 area on a large screen, 100% full screen on a small
             screen)
           </div>
 
-          <div class="md:col-span-8 bg-blue-200 p-4">
+          <div class="md:col-span-8">
             Column 2 (8/12 area on a large screen, 100% full screen on a small
             screen)
           </div>

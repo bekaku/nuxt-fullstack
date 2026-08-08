@@ -42,7 +42,7 @@ export default defineAppConfig({
     badge: {
       defaultVariants: {
         color: 'primary',
-        variant: 'soft',
+        variant: 'subtle',
         size: 'md'
       }
     },

@@ -39,7 +39,6 @@ export default defineNuxtConfig({
         'clsx',
         'date-fns',
         'date-fns/locale',
-        'dompurify',
         'isomorphic-dompurify',
         'jszip',
         'tailwind-merge',
@@ -47,7 +46,18 @@ export default defineNuxtConfig({
         'zod',
         '@tato30/vue-pdf',
         'pdf-lib',
+        'plyr',
+        'md-editor-v3',
+        'cropperjs'
       ]
+    }
+  },
+  vue: {
+    compilerOptions: {
+      // isCustomElement: (tag) => tag.startsWith('swiper-'),
+      isCustomElement: (tag) => [
+        'cropper-canvas', 'cropper-image', 'cropper-shade', 'cropper-handle', 'cropper-selection', 'cropper-grid', 'cropper-crosshair', 'cropper-viewer'
+      ].includes(tag)
     }
   },
   css: ['~/assets/css/main.css'],
