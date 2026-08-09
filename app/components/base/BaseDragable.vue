@@ -53,7 +53,7 @@ const onDragEnd = (event: any) => {
       v-model="modelValue"
       :animation="250"
       :group="group"
-      class="drop-zone"
+      class="drop-zone bg-transparent"
       @start="onDragStart"
       @end="onDragEnd"
     >

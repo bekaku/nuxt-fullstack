@@ -8,7 +8,7 @@ const { isMobile } = useDevice();
 // const drgaGroup = 'people';
 const listHeight = "65vh";
 const draging = ref(false);
-const draging2= ref(false);
+const draging2 = ref(false);
 const todoItems = ref<any[]>([
   {
     id: 1,
@@ -168,7 +168,6 @@ const deployItems = ref<any[]>([
   },
 ]);
 
-
 const log = (ctx: any) => {
   console.log("log", ctx);
 };
@@ -196,6 +195,51 @@ const onDragEnd = (event: any) => {
       class="w-full data-[orientation=vertical]:h-96 p-4"
     >
       <div class="flex flex-none gap-4">
+         <UCard
+          title="Draggable Component"
+          class="w-[350px] min-h-45 rounded-md"
+          :ui="{ body: 'p-0! sm:p-0!' }"
+          :class="{ 'border border-error border-dashed': draging }"
+        >
+          <UScrollArea orientation="vertical" class="w-full h-[75vh]">
+            <BaseDragable
+              v-model="deployItems"
+              group="my-tasks"
+              label-key="task"
+              value-key="id"
+              @on-drag-start="onDragStart"
+              @on-drag-end="onDragEnd"
+            >
+              <template #item="{ item, index }">
+                <div
+                  v-if="item"
+                  class="my-4 mx-2 bg-white dark:bg-neutral-800 p-2 rounded-md"
+                >
+                  <div class="flex flex-col gap-2">
+                    <div class="text-md font-bold">{{ item.task }}</div>
+                    <div>{{ item.description }}</div>
+                    <div class="flex gap-2 pt-2">
+                      <UBadge
+                        v-for="(chip, chipIndex) in item.chips"
+                        :key="`${index}-chip-${chipIndex}-${chip}`"
+                      >
+                        {{ chip }}
+                      </UBadge>
+                    </div>
+                  </div>
+                  <BaseItem :separator="false">
+                    <template #start>
+                      <Icon name="lucide:check" class="text-success" />
+                    </template>
+                    <template #end>
+                      <UAvatar :src="item.avatar" loading="lazy" />
+                    </template>
+                  </BaseItem>
+                </div>
+              </template>
+            </BaseDragable>
+          </UScrollArea>
+        </UCard>
         <!-- Todo -->
         <div
           class="w-[350px] min-h-full bg-neutral-100 dark:bg-neutral-700 border border-default rounded-md"
@@ -406,52 +450,6 @@ const onDragEnd = (event: any) => {
         </div>
       </div>
     </UScrollArea>
-
-    <UCard
-      title="Draggable Component"
-      class="mt-16 w-[350px] min-h-45 rounded-md"
-      :ui="{ body: 'p-0! sm:p-0!' }"
-       :class="{ 'border border-error border-dashed': draging2 }"
-    >
-      <UScrollArea orientation="vertical" class="w-full h-[75vh]">
-        <BaseDragable
-          v-model="deployItems"
-          group="deploy-group"
-          label-key="task"
-          value-key="id"
-          @on-drag-start="draging2=true"
-          @on-drag-end="draging2=false"
-        >
-          <template #item="{ item, index }">
-            <div
-              v-if="item"
-              class="my-4 mx-2 bg-white dark:bg-neutral-800 p-2 rounded-md"
-            >
-              <div class="flex flex-col gap-2">
-                <div class="text-md font-bold">{{ item.task }}</div>
-                <div>{{ item.description }}</div>
-                <div class="flex gap-2 pt-2">
-                  <UBadge
-                    v-for="(chip, chipIndex) in item.chips"
-                    :key="`${index}-chip-${chipIndex}-${chip}`"
-                  >
-                    {{ chip }}
-                  </UBadge>
-                </div>
-              </div>
-              <BaseItem :separator="false">
-                <template #start>
-                  <Icon name="lucide:check" class="text-success" />
-                </template>
-                <template #end>
-                  <UAvatar :src="item.avatar" loading="lazy" />
-                </template>
-              </BaseItem>
-            </div>
-          </template>
-        </BaseDragable>
-      </UScrollArea>
-    </UCard>
   </BaseDashboardPanel>
 </template>
 <style lang="css" scoped>
