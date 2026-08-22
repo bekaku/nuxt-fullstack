@@ -25,13 +25,13 @@ const {
   imageClass?: string;
   showName?: boolean;
   showSize?: boolean;
+  progress?:number
 }>();
 const emit = defineEmits<{
   "on-remove": [index: number];
   "on-click": [index: number];
   "on-soft-delete": [index: number];
 }>();
-const progress = defineModel<number>("progress", { default: 0 });
 
 const fileForView = ref<FileManager>();
 const showFileView = ref(false);
@@ -138,7 +138,7 @@ const setImagesFileView = (file: FileManager) => {
         </div>
       </div>
     </div>
-    <UProgress v-if="showProgress" v-model="progress" status />
+    <UProgress v-if="showProgress && progress" :model-value="Math.min(Math.max(progress, 0), 100)" status />
   </div>
   <LazyBaseFileViewDialog
     v-if="showFileView && fileForView"

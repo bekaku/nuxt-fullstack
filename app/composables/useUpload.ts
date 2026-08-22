@@ -160,13 +160,13 @@ export const useUpload = () => {
         }
 
         if (setProgress) {
-          const progressPercent = (chunkIndex + 1) / totalChunks;
+           const progressPercent = Math.round(((chunkIndex + 1) / totalChunks) * 100);
           await setUploadProgress(currentFileIndex.value, 'UPLOADING', true, progressPercent);
         }
       }
 
       if (setProgress) {
-        await setUploadProgress(currentFileIndex.value, 'COMPLETED', false, 1);
+        await setUploadProgress(currentFileIndex.value, 'COMPLETED', false, 100);
       }
       console.log("Upload Complete!");
       return responseFile;

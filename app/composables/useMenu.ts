@@ -127,6 +127,11 @@ export const useMenu = () => {
             to: "/example/drag-drop",
           },
           {
+            label: "Download files",
+            icon: "lucide:cloud-download",
+            to: "/example/download-files",
+          },
+          {
             label: "Forms",
             icon: "i-lucide-card-sim",
             to: "/example/form",

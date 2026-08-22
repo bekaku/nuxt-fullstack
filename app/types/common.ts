@@ -722,3 +722,38 @@ export interface WebSocketBroadcast<T> extends WebSocketBroadcastRequest {
   data?: T
 }
 
+export interface DownloadConfig {
+    url?: string
+    baseUrl?: string
+    fileId?: number | string
+    filename: string
+    chunkSize?: number
+    downloadable?: boolean
+    historyable?: boolean
+}
+
+export interface StreamConfig {
+    recordCount: number
+}
+
+export interface DownloadProgress {
+    visible: boolean
+    loaded: number
+    total: number
+    percentage: number
+    speed: string
+    filename: string | null
+    startTime: number | null
+}
+
+export interface DownloadHistoryItem {
+    id: number
+    src?: string
+    type?: string
+    filename: string
+    size: number
+    status: 'completed' | 'failed' | 'cancelled'
+    duration: number
+    timestamp: string
+    error?: string
+}

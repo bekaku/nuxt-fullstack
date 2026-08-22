@@ -482,7 +482,7 @@ const handleSearch = () => {
     queryParts.push(`${col}${op}${val}`);
   });
 
-  const queryString = queryParts.join("&");
+  const queryString = queryParts.join(";");
 
   console.log("Generated Query:", queryString, queryParts);
 

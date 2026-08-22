@@ -1,5 +1,5 @@
 import { getQuery, type H3Event } from 'h3'
-import { asc, desc, ilike, eq, ne, gt, gte, lt, lte, and, type AnyColumn, type SQL, or } from 'drizzle-orm'
+import { asc, desc, ilike, eq, ne, gt, gte, lt, lte, and, type AnyColumn, type SQL, or, inArray } from 'drizzle-orm'
 import { SearchOperation } from '~/types/common';
 
 
@@ -60,7 +60,7 @@ export async function paginate<T>(
 
   const searchStr = query._q as string
   if (searchStr) {
-    const filters = searchStr.split(',')
+    const filters = searchStr.split(';')
     for (const filter of filters) {
       const match = filter.match(/^([a-zA-Z0-9_]+)(>=|<=|!=|>|<|=|:)(.+)$/)
 
@@ -68,10 +68,29 @@ export async function paginate<T>(
         const [, field, operator, value] = match
         if (!field || !value) continue
 
-        // Pull columns from the map in the same way.
+        // Pull columns from the map
         const column = config.columns[field]
 
         if (column) {
+
+         // Check if it's an array (there are commas in the values)
+          if (value.includes(',')) {
+           // Break into an array and remove spaces.
+            const arrayValues = value.split(',').map(v => v.trim())
+
+           // Parse the default values ​​in the array in case there are true, false, or null.
+            const parsedArray = arrayValues.map(v => {
+              if (v.toLowerCase() === 'true') return true
+              if (v.toLowerCase() === 'false') return false
+              if (v.toLowerCase() === 'null') return null
+              return v
+            })
+
+           // Use the inArray of the Drizzle ORM
+            conditions.push(inArray(column, parsedArray))
+            continue // Skip to the next condition. No need to go down to the switch (operator) below.
+          }
+
           let parsedValue: any = value
 
           if (value.toLowerCase() === 'true') parsedValue = true
