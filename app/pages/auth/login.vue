@@ -13,7 +13,21 @@ const { isDark } = useTheme();
 const { getPageQuery } = useBase();
 const { signin, loading } = useAuth();
 const redirectTimeout = ref<any>(null);
-const redirectTo = ref<string | undefined>(getPageQuery("continue"));
+// Only allow same-origin relative redirect targets — blocks open redirects
+// like ?continue=https://evil.com or ?continue=//evil.com
+const sanitizeRedirect = (target: unknown): string => {
+  const value = Array.isArray(target) ? target[0] : target;
+  if (
+    typeof value !== "string" ||
+    !value.startsWith("/") ||
+    value.startsWith("//") ||
+    value.startsWith("/\\")
+  ) {
+    return "/";
+  }
+  return value;
+};
+const redirectTo = ref<string>(sanitizeRedirect(getPageQuery("continue")));
 const { sendBroradcastChanelReload } = useAppBroadcastChannels();
 const schema = z.object({
   email: z.email(t("error.emailFormat")),
@@ -40,9 +54,7 @@ const onSubmit = async (event: FormSubmitEvent<Schema>) => {
   if (response) {
     await sendBroradcastChanelReload();
     redirectTimeout.value = setTimeout(() => {
-      window.location.replace(
-        redirectTo.value !== undefined ? redirectTo.value : "/",
-      );
+      window.location.replace(redirectTo.value);
     }, 350);
   }
 };

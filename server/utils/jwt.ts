@@ -34,6 +34,6 @@ export function generateRefreshToken(): string {
 
 export function refreshTokenExpiryDate(): Date {
   const config = useRuntimeConfig()
-  const days = Number(config.refreshTokenTtlDays ?? 7)
+  const days = Number(config.refreshTokenDays ?? 7)
   return new Date(Date.now() + days * 24 * 60 * 60 * 1000)
 }

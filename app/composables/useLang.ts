@@ -43,10 +43,9 @@ export const useLang = () => {
   }
   const onSwitchLocale = (l: ILanguge) => {
     onSetLocale(l);
-    // timeout.value = setTimeout(() => {
-    //     window.location.reload()
-    // }, 500);
-    setTimeout(() => {
+    // Store the timer id so it can be cancelled if the component unmounts
+    // before the reload fires (e.g. the user navigates away immediately).
+    timeout.value = setTimeout(() => {
       window.location.reload()
     }, 500)
   }

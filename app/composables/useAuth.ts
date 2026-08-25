@@ -5,7 +5,6 @@ import { useBase } from './useBase';
 
 export const useAuth = () => {
   const nuxtApp = useNuxtApp();
-  const { refreshTokenDays } = useConfiguration()
   const api = useApi();
   const loading = ref<boolean>(false);
   const t = nuxtApp.$i18n.t;

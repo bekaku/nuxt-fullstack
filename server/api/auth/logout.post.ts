@@ -3,7 +3,9 @@ import { useDb, schema } from '../../database/client'
 import { ResponseEntity } from '~/types/common'
 
 export default defineEventHandler(async (event): Promise<ResponseEntity<void>> => {
-  const refreshToken = getCookie(event, 'refresh_token')
+
+   const { public: publicConfig } = useRuntimeConfig()
+  const refreshToken = getCookie(event, publicConfig.refreshJwtKeyName)
 
   if (refreshToken) {
     const db = useDb()
@@ -13,7 +15,7 @@ export default defineEventHandler(async (event): Promise<ResponseEntity<void>> =
       .where(eq(schema.accessToken.token, refreshToken))
   }
 
-  const { public: publicConfig } = useRuntimeConfig()
+
   deleteCookie(event, publicConfig.jwtKeyName, { path: '/' })
   deleteCookie(event, publicConfig.refreshJwtKeyName, { path: '/' })
 

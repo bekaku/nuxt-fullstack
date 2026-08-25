@@ -1,209 +1,196 @@
-# Nuxt 4 + Drizzle + PostgreSQL 18 — JWT HTTP-Only Auth + RBAC Starter
+# Nuxt Fullstack Starter
 
-This project converts the uploaded `starter_postgres.sql` (22 tables) to a Drizzle ORM
-schema with **JWT HTTP-Only Cookie + Refresh Token + RBAC Middleware on the server side** authentication system.
+Production-ready fullstack starter built on **Nuxt 4 (SSR)** with a complete authentication and authorization layer: **JWT access tokens delivered via HTTP-Only cookies, opaque refresh tokens with rotation/revocation, and server-enforced RBAC**.
 
-✅ **This project has been successfully run through testing** (build, migrate, seed, login, refresh,
-RBAC 200/403/401 all tested via localhost)
+- **Stateless auth** — permissions and roles are embedded in the short-lived JWT payload; no per-request database lookup for authorization.
+- **HTTP-Only cookies** — tokens are inaccessible to client-side JavaScript.
+- **Silent refresh** — the API client retries through `/api/auth/refresh` transparently on `401`.
+- **RBAC everywhere** — enforced on the server (`requirePermission`) and mirrored in the UI (`v-rbac` directive).
+- **22-table Drizzle schema** — fully typed, migrated, and seeded.
 
-## Stack
+## Tech Stack
 
-| Layer | Version |
+| Layer | Technology |
 |---|---|
-| Nuxt | 4.4.8 |
-| Nuxt UI | 4.10.0 |
-| Drizzle ORM | 0.45.2 (+ drizzle-kit 0.31.10) |
-| PostgreSQL | 18 (via Docker) |
-| TypeScript | 5.7+ |
-| bcryptjs | 3.0.3 (via Password) |
-| jsonwebtoken | 9.0.3 (sign/verify JWT) |
-| zod | 4.4.3 (validate request body) |
+| Framework | Nuxt 4.4 (SSR) |
+| UI | Nuxt UI 4 + Tailwind CSS 4 |
+| ORM | Drizzle ORM 0.45 / drizzle-kit 0.31 |
+| Database | PostgreSQL 18 (Docker) |
+| Language | TypeScript 5.7+ |
+| Auth | jsonwebtoken 9 (JWT), bcryptjs 3 (password hashing) |
+| Validation | Zod 4 |
 
-## Project structure
+## Project Structure
 
 ```
 app/
   pages/
-    index.vue            Home
-    login.vue             Login page
-    admin/index.vue       Dashboard (ต้อง login)
-    admin/users.vue       ตัวอย่างหน้าที่ใช้ v-can + RBAC API
+    index.vue                 Landing page
+    login.vue                 Login
+    admin/index.vue           Dashboard (auth required)
   middleware/
-    auth.global.ts         Client route middleware ป้องกัน /admin/**
+    01.auth.global.ts         Client route guard for protected pages
   composables/
-    useAuth.ts              login/logout/fetchMe/can()/hasRole()
-    useApi.ts               ofetch wrapper + silent refresh อัตโนมัติเมื่อเจอ 401
+    useAuth.ts                login/logout/fetchMe/can()/hasRole()
+    useApi.ts                 ofetch wrapper with silent refresh on 401
   plugins/
-    permission.client.ts    v-can="'permission_code'" directive
+    rbac.ts                   Registers the v-rbac directive
 
 server/
   database/
-    schema.ts               Drizzle schema (22 ตาราง แปลงจาก starter_postgres.sql)
-    client.ts               useDb() — postgres.js connection (singleton)
-    seed.ts                 Create basic permissions + Admin/Viewer roles + admin user.
+    schema.ts                 Drizzle schema (22 tables)
+    client.ts                 useDb() — singleton postgres.js connection
+    seed.ts                   Permissions, Admin/Viewer roles, admin user
   middleware/
-    00.auth.ts               Check the JWT from the cookie for every request at /api/** (except login/refresh/logout).
+    00.auth.ts                Global JWT guard for /api/** (login/refresh/logout excluded)
   utils/
-    jwt.ts                    sign/verify access token, generate refresh token
-    password.ts               hash/verify ด้วย bcryptjs
+    jwt.ts                    Access token sign/verify, refresh token generation
+    password.ts               bcryptjs hash/verify
     permission.ts             loadUserPermissions(), requirePermission(), getAuthUser()
-    snowflake.ts              Time-sortable bigint ID generator (replaces the original ID in the dump)
+    snowflake.ts              Time-sortable bigint ID generator
   api/
     auth/login.post.ts
     auth/refresh.post.ts
     auth/logout.post.ts
     auth/me.get.ts
-    users/index.get.ts        Examples of routes that require permission."app_user_list"
-    users/index.post.ts       Examples of routes that require permission."app_user_add"
-    permissions/index.get.ts
+    users/index.get.ts        Requires app_user_list permission
+    users/index.post.ts       Requires app_user_add permission
 
-drizzle/                     The generated SQL migration (0000_*.sql, 22 tables)
-docker-compose.yml            Postgres 18
+drizzle/                     Generated SQL migrations
+docker-compose-postgres.yml  PostgreSQL 18
 ```
 
-## Auth Design Concepts (Important: Must understand before reading the code)
+## Authentication Design
 
-1. **Access Token** = JWT (stateless, short-lived (15 minutes)). `permissions[]` and
-`roles[]` are stored in the payload to avoid querying the database for every request. — **Not saved to the database.**
-2. **Refresh Token** = Random string (opaque, not a JWT). Long-lived (default 7 days).
-**Save to a table.** 1. **`access_token`** (column `token`) to allow revoke/rotate.
-— Matches the sample data in the dump where the `token` column is the UUID.
-3. Both tokens are returned as **HTTP-Only Cookie** (`access_token`,
-`refresh_token`) — there's no way for browser-side JavaScript to read the values.
-4. When the Access Token expires → API responds with `401` → the client side
-(`app/composables/useApi.ts`) will silently call `/api/auth/refresh`
-and retry the original request once (Silent Refresh).
-5. RBAC: `server/middleware/00.auth.ts` checks the JWT and pastes
-`event.context.user = { permissions: [...] }`, then each API route calls
-`requirePermission(event, 'app_user_add')`. To check permissions by name:
-`"<table name>_<action>"` (list/view/add/edit/delete) — If there are no permissions, respond with `403`.
+1. **Access token** — stateless JWT with a 15-minute TTL. The payload embeds `permissions[]` and `roles[]`, so authorization requires no database round-trip.
+2. **Refresh token** — opaque random string (not a JWT), valid for 7 days by default. Persisted in the `access_token` table to support revocation and rotation.
+3. **Transport** — both tokens are set as HTTP-Only cookies (`access_token`, `refresh_token`), invisible to browser JavaScript.
+4. **Silent refresh** — when an access token expires, the API responds `401`; `app/composables/useApi.ts` calls `/api/auth/refresh` once and retries the original request.
+5. **RBAC enforcement** — `server/middleware/00.auth.ts` verifies the JWT and attaches `event.context.user = { permissions: [...] }`. Each route then calls `requirePermission(event, 'app_user_add')`. Permissions follow the `<table>_<action>` convention (`list` / `view` / `add` / `edit` / `delete`). Unauthorized requests receive `403`.
 
-## How to run the test (follow these steps)
+## Getting Started
 
-### 1) Prepare PostgreSQL 18
+### 1. Start PostgreSQL 18
 
 ```bash
-docker compose -f docker-compose-postgres.yml up-d
+docker compose -f docker-compose-postgres.yml up -d
 ```
 
-Wait 5-10 seconds for Postgres to prepare (the healthcheck is already included in compose).
+Wait a few seconds for the healthcheck to pass.
 
-### 2) Install dependencies
+### 2. Install dependencies
 
 ```bash
 pnpm install
 ```
 
-### 3) config .env
+### 3. Configure environment
 
 ```bash
 cp .env.example .env
 ```
 
-Change `NUXT_JWT_ACCESS_SECRET` and `NUXT_JWT_REFRESH_SECRET` to true random values ​​(do not use the default values ​​in production):
+Generate strong secrets for `NUXT_JWT_ACCESS_SECRET` and `NUXT_JWT_REFRESH_SECRET`:
 
 ```bash
 openssl rand -hex 64
 ```
 
-ค่า `NUXT_DATABASE_URL` ใน `.env.example` ตรงกับ `docker-compose-postgres.yml` อยู่แล้ว
-(`app_user` / `app_password` / db ชื่อ `nuxt4_rbac`) ไม่ต้องแก้ถ้าใช้ docker-compose ได้เลย
+The default `NUXT_DATABASE_URL` matches `docker-compose-postgres.yml` (`app_user` / `app_password`, database `nuxt4_rbac`) — no changes needed if you use the provided compose file.
 
-### 4) Create a table in the database.
-
-The SQL migration has already been generated in `drizzle/0000_*.sql` (complete with 22 tables + FK + Index + Check Constraints according to `starter_postgres.sql`). You can apply it directly:
+### 4. Run migrations
 
 ```bash
 pnpm db:migrate
 ```
 
-Or, if you've modified schema.ts and need to generate a new migration:
+After modifying `schema.ts`, generate a new migration instead:
 
 ```bash
-pnpm db:generate   #Create a new SQL file from schema.ts.
-pnpm db:migrate    # This command is responsible for executing the SQL file generated from the `generate` function and inserting it into the database.
-pnpm db:push #This command is a speed-oriented shortcut; its function is to immediately push the schema.ts file into the actual database without creating an SQL file.
+pnpm db:generate   # Generate SQL from schema.ts
+pnpm db:migrate    # Apply generated migrations
+# or, dev only:
+pnpm db:push       # Push schema directly without generating SQL files
 ```
 
-### 5) Seed - Initial Information
+### 5. Seed the database
 
 ```bash
 pnpm db:seed
 ```
 
-You will receive the `Admin` role (all privileges) and `Viewer` (list/view only) with the following user:
+Creates an `Admin` role (all permissions) and a `Viewer` role (list/view only), plus this user:
 
-```
-Email:    admin@example.com
-Username: admin
-Password: Admin@12345
-```
+| Field | Value |
+|---|---|
+| Email | `admin@example.com` |
+| Username | `admin` |
+| Password | `Admin@12345` |
 
-⚠️ Change this password immediately before use.
+> Change this password immediately before any real use.
 
-### 6) Run the project.
+### 6. Start the dev server
 
 ```bash
 pnpm dev
 ```
 
-Open http://localhost:3000 → Click "Login" → Log in with the admin account above.
-→ You will be taken to the `/admin` page which displays all roles/permissions for the current user.
+Open http://localhost:3000, log in with the admin account, and you will be redirected to `/admin`, which displays the current user's roles and permissions.
 
-### 7)Test the API with curl (optional).
+### 7. Verify the API (optional)
 
 ```bash
-# Log in and save cookies.
+# Log in and persist cookies
 curl -c cookies.txt -X POST http://localhost:3000/api/auth/login \
   -H 'Content-Type: application/json' \
   -d '{"emailOrUsername":"admin@example.com","password":"Admin@12345"}'
 
-# Calling a route that requires app_user_list permission.
+# Route requiring the app_user_list permission
 curl -b cookies.txt http://localhost:3000/api/users
 
-# try refresh token
+# Rotate the refresh token
 curl -b cookies.txt -c cookies.txt -X POST http://localhost:3000/api/auth/refresh
 
-# logout
+# Log out
 curl -b cookies.txt -X POST http://localhost:3000/api/auth/logout
 ```
 
-### Accessories
+### Utilities
 
 ```bash
-pnpm db:studio  # Open Drizzle Studio and view the database information via the web.
+pnpm db:studio   # Browse the database in Drizzle Studio
 ```
 
-## Adding new permissions to other routes.
+## Adding Permissions
 
-1. Add a row to the `permission` table (or modify `RESOURCES`/`ACTIONS` in
-`server/database/seed.ts` and run the seed again) following the convention
-`"<table_name>_<action>"`, e.g., `files_directory_add`.
-2. In the new API route, call `requirePermission(event, 'files_directory_add')` at the beginning of the function (see example in `server/api/users/index.post.ts`).
-3. On the UI side, use `v-can="'files_directory_add'"` with the button/element you want to hide.
-(This hiding is just UX – the actual security lies in the `requirePermission` on the server side.)
+Permissions follow the `<table>_<action>` naming convention.
 
-## Notes on Schema
+1. Insert a row into the `permission` table — or extend `RESOURCES` / `ACTIONS` in `server/database/seed.ts` and re-run the seed (e.g. `files_directory_add`).
+2. Guard the new API route by calling `requirePermission(event, 'files_directory_add')` at the top of the handler (see `server/api/users/index.post.ts`).
+3. In the UI, hide gated elements with the `v-rbac` directive:
 
-- All 22 tables from `starter_postgres.sql` have been converted to a complete Drizzle schema (`server/database/schema.ts`), including Foreign Keys, Check Constraints (e.g.,
-`service >= 0 AND service <= 1`), and Indexes (e.g., index on `token`,
-`revoked`, `lastest_active` of the `access_token` table).
-- **The `performance_dashboard` view and the function
-`create_monthly_partitions` have not been converted because they are Postgres-specific objects that Drizzle
-ORM does not yet support direct generation — if you want to use them, add them as raw SQL
-migration separately (`drizzle-kit` supports custom SQL migration via
-`npx drizzle-kit generate --custom`).
-- The Primary key is a `bigint` in Snowflake-style (created on the app side via
-Use `server/utils/snowflake.ts` to match the original id style in the dump (e.g.,
-350885844724224000`) instead of just using `bigserial`.
-- **Do not import sample data (rows) from the original dump**, such as audit_log,
-file_manager which includes the actual data — intentionally omitted to prevent password/IP/
-original files from being transferred to the new project. Use `pnpm db:seed` to create a clean initial dataset instead.
+   ```vue
+   <UButton
+     label="Any of multiple permissions"
+     v-rbac="{
+       permissions: ['user_manage_not_exist', 'app_role_add'],
+       condition: 'any',
+     }"
+   />
+   ```
 
-## ขั้นต่อไปที่แนะนำ (ยังไม่ได้ทำในสตาร์ทเตอร์นี้)
+> The `v-rbac` directive is UX only — actual security is enforced server-side by `requirePermission`.
 
-- หน้า UI สำหรับจัดการ Role / Permission mapping (ตอนนี้มีแค่ API + seed)
-- Rate limiting ที่ `/api/auth/login` กัน brute-force
-- Redis cache สำหรับ permission ถ้าระบบใหญ่ขึ้นจนฝัง JWT payload ใหญ่เกินไป
-- อัปโหลดไฟล์ (ตาราง `file_manager`, `files_directory` มี schema พร้อมแล้ว
-  แต่ยังไม่มี API)
+## Schema Notes
+
+- All 22 tables from the original dump are converted to a fully typed Drizzle schema (`server/database/schema.ts`), including foreign keys, check constraints (e.g. `service >= 0 AND service <= 1`), and indexes (e.g. on `token`, `revoked`, `lastest_active` of the `access_token` table).
+- Primary keys are **Snowflake-style `bigint`s** generated application-side via `server/utils/snowflake.ts`, matching the ID style of the original dump rather than relying on `bigserial`.
+- The `performance_dashboard` view and `create_monthly_partitions` function are **not converted** — Drizzle does not yet support these Postgres-specific objects. Add them as raw SQL migrations if needed (`npx drizzle-kit generate --custom`).
+- **No sample rows are imported** from the original dump (e.g. `audit_log`, `file_manager` contain real user data). Use `pnpm db:seed` to create a clean initial dataset.
+
+## Roadmap
+
+- [ ] Admin UI for role/permission mapping (API + seed exist today)
+- [ ] Rate limiting on `/api/auth/login` against brute-force attacks
+- [ ] Redis-backed permission cache for deployments where the embedded JWT payload grows too large
+- [ ] File upload API (`file_manager`, `files_directory` schemas are ready)

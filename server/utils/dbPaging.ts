@@ -22,10 +22,17 @@ export async function paginate<T>(
 ) {
   const query = getQuery(event)
 
-  const currentPage = parseInt(query.page as string) || 0
-  const size = parseInt(query.size as string) || 10
-  const limit = size
-  const offset = currentPage * size
+  // Bound paging values: an unbounded ?size= turns into a huge SQL LIMIT (DoS),
+  // and negative values would produce a negative OFFSET (DB error).
+  const MAX_PAGE_SIZE = 100
+
+  const currentPage = Math.max(0, parseInt(query.page as string) || 0)
+  const requestedSize = parseInt(query.size as string) || 10
+  const limit = Math.min(Math.max(requestedSize, 1), MAX_PAGE_SIZE)
+  const offset = currentPage * limit
+
+  // Escape LIKE wildcards so user input can't inject % or _ patterns.
+  const escapeLike = (value: string) => value.replace(/[\\%_]/g, '\\$&')
 
   // --- Sorting ---
   const orderByClause = []
@@ -102,7 +109,10 @@ export async function paginate<T>(
           }
 
           switch (operator as SearchOperation) {
-            case ':': conditions.push(ilike(column, `%${parsedValue}%`)); break;
+            case ':': {
+              const likeValue = typeof parsedValue === 'string' ? escapeLike(parsedValue) : parsedValue
+              conditions.push(ilike(column, `%${likeValue}%`)); break;
+            }
             case '=': conditions.push(eq(column, parsedValue)); break;
             case '!=': conditions.push(ne(column, parsedValue)); break;
             case '>': conditions.push(gt(column, parsedValue)); break;
@@ -121,7 +131,7 @@ export async function paginate<T>(
   if (keywordStr && config.searchColumns && config.searchColumns.length > 0) {
     // Create an ILIKE condition for all columns specified in searchColumns.
     const searchOrConditions = config.searchColumns.map((col) =>
-      ilike(col, `%${keywordStr}%`)
+      ilike(col, `%${escapeLike(keywordStr)}%`)
     )
 
     const globalSearchCondition = or(...searchOrConditions)
@@ -149,7 +159,7 @@ export async function paginate<T>(
   ])
 
   const totalElements = totalResult[0]?.value ?? 0
-  const totalPages = Math.ceil(totalElements / size)
+  const totalPages = Math.ceil(totalElements / limit)
   const last = currentPage >= totalPages - 1 || totalElements === 0
 
   const dataList = config.transform ? await Promise.all(items.map(config.transform)) : items

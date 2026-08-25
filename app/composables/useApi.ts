@@ -33,12 +33,18 @@ export const useApi = () => {
   const localeCookie = useCookie('locale');
   const event = import.meta.server ? useRequestEvent() : null;
   const requestHeaders = import.meta.server ? useRequestHeaders(['cookie']) : {};
-  const responseCookies = new Map<string, string>();
 
   // const toast = import.meta.client ? useToast() : null;
-  const { refreshTokenDays } = useConfiguration()
-  const ttlDays = Number(refreshTokenDays) || 7;
   const nuxtApp = useNuxtApp();
+
+  // Share refreshed cookies across all useApi() instances of the current
+  // request. A per-instance map would make a second SSR instance replay the
+  // stale cookie header after another instance already rotated the refresh
+  // token, causing a redundant refresh that fails and forces a logout.
+  if (!nuxtApp._responseCookies) {
+    nuxtApp._responseCookies = new Map<string, string>();
+  }
+  const responseCookies: Map<string, string> = nuxtApp._responseCookies;
 
   const getBaseHeaders = () => {
     return {
@@ -52,7 +58,13 @@ export const useApi = () => {
     nuxtApp._refreshPromise = null;
 
     if (import.meta.client) {
-      await navigateTo('/auth/login');
+      await nuxtApp.runWithContext(async () => {
+        // Clear the client-side auth state so the route middleware
+        // doesn't treat the dead session as logged in and bounce
+        // the user away from the login page.
+        useAuth().clearAuth();
+        await navigateTo('/auth/login');
+      });
     }
   }
 

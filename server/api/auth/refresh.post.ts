@@ -13,7 +13,7 @@ const COOKIE_BASE = {
 }
 
 export default defineEventHandler(async (event): Promise<ResponseEntity<AppUser>> => {
-  const { public: publicConfig, accessTokenTtl, refreshTokenTtlDays } = useRuntimeConfig()
+  const { public: publicConfig, accessTokenTtl, refreshTokenDays } = useRuntimeConfig()
 
   const refreshToken = getCookie(event, publicConfig.refreshJwtKeyName)
   if (!refreshToken) {
@@ -79,7 +79,7 @@ export default defineEventHandler(async (event): Promise<ResponseEntity<AppUser>
   })
   setCookie(event, publicConfig.refreshJwtKeyName, newRefreshToken, {
     ...COOKIE_BASE,
-    maxAge: Number(refreshTokenTtlDays ?? 7) * 24 * 60 * 60,
+    maxAge: Number(refreshTokenDays ?? 7) * 24 * 60 * 60,
   })
 
   return {

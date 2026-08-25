@@ -1,5 +1,5 @@
 import { schema, useDb } from '#server/database/client'
-import { eq } from 'drizzle-orm'
+import { and, eq, ne } from 'drizzle-orm'
 import { z } from 'zod'
 import { ResponseEntity } from '~/types/common'
 
@@ -61,11 +61,25 @@ export default defineEventHandler(async (event): Promise<ResponseEntity<void>> =
     throw createError({ statusCode: 500, statusMessage: 'Data saving failed.' })
   }
 
-  // Remove all tokens
-  if (body.logoutAllDevices === true) {
+  // Revoke sessions: a password change must invalidate existing sessions,
+  // otherwise a stolen session survives the new password indefinitely.
+  const { public: publicConfig } = useRuntimeConfig()
+  const currentRefreshToken = getCookie(event, publicConfig.refreshJwtKeyName)
+
+  if (body.logoutAllDevices === true || !currentRefreshToken) {
+    // Revoke every session for this user.
     await db
       .delete(schema.accessToken)
       .where(eq(schema.accessToken.appUser, BigInt(auth.sub)));
+  } else {
+    // Revoke all other devices but keep the current session alive
+    // (the auth middleware requires this row to exist for requests to pass).
+    await db
+      .delete(schema.accessToken)
+      .where(and(
+        eq(schema.accessToken.appUser, BigInt(auth.sub)),
+        ne(schema.accessToken.token, currentRefreshToken)
+      ));
   }
 
   return {

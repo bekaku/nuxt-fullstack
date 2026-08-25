@@ -7,6 +7,7 @@ import { loadUserPermissions } from '../../utils/permission'
 import { nextId } from '../../utils/snowflake'
 import { AppUser } from '~/types/models'
 import { ResponseEntity } from '~/types/common'
+import { clearLoginFailures, getLoginRateLimitKey, isLoginBlocked, recordLoginFailure } from '~~/server/utils/loginRateLimit'
 
 const bodySchema = z.object({
   emailOrUsername: z.string().min(1),
@@ -22,10 +23,28 @@ const COOKIE_BASE = {
   path: '/',
 }
 
+// Precomputed bcrypt hash (cost must match SALT_ROUNDS) of a random secret.
+// Compared against when the account doesn't exist so that response timing
+// is identical for existing and non-existing accounts (timing oracle).
+const DUMMY_HASH = '$2b$10$pDALgPSVnA5bIFvC/nP7m.WESnazkjUqx/RL0zlPhBESeo0C9oXxy'
+
+// Same generic message for every failure — never reveal whether the account
+// exists, is deleted, or is suspended (account enumeration).
+const GENERIC_LOGIN_ERROR = 'The email address/username or password is incorrect.'
+
 export default defineEventHandler(async (event): Promise<ResponseEntity<AppUser>> => {
 
   const body = await readValidatedBody(event, bodySchema.parse)
   const db = useDb()
+
+  // --- Rate limiting: block after repeated failures per identifier+IP ---
+  const ip = getRequestIP(event, { xForwardedFor: true }) ?? 'unknown'
+  const rateLimitKey = getLoginRateLimitKey(body.emailOrUsername, ip)
+  const blockedForSeconds = await isLoginBlocked(rateLimitKey)
+  if (blockedForSeconds > 0) {
+    setResponseHeader(event, 'retry-after', blockedForSeconds)
+    throw createError({ statusCode: 429, statusMessage: 'Too many failed login attempts. Please try again later.' })
+  }
 
   const [user] = await db
     .select()
@@ -33,24 +52,19 @@ export default defineEventHandler(async (event): Promise<ResponseEntity<AppUser>
     .where(or(eq(schema.appUser.email, body.emailOrUsername), eq(schema.appUser.username, body.emailOrUsername)))
     .limit(1)
 
-  if (!user || !user.password || user.deleted) {
-    throw createError({ statusCode: 403, statusMessage: 'The email address/username or password is incorrect.' })
+  // Always run bcrypt (dummy hash when the user doesn't exist) to equalize timing.
+  const validPassword = await verifyPassword(body.password, user?.password ?? DUMMY_HASH)
+  if (!user || !user.password || !validPassword || user.deleted || !user.active) {
+    await recordLoginFailure(rateLimitKey)
+    throw createError({ statusCode: 403, statusMessage: GENERIC_LOGIN_ERROR })
   }
 
-  if (!user.active) {
-    throw createError({ statusCode: 403, statusMessage: 'This user account has been suspended.' })
-  }
-
-  const validPassword = await verifyPassword(body.password, user.password)
-  if (!validPassword) {
-    throw createError({ statusCode: 403, statusMessage: 'The email address/username or password is incorrect.' })
-  }
+  await clearLoginFailures(rateLimitKey)
 
   const { roles, permissions } = await loadUserPermissions(user.id)
 
   // Record device/IP addresses to user_agent and login_log.
   const uaString = getHeader(event, 'user-agent') ?? 'unknown'
-  const ip = getRequestIP(event, { xForwardedFor: true }) ?? 'unknown'
 
   let [userAgentRow] = await db
     .select()

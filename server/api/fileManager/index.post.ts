@@ -8,6 +8,9 @@ import { FileManager } from '~/types/models'
 import { mapToFileManager } from '~~/server/utils/modelMapper'
 import { getFileMimeType } from '~~/server/utils'
 
+const MAX_TOTAL_CHUNKS = 1000
+const DEFAULT_MAX_FILE_SIZE_BYTES = 52428800
+
 export default defineEventHandler(async (event): Promise<ResponseEntity<FileManager | void>> => {
   const auth = getAuthUser(event)
   if (!auth) {
@@ -52,15 +55,45 @@ export default defineEventHandler(async (event): Promise<ResponseEntity<FileMana
     throw createError({ statusCode: 400, message: 'Missing chunk, filename, or uploadId' })
   }
 
-  const ext = path.extname(originalFilename)
-  const uniqueFilename = `${auth.sub}_${uniqueId}${ext}`
+  // Sanitize client-controlled values to prevent path traversal (e.g. ../../)
+  const sanitizedUniqueId = uniqueId.replace(/[^A-Za-z0-9._-]/g, '_').replace(/^\.+/, '')
+  if (!sanitizedUniqueId) {
+    throw createError({ statusCode: 400, message: 'Invalid uploadId' })
+  }
+  if (!Number.isInteger(chunkIndex) || chunkIndex < 0
+    || !Number.isInteger(totalChunks) || totalChunks < 1
+    || totalChunks > MAX_TOTAL_CHUNKS || chunkIndex >= totalChunks) {
+    throw createError({ statusCode: 400, message: 'Invalid chunk index or total chunks' })
+  }
+  const rawExt = path.extname(originalFilename).toLowerCase()
+  const ext = /^[a-z0-9]{1,10}$/.test(rawExt.slice(1)) ? rawExt : ''
+  const uniqueFilename = `${auth.sub}_${sanitizedUniqueId}${ext}`
 
-  const uploadDir = path.join(process.cwd(), cdnDirectory)
+  // Server-side MIME whitelist — client-side acceptFiles is advisory only.
+  // Blocks executable/browser-interpretable types (.html -> text/html,
+  // .svg -> image/svg+xml, etc.) that could be served inline from /cdn/.
+  const acceptedMimes: string[] = config.public.acceptFiles ?? []
+  const uploadMime = mime.lookup(uniqueFilename) || 'application/octet-stream'
+  if (acceptedMimes.length > 0 && !acceptedMimes.includes(uploadMime)) {
+    throw createError({ statusCode: 415, message: 'File type not allowed' })
+  }
+
+  // Server-side size limit (client-side limitFileUploadSize is advisory only)
+  const maxFileSizeBytes = Number(config.public.limitFileUploadSize) || DEFAULT_MAX_FILE_SIZE_BYTES
+  if (fileChunk.length > maxFileSizeBytes) {
+    throw createError({ statusCode: 413, message: 'Chunk exceeds the maximum upload size' })
+  }
+
+  const uploadDir = path.resolve(path.join(process.cwd(), cdnDirectory))
   const tempDir = path.join(uploadDir, 'temp')
+
+  const tempFilePath = path.resolve(path.join(tempDir, `${uniqueFilename}.part-${chunkIndex}`))
+  if (!tempFilePath.startsWith(tempDir + path.sep)) {
+    throw createError({ statusCode: 400, message: 'Invalid uploadId' })
+  }
 
   await fs.mkdir(tempDir, { recursive: true })
 
-  const tempFilePath = path.join(tempDir, `${uniqueFilename}.part-${chunkIndex}`)
   await fs.writeFile(tempFilePath, fileChunk)
 
   if (chunkIndex === totalChunks - 1) {
@@ -86,7 +119,10 @@ export default defineEventHandler(async (event): Promise<ResponseEntity<FileMana
     const yearMonth = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}`
     const targetDir = path.join(uploadDir, yearMonth)
     await fs.mkdir(targetDir, { recursive: true })
-    const finalFilePath = path.join(targetDir, uniqueFilename)
+    const finalFilePath = path.resolve(path.join(targetDir, uniqueFilename))
+    if (!finalFilePath.startsWith(uploadDir + path.sep)) {
+      throw createError({ statusCode: 400, message: 'Invalid uploadId' })
+    }
 
     // Improve I/O Performance: Enable File Handle only once.
     const fileHandle = await fs.open(finalFilePath, 'w')
@@ -109,6 +145,11 @@ export default defineEventHandler(async (event): Promise<ResponseEntity<FileMana
 
     const stats = await fs.stat(finalFilePath)
     const fileSizeBytes = stats.size
+
+    if (fileSizeBytes > maxFileSizeBytes) {
+      await fs.unlink(finalFilePath).catch(() => { })
+      throw createError({ statusCode: 413, message: 'Uploaded file exceeds the maximum size' })
+    }
 
     const fileMimeType = mime.lookup(finalFilePath) || 'application/octet-stream'
 

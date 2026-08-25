@@ -27,6 +27,7 @@ export default defineEventHandler(async (event): Promise<ResponseEntity<AppUser>
 
   const duplicateCondition = or(
     eq(schema.appUser.email, body.email),
+    eq(schema.appUser.username, body.username)
   )
 
   const checkCondition = auth.sub
@@ -40,10 +41,10 @@ export default defineEventHandler(async (event): Promise<ResponseEntity<AppUser>
     .limit(1)
 
   if (existingUser) {
-    if (existingUser.email === body.email) {
-      throw createError({ statusCode: 409, statusMessage: 'This email address is already in use.' })
+    if (existingUser.username === body.username) {
+      throw createError({ statusCode: 409, statusMessage: 'This username is already in use.' })
     }
-    throw createError({ statusCode: 409, statusMessage: 'This username is already in use.' })
+    throw createError({ statusCode: 409, statusMessage: 'This email address is already in use.' })
   }
 
   // check if the user exists

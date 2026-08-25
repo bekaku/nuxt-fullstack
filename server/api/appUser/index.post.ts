@@ -51,10 +51,11 @@ export default defineEventHandler(async (event): Promise<ResponseEntity<AppUser>
 
   let resultUser;
 
-  //update mode
+  // Capture current avatar/cover ids before saving so old files can be
+  // removed after a successful commit.
+  let oldAvatarFileId: bigint | string | null = null;
+  let oldCoverFileId: bigint | string | null = null;
   if (body.id) {
-
-    // check if the user exists
     const [existUser] = await db
       .select({
         id: schema.appUser.id,
@@ -70,85 +71,76 @@ export default defineEventHandler(async (event): Promise<ResponseEntity<AppUser>
         statusMessage: 'Data not found'
       })
     }
+    oldAvatarFileId = existUser.avatarFileId
+    oldCoverFileId = existUser.coverFileId
+  }
 
+  // User + roles must be written in ONE transaction so an invalid role id
+  // rolls back the user save too (no half-updated/half-created users).
+  resultUser = await db.transaction(async (tx) => {
 
-    const updateData: any = {
-      email: body.email,
-      username: body.username,
-      active: body.active,
-      updatedUser: BigInt(auth.sub)
-    }
-
-    if (body.password) {
-      const { hash } = await hashPassword(body.password)
-      updateData.password = hash
-    }
-
-    if (body.avatarFileId) {
-      updateData.avatarFileId = body.avatarFileId
-    }
-    if (body.coverFileId) {
-      updateData.coverFileId = body.coverFileId
-    }
-
-    const [updated] = await db
-      .update(schema.appUser)
-      .set(updateData)
-      .where(eq(schema.appUser.id, BigInt(body.id)))
-      .returning({
-        id: schema.appUser.id,
-      })
-
-
-    //delete old file if exist
-    if (body.avatarFileId) {
-
-      //delete old avatar if exist
-      if (existUser.avatarFileId) {
-        await deleteFileManager(existUser.avatarFileId);
-      }
-    }
-    if (body.coverFileId) {
-      //delete old cover if exist
-      if (existUser.coverFileId) {
-        await deleteFileManager(existUser.coverFileId);
-      }
-    }
-
-    resultUser = updated
-  } else {
-    // create mode
-    if (!body.password) {
-      throw createError({ statusCode: 400, statusMessage: 'A password is required to create a new user.' })
-    }
-
-    const { hash } = await hashPassword(body.password)
-
-    const [created] = await db
-      .insert(schema.appUser)
-      .values({
+    //update mode
+    if (body.id) {
+      const updateData: any = {
         email: body.email,
         username: body.username,
-        password: hash,
-        active: body.active || true,
-        avatarFileId: body.avatarFileId ? BigInt(body.avatarFileId) : null,
-        coverFileId: body.coverFileId ? BigInt(body.coverFileId) : null,
-        createdUser: BigInt(auth.sub),
+        active: body.active,
         updatedUser: BigInt(auth.sub)
-      })
-      .returning({
-        id: schema.appUser.id,
-      })
+      }
 
-    resultUser = created
-    setResponseStatus(event, 201)
-  }
+      if (body.password) {
+        const { hash } = await hashPassword(body.password)
+        updateData.password = hash
+      }
 
-  if (!resultUser) {
-    throw createError({ statusCode: 500, statusMessage: 'Data saving failed.' })
-  }
+      if (body.avatarFileId) {
+        updateData.avatarFileId = body.avatarFileId
+      }
+      if (body.coverFileId) {
+        updateData.coverFileId = body.coverFileId
+      }
 
-  const result = await db.transaction(async (tx) => {
+      const [updated] = await tx
+        .update(schema.appUser)
+        .set(updateData)
+        .where(eq(schema.appUser.id, BigInt(body.id)))
+        .returning({
+          id: schema.appUser.id,
+        })
+
+      resultUser = updated
+    } else {
+      // create mode
+      if (!body.password) {
+        throw createError({ statusCode: 400, statusMessage: 'A password is required to create a new user.' })
+      }
+
+      const { hash } = await hashPassword(body.password)
+
+      const [created] = await tx
+        .insert(schema.appUser)
+        .values({
+          email: body.email,
+          username: body.username,
+          password: hash,
+          active: body.active ?? true,
+          avatarFileId: body.avatarFileId ? BigInt(body.avatarFileId) : null,
+          coverFileId: body.coverFileId ? BigInt(body.coverFileId) : null,
+          createdUser: BigInt(auth.sub),
+          updatedUser: BigInt(auth.sub)
+        })
+        .returning({
+          id: schema.appUser.id,
+        })
+
+      resultUser = created
+      setResponseStatus(event, 201)
+    }
+
+    if (!resultUser) {
+      throw createError({ statusCode: 500, statusMessage: 'Data saving failed.' })
+    }
+
     // Clear all existing permissions first to prepare for installing new ones.
     const currentUserId = BigInt(resultUser.id);
     await tx
@@ -165,7 +157,17 @@ export default defineEventHandler(async (event): Promise<ResponseEntity<AppUser>
 
       await tx.insert(schema.appUserRole).values(useRoleData);
     }
+
+    return resultUser;
   })
+
+  //delete old file if exist (only after the transaction committed successfully)
+  if (body.avatarFileId && oldAvatarFileId && BigInt(oldAvatarFileId) !== BigInt(body.avatarFileId)) {
+    await deleteFileManager(BigInt(oldAvatarFileId));
+  }
+  if (body.coverFileId && oldCoverFileId && BigInt(oldCoverFileId) !== BigInt(body.coverFileId)) {
+    await deleteFileManager(BigInt(oldCoverFileId));
+  }
 
   const data = await findUserById(BigInt(resultUser.id))
   if (!data) {

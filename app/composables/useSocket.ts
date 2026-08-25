@@ -26,6 +26,18 @@ export const useSocket = (options: Options) => {
       pongTimeout: 10000
     },
     immediate: import.meta.client,
+    // Frames sent before the socket reaches OPEN are silently dropped by
+    // VueUse, so (re)subscribe to the topic on every successful connection,
+    // including auto-reconnects.
+    onConnected() {
+      send(
+        JSON.stringify({
+          action: "SUBSCRIBE",
+          type: options.type,
+          topic: options.topic,
+        }),
+      );
+    },
     onMessage: (ws, event) => {
       if (event.data === 'ping' || event.data === 'pong') {
         return;
@@ -42,20 +54,8 @@ export const useSocket = (options: Options) => {
     }
   });
 
-  const subscribeTopic = (type: WebSocketSubscribeType, topic: string) => {
-    if (import.meta.client) {
-      send(
-        JSON.stringify({
-          action: "SUBSCRIBE",
-          type,
-          topic,
-        }),
-      );
-    }
-  }
   const reconnect = () => {
     open();
-    subscribeTopic(options.type, options.topic);
   }
   const broadcastEvent = <T,>(payload: WebSocketBroadcast<T>) => {
     send(
@@ -65,7 +65,6 @@ export const useSocket = (options: Options) => {
       }),
     );
   };
-  subscribeTopic(options.type, options.topic);
 
   if (import.meta.client) {
     onBeforeUnmount(() => {
