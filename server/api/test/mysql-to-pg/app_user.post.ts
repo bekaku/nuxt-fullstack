@@ -97,16 +97,12 @@ export default defineEventHandler(async (event) => {
   console.log('Migration completed successfully!')
 
   /**
-   * (Optional) 7. อัปเดต Sequence ถ้าย้ายข้อมูลเสร็จแล้ว
-   * ถ้าใน PostgreSQL คอลัมน์ id มีการทำ Auto-increment (เช่นใช้ serial หรือ generatedAlwaysAsIdentity)
-   * คุณต้องอัปเดตเลข Sequence ให้รันต่อจาก ID สูงสุดที่ย้ายเข้ามา
-   *
    * ก. การจัดการลำดับ Foreign Key (Dependency Order)
     วิธีที่ 1 (แนะนำสำหรับ Bulk Migration): ปิดการตรวจสอบ Foreign Key ชั่วคราวใน PostgreSQL ระหว่างนำเข้าข้อมูล:
 
     SQL
     SET session_replication_role = 'replica';
-    -- ทำการย้ายข้อมูลทั้งหมด --
+    -- หลังทำการย้ายข้อมูลทั้งหมด --
     SET session_replication_role = 'origin';
     วิธีที่ 2: ย้ายตารางแม่ (Parent Tables) ก่อนตารางลูก (Child Tables) ตามลำดับความสัมพันธ์
    */

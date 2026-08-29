@@ -7,6 +7,17 @@ import { escapeSql } from './helpers'
 import { tableMappings } from './mappings' // นำเข้า Config 100 ตาราง
 
 // npx tsx server/database/migrate/run-engine.ts
+  /**
+   * ก. การจัดการลำดับ Foreign Key (Dependency Order)
+    วิธีที่ 1 (แนะนำสำหรับ Bulk Migration): ปิดการตรวจสอบ Foreign Key ชั่วคราวใน PostgreSQL ระหว่างนำเข้าข้อมูล:
+
+    SQL
+    SET session_replication_role = 'replica';
+    -- ทำการย้ายข้อมูลทั้งหมด --
+    SET session_replication_role = 'origin';
+    วิธีที่ 2: ย้ายตารางแม่ (Parent Tables) ก่อนตารางลูก (Child Tables) ตามลำดับความสัมพันธ์
+   */
+
 export async function runEngine() {
   const cdnDirectory = process.env.NUXT_CDN_DIRECTORY
   if (!cdnDirectory) throw new Error('NUXT_CDN_DIRECTORY is not set')
