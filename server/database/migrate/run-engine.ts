@@ -37,7 +37,11 @@ export async function runEngine() {
     const filePath = join(targetDir, `V1_${filePrefix}__init_${config.sourceTable}.sql`)
 
     console.log(`\n[${i + 1}/${tableMappings.length}] Exporting: ${config.sourceTable} -> ${config.targetTable}`)
-    await writeFile(filePath, `-- Custom Migration for ${config.sourceTable}\n\n`, 'utf-8')
+    const fileHeader = `-- Custom Migration for ${config.sourceTable}
+SET session_replication_role = 'replica';
+
+`
+    await writeFile(filePath, fileHeader, 'utf-8')
 
     let lastCursorValue: any = 0
     let totalMigrated = 0
@@ -74,6 +78,7 @@ ON CONFLICT (${cursorCol}) DO NOTHING;
 
       console.log(`  - Exported ${totalMigrated} rows... (Last ${cursorCol}: ${lastCursorValue})`)
     }
+    await appendFile(filePath, `\nSET session_replication_role = 'origin';\n`, 'utf-8')
   }
 
   console.log(`\n🎉 Success! All customized SQL files are generated at ${targetDir}`)
