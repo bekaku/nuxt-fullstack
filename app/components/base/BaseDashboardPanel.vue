@@ -8,12 +8,16 @@ const props = withDefaults(
     maxSize?: number;
     defaultSize?: number;
     resizable?: boolean;
+    collapseable?: boolean;
     ui?: DashboardPanelProps["ui"];
+    bodyClass?: string;
   }>(),
   {
     resizable: false,
+    collapseable: false,
     ui: () => ({
       root: "gap-1",
+      body: "pt-(--ui-header-height)",
     }),
   },
 );
@@ -43,14 +47,18 @@ const items = [
     :min-size="minSize"
     :max-size="maxSize"
     :default-size="defaultSize"
+    :ui
   >
     <template #header>
       <slot name="header">
         <!-- class="bg-default" -->
-        <UDashboardNavbar :title="title" :ui >
+        <UDashboardNavbar
+          :title="title"
+          class="absolute top-0 inset-x-0 z-20 h-(--ui-header-height) bg-default/70 backdrop-blur-xl border-b border-default/60"
+        >
           <template #leading>
             <slot name="leading">
-              <UDashboardSidebarCollapse />
+              <UDashboardSidebarCollapse v-if="collapseable" />
             </slot>
           </template>
           <template #trailing>
@@ -59,7 +67,6 @@ const items = [
 
           <template #right>
             <slot name="navbarRight">
-              <BaseLangugeSwitcher />
               <BaseThemeSwitcher />
               <UTooltip text="Notifications" :shortcuts="['N']">
                 <UButton
@@ -76,32 +83,42 @@ const items = [
                   </UChip>
                 </UButton>
               </UTooltip>
-
-              <!-- <UDropdownMenu :items="items">
-                <UButton icon="i-lucide-plus" size="md" class="rounded-full" />
-              </UDropdownMenu> -->
             </slot>
           </template>
         </UDashboardNavbar>
 
-        <slot name="toolbar">
-          <UDashboardToolbar
-            v-if="$slots.toolbar || $slots.toolbarLeft || $slots.toolbarRight"
-          >
-            <template #left>
-              <slot name="toolbarLeft" />
-            </template>
-            <template #right>
-              <slot name="toolbarRight" />
-            </template>
-          </UDashboardToolbar>
-        </slot>
+        <div
+          v-if="$slots.toolbar || $slots.toolbarLeft || $slots.toolbarRight"
+          class="mt-(--ui-header-height)"
+        >
+          <slot name="toolbar">
+            <UDashboardToolbar
+              v-if="$slots.toolbar || $slots.toolbarLeft || $slots.toolbarRight"
+            >
+              <template #left>
+                <slot name="toolbarLeft" />
+              </template>
+              <template #right>
+                <slot name="toolbarRight" />
+              </template>
+            </UDashboardToolbar>
+          </slot>
+        </div>
       </slot>
     </template>
 
     <template #body>
-      <div class="w-full max-w-[1440px] mx-auto">
+      <div
+        :class="
+          cssMerge(
+            'w-full max-w-[1440px] mx-auto pt-(--ui-header-height)',
+            bodyClass,
+          )
+        "
+      >
         <slot />
+
+        <!-- <div class="h-12 sm:h-16 shrink-0 w-full"></div> -->
       </div>
     </template>
   </UDashboardPanel>

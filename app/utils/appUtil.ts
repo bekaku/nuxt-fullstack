@@ -39,6 +39,14 @@ export const isListResponse = (obj: any): obj is ApiResponse<any> => {
 export const isNumber = (value: string | number): boolean => {
   return value != null && value !== '' && !isNaN(Number(value.toString()));
 };
+/**
+* Check if a String contains only numbers (0-9).
+* @param {string} str - The text to check.
+* @returns {boolean} - True if it's all numbers, false if it's not or is empty.
+ */
+export const isNumericOnly = (str: any)=> {
+  return typeof str === 'string' && /^\d+$/.test(str);
+}
 export const capitalizeFirstLetter = (str: string) => {
   return str.charAt(0).toUpperCase() + str.slice(1);
 };

@@ -328,7 +328,10 @@
     "settingEmailDescription": "Used to sign in, for email receipts and product updates.",
     "settingUsernameDescription": "Your unique username for logging in and your profile URL.",
     "updatePasswordSub": "Confirm your current password before setting a new one.",
-    "addImagelink": "Add image link"
+    "addImagelink": "Add image link",
+    "copyToClipboard": "Copy to clipboard",
+    "confirm": "Confirm",
+    "generateApiKey": "Generate API KEY"
   },
   "drive": {
     "title": "My Files",
@@ -453,13 +456,30 @@
     "monthShorts": "Jan._Feb._Mar._Apr._May_Jun._Jul._Aug._Sep._Oct._Nov._Dec."
   },
   "chats": {
+    "chatWithAi": "Chat with AI",
     "chats": "Chats",
     "media": "Media",
     "files": "Files",
     "all": "All",
     "groups": "Groups",
     "favorite": "Favorite",
+    "unfavorite": "Unfavorite",
+    "newChat": "New Chat",
+    "recent": "Recent",
+    "searchChat": "Search chats",
     "typeMessage": "Type your message"
+  },
+  "ai": {
+    "thinking": "Thinking",
+    "thinkingShow": "Show the thought process.",
+    "promtLabel": "Type your message here...",
+    "aiMistakeable": "AI may provide incorrect answers. Please verify important information before use.",
+    "source": "Source",
+    "syncDatabaseSchema": "Sync database schema",
+    "chatHistory": "Chat history",
+    "chatHistoryNotfound": "No chat history found.",
+    "modelLoadFailed": "Unable to load the AI model",
+    "modelPreparing": "Preparing the AI system"
   },
   "authen": {
     "login": "Login",

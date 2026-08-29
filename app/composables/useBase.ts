@@ -140,14 +140,28 @@ export const useBase = () => {
     );
   };
 
-  const writeToClipboard = (text: string) => {
-    if (import.meta.server) {
+  const writeToClipboard = async(text: string) => {
+       if (import.meta.server) {
       return;
     }
-    navigator.clipboard.writeText(text);
-     if (nuxtApp.$toast) {
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch (error) {
+      console.error('Failed to copy to clipboard', error);
+      if (nuxtApp.$toast) {
+        nuxtApp.$toast.add({
+          description: t('error.internalServererror'),
+          icon: 'lucide:octagon-alert',
+          color: 'error'
+        })
+      }
+      return;
+    }
+    if (nuxtApp.$toast) {
       nuxtApp.$toast.add({
-        description: t('success.copy')
+        description: t('success.copy'),
+        duration: 1000,
+        progress: false
       })
     }
   }

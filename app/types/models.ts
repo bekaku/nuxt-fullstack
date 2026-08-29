@@ -1,6 +1,9 @@
+import type { AvatarProps } from "@nuxt/ui";
 import type { ChatMessageType, ChatType, EmojiType, FileMimeType, ILanguge, LoginLogType, UploadStatus, VideoSrc, VideoTrack } from "./common";
 export type IPermissionOperationType = 1 | 2 | 3; // 1=crud, 2=report, 3=other
 export type PermissionType = "CRUD" | "REPORT" | "OTHER" | "FEATURE";
+export type AiRole = "user" | "assistant" | "system";
+export type AiChatSourceType = "DOCUMENT" | "DATABASE_TABLE" | "DATABASE_QUERY";
 export type IdType = bigint | string | null | undefined;
 export interface Id {
   id?: IdType
@@ -205,4 +208,37 @@ export interface GroupChatMsgRequest {
 export interface FavoriteMenu extends Id {
   url: string | null
   appUser?: IdType
+}
+export interface AiChat extends Id {
+  title: string
+  updatedDate: string
+  pin: boolean
+}
+export interface AiChatMessage extends Id {
+  title: string
+  aiRole: AiRole
+  content: string
+  createdDate: string
+}
+export interface ChatSourceReference {
+  type?: AiChatSourceType
+  fileName?: string
+  documentType?: string
+  schema?: string
+  tableName?: string
+  query?: string
+  score?: number
+  title?: string
+}
+export interface ChatMessage {
+  id: IdType
+  role: AiRole
+  content: string
+  parts?: any[]
+  name?: string
+  avatar?: AvatarProps
+  thinkingContent?: string
+  isThinkingDone: boolean,
+  isThinkingOpen?: boolean,
+  sources?: any[]
 }

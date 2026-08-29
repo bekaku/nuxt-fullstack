@@ -11,6 +11,7 @@ const { appNavigations, addFavoriteMenus, removeFavoriteMenus } = useAuth();
 const { getFavoriteNavigations, findByUrl, getFaveroteIndex, isFaveroteExist } =
   useMenu();
 const open = ref(false);
+const { isDark, appLayout } = useTheme();
 const groups = computed(() => [
   {
     id: "links",
@@ -111,18 +112,42 @@ const onUnFav = async (e: any, item: AppNavigationMenuItem) => {
 
 <template>
   <UDashboardGroup unit="rem">
-    <!-- class="bg-elevated/25" -->
-     <!-- bg-default -->
     <UDashboardSidebar
       id="default"
       v-model:open="open"
       collapsible
       resizable
-      class="bg-elevated/25"
+      :class="
+        appLayout == 'boxed'
+          ? 'border-r-0 py-4 dark:[--ui-bg-elevated:var(--ui-color-neutral-900)]'
+          : ''
+      "
       :ui="{ footer: 'lg:border-t lg:border-default' }"
+      :menu="{ inset: true }"
     >
       <template #header="{ collapsed }">
-        <UserMenu :collapsed="collapsed" />
+        <!-- <TeamsMenu :collapsed="collapsed" /> -->
+        <div class="flex w-full justify-between">
+          <UButton
+            v-if="!collapsed"
+            :avatar="{
+              src: !isDark ? '/logo/logo-black.png' : '/logo/logo-white.png',
+              alt: 'App',
+            }"
+            to="/"
+            variant="ghost"
+            :square="collapsed"
+            class="data-[state=open]:bg-elevated cursor-pointer justify-start"
+            :class="[!collapsed && 'py-2']"
+            :ui="{
+              leadingAvatar: [
+                'rounded-none  bg-transparent',
+                !collapsed ? 'size-10' : 'size-5',
+              ],
+            }"
+          />
+          <UDashboardSidebarCollapse icon="lucide:sidebar" />
+        </div>
       </template>
 
       <template #default="{ collapsed }">
@@ -185,26 +210,10 @@ const onUnFav = async (e: any, item: AppNavigationMenuItem) => {
             </div>
           </template>
         </UNavigationMenu>
-
-        <!-- <UNavigationMenu
-          :collapsed="collapsed"
-          :items="links[0]"
-          orientation="vertical"
-          tooltip
-          popover
-        />
-
-        <UNavigationMenu
-          :collapsed="collapsed"
-          :items="links[1]"
-          orientation="vertical"
-          tooltip
-          class="mt-auto"
-        /> -->
       </template>
 
       <template #footer="{ collapsed }">
-        <TeamsMenu :collapsed="collapsed" />
+        <UserMenu :collapsed="collapsed" />
       </template>
     </UDashboardSidebar>
 
@@ -214,8 +223,16 @@ const onUnFav = async (e: any, item: AppNavigationMenuItem) => {
       :color-mode="false"
     />
 
-    <slot />
-
+    <div
+      class="flex-1 flex min-w-0 bg-default/75"
+      :class="
+        appLayout == 'boxed'
+          ? 'm-4 lg:ml-0 rounded-lg ring ring-default/45 shadow-xs overflow-hidden'
+          : ''
+      "
+    >
+      <slot />
+    </div>
     <NotificationsSlideover />
   </UDashboardGroup>
 </template>

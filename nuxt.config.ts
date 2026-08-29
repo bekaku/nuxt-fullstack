@@ -188,6 +188,8 @@ export default defineNuxtConfig({
     accessTokenTtl: '15m',// default 15m
     refreshTokenDays: 7,
     cdnDirectory: 'cdn',
+    openrouterApiKey: 'OPENROUTER_API_KEY',
+    ollamaApiKey: 'OLLAMA_API_KEY',
     // Keys within public, will be also exposed to the client-side
     public: {
       apiDomain: 'localhost',//override by NUXT_PUBLIC_API_BASE in .env

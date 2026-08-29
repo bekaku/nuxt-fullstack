@@ -1,8 +1,9 @@
 import type { IThemeItem } from "~/types/common";
-
+type LayoutMode = 'fluid' | 'boxed';
 export const useTheme = () => {
   const colorMode = useColorMode()
 
+    const appLayout = useState<LayoutMode>('theme:layout', () => 'fluid');
   const isDark = computed({
     get() {
       return colorMode.value === 'dark'
@@ -20,6 +21,7 @@ export const useTheme = () => {
 
   return {
     colorMode,
+    appLayout,
     isDark,
     availableThemes
   }

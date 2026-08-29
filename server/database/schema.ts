@@ -24,6 +24,7 @@ export const permissionTypeEnum = pgEnum('permission_type_enum', [
   'OTHER',
   'FEATURE',
 ])
+export const aiRoleEnum = pgEnum('ai_role_enum', ['user', 'assistant', 'system'])
 /**
 * Note regarding Primary Key
 * The original data in starter_postgres.sql uses a Snowflake/TSID bigint (e.g., 350885844724224000).
@@ -39,6 +40,10 @@ export const auditFieldsSoftDelete = () => ({
   createdUser: bigint('created_user', { mode: 'bigint' }),
   updatedDate: timestamp('updated_date', { precision: 6 }).$onUpdate(() => new Date()), // อัปเดตเวลาให้อัตโนมัติเมื่อมีการแก้ไข
   updatedUser: bigint('updated_user', { mode: 'bigint' }),
+})
+export const fieldsCreatedUpdated = () => ({
+  createdDate: timestamp('created_date', { precision: 6 }).$defaultFn(() => new Date()),
+  updatedDate: timestamp('updated_date', { precision: 6 }).$onUpdate(() => new Date()), // อัปเดตเวลาให้อัตโนมัติเมื่อมีการแก้ไข
 })
 
 // ---------------------------------------------------------------------------
@@ -325,6 +330,28 @@ export const aiDocumentVectorIds = pgTable('ai_document_vector_ids', {
   vectorId: varchar('vector_id', { length: 255 }),
 })
 
+
+export const aiChat = pgTable(
+  'ai_chat',
+  {
+    id: id(),
+    title: varchar('title', { length: 255 }),
+    pin: boolean('pin').default(false),
+   ...auditFieldsSoftDelete()
+  },
+  (t) => [
+    index('idx_ai_chat_created_user').on(t.createdUser),
+  ]
+)
+export const aiChatMessage = pgTable('ai_chat_messages', {
+  id: id(),
+  role: aiRoleEnum('role').notNull(),
+  aiChat: bigint('ai_chat', { mode: 'bigint' })
+    .notNull()
+    .references(() => aiChat.id, { onDelete: 'cascade' }),
+  content: text('content').notNull(),
+  createdDate: timestamp('created_date', { precision: 6 }).$defaultFn(() => new Date()),
+})
 // ---------------------------------------------------------------------------
 // Relations (Used with Drizzle Query API, e.g., db.query.appUser.findFirst({ with: {...} }))
 // ---------------------------------------------------------------------------
@@ -409,3 +436,13 @@ export const fileManagerRelations = relations(fileManager, ({ one }) => ({
     references: [fileMime.id],
   }),
 }));
+export const aiChatRelations = relations(aiChat, ({ many }) => ({
+  messages: many(aiChatMessage),
+}))
+
+export const aiChatMessageRelations = relations(aiChatMessage, ({ one }) => ({
+  chat: one(aiChat, {
+    fields: [aiChatMessage.aiChat],
+    references: [aiChat.id]
+  }),
+}))

@@ -14,6 +14,11 @@ export const useMenu = () => {
         to: "/",
       },
       {
+        label: t('ai.chatWithAi'),
+        icon: "hugeicons:ai-magic",
+        to: "/ai-chats/c/new",
+      },
+      {
         label: t("nav.developers"),
         icon: "lucide:file-code",
         slot: 'developer-label' as const,
@@ -136,7 +141,7 @@ export const useMenu = () => {
             icon: "i-lucide-card-sim",
             to: "/example/form",
           },
-            {
+          {
             label: "Image cropper",
             icon: "hugeicons:image-crop",
             to: "/example/image-cropper",

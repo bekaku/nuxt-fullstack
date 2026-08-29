@@ -3,7 +3,7 @@
 @import "@nuxt/ui";
 
 @theme static {
-  /* --font-sans: "Public Sans", sans-serif; */
+  --font-sans: "Public Sans", sans-serif;
   /* --font-sans: 'Kanit', sans-serif; */
   /* --font-sans: 'Prompt', sans-serif; */
   --font-sans: "GoogleSans", sans-serif;
@@ -97,6 +97,11 @@
   --ui-text-inverted: white;
 }
 
+@layer base {
+  body {
+    @apply bg-neutral-50 dark:bg-neutral-950;
+  }
+}
 :root {
   --ui-radius: 0.375rem;
   --bg-main: var(--ui-color-neutral-50);

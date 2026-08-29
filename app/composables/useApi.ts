@@ -44,7 +44,7 @@ export const useApi = () => {
   if (!nuxtApp._responseCookies) {
     nuxtApp._responseCookies = new Map<string, string>();
   }
-  const responseCookies: Map<string, string> = nuxtApp._responseCookies;
+  const responseCookies: Map<string, string> = nuxtApp._responseCookies as any;
 
   const getBaseHeaders = () => {
     return {

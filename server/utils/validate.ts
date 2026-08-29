@@ -4,7 +4,7 @@ export const validateID = (event: H3Event): string => {
   if (!id) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'Permission ID is required'
+      statusMessage: 'ID is required'
     })
   }
 

@@ -329,7 +329,10 @@
     "settingEmailDescription": "ใช้สำหรับเข้าสู่ระบบ รับอีเมลแจ้งเตือน และรับข้อมูลอัปเดตผลิตภัณฑ์",
     "settingUsernameDescription": "ชื่อผู้ใช้เฉพาะของคุณสำหรับการเข้าสู่ระบบและ URL โปรไฟล์ของคุณ",
     "updatePasswordSub": "ตรวจสอบรหัสผ่านปัจจุบันของคุณก่อนตั้งรหัสผ่านใหม่",
-    "addImagelink": "เพิ่มลิงก์รูปภาพ"
+    "addImagelink": "เพิ่มลิงก์รูปภาพ",
+    "copyToClipboard": "คัดลอกไปยังคลิปบอร์ด",
+    "confirm": "ยืนยัน",
+    "generateApiKey": "สร้างคีย์"
   },
   "drive": {
     "title": "ไฟล์ของฉัน",
@@ -458,7 +461,24 @@
     "all": "ทั้งหมด",
     "groups": "กลุ่ม",
     "favorite": "ชื่นชอบ",
+    "unfavorite": "เลิกชื่นชอบ",
+    "newChat": "สร้างแชทใหม่",
+    "recent": "ล่าสุด",
+    "searchChat": "ค้นหาแชท",
     "typeMessage": "พิมพ์ข้อความ"
+  },
+  "ai": {
+    "thinking": "กำลังคิด",
+    "chatWithAi": "แชทกับ AI",
+    "thinkingShow": "แสดงกระบวนการคิด",
+    "promtLabel": "พิมพ์ข้อความของคุณที่นี่...",
+    "aiMistakeable": "AI อาจตอบผิดพลาดได้ โปรดตรวจสอบข้อมูลสำคัญก่อนนำไปใช้",
+    "source": "แหล่งที่มา",
+    "syncDatabaseSchema": "ปรับปรุงโครงสร้างฐานข้อมูล",
+    "chatHistory": "ประวัติการแชท",
+    "chatHistoryNotfound": "ยังไม่มีประวัติการแชท",
+    "modelLoadFailed": "ไม่สามารถโหลดโมเดล AI ได้",
+    "modelPreparing": "กำลังเตรียมระบบ AI"
   },
   "authen": {
     "login": "เข้าสู่ระบบ",

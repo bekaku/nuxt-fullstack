@@ -1,9 +1,27 @@
 
 import { th, enUS } from 'date-fns/locale';
-import { FORMAT_DATE_DD_MM_YY } from '~/utils/dateUtil';
+import { FORMAT_DATE_DD_MM_YY, FORMAT_DATE_TIME_ALT } from '~/utils/dateUtil';
 export const useDateFns = () => {
   const { $datefns } = useNuxtApp()
-  // const { t, locale } = useLang();
+  const { locale } = useLang();
+
+  const parseISO = (
+    date: string,
+  ): Date => {
+    return $datefns.parseISO(date);
+  };
+
+  const convertStringToDate = (
+    date: string,
+    iso: boolean = false,
+    format = FORMAT_DATE_TIME_ALT,
+  ): Date => {
+    if (iso) {
+      return $datefns.parseISO(date);
+    }
+    return $datefns.parse(date, format, new Date());
+    // return new Date(dateString);
+  };
   /**
    *
    * @param dateLeft the later date
@@ -20,8 +38,8 @@ export const useDateFns = () => {
   const getDateDiff = (dateLeft: Date | number, dateRight: Date | number) => {
     return $datefns.differenceInDays(dateRight, dateLeft);
   };
-  const getDateDiffNow = (dateString: string) => {
-    const d = removeTime(dateString);
+  const getDateDiffNow = (date: string) => {
+    const d = removeTime(date);
     const currentDate = removeTime(getCurrentDateByFormat());
     if (d == undefined || currentDate == undefined) {
       return 0;
@@ -29,78 +47,129 @@ export const useDateFns = () => {
     // return getDateDiff(Date.parse(d), new Date());
     return getDateDiff(Date.parse(d), Date.parse(currentDate));
   };
-  const getDateAutoFormatBy = (dateString: string | undefined, locale: string = 'th') => {
-    if (!dateString) {
+  const getDateAutoFormatBy = (options: {
+    date: string,
+    iso?: boolean,
+  }) => {
+    if (!options.date) {
       return '';
     }
 
-    const difDays = getDateDiffNow(dateString);
-    if (difDays > 0 && difDays < 365) {
-      return formatDateTime(dateString, FORMAT_DATE_DD_MM, locale);
-    } else if (difDays > 365) {
-      return formatDateTime(dateString, FORMAT_DATE_DD_MM_YY, locale);
+    const difDays = getDateDiffNow(options.date);
+    if (difDays >= 365) {
+      return formatDateTime({
+        date: options.date,
+        iso: options.iso,
+        format: FORMAT_DATE_DD_MM_YY
+      });
+    } else if (difDays >= 1 || difDays <= -1) {
+      return formatDateTime({
+        date: options.date,
+        iso: options.iso,
+        format: FORMAT_DATE_DD_MM
+      });
     }
-    return formatDateTime(dateString, FORMAT_DATE_HH_MM, locale);
+    return formatDateTime({
+      date: options.date,
+      iso: options.iso,
+      format: FORMAT_DATE_HH_MM
+    });
   };
-  const getDateTimeAutoFormatBy = (dateString: string | undefined, locale: string = 'th') => {
-    if (!dateString) {
+  const getDateTimeAutoFormatBy = (options: {
+    date: string,
+    iso?: boolean,
+  }) => {
+    if (!options.date) {
       return '';
     }
-    const difDays = getDateDiffNow(dateString);
+    const difDays = getDateDiffNow(options.date);
     if (difDays >= 0 && difDays < 1) {
-      return formatDateTime(dateString, FORMAT_DATE_HH_MM, locale);
+      return formatDateTime({
+        date: options.date,
+        iso: options.iso,
+        format: FORMAT_DATE_HH_MM
+      });
     } else if (difDays >= 1 && difDays < 365) {
-      return formatDateTime(dateString, FORMAT_DATE_DD_MM_HH_MM, locale);
+      return formatDateTime({
+        date: options.date,
+        iso: options.iso,
+        format: FORMAT_DATE_DD_MM_HH_MM
+      });
     } else {
-      return formatDateTime(dateString, FORMAT_DATE_TIME_ALT, locale);
+      return formatDateTime({
+        date: options.date,
+        iso: options.iso,
+        format: FORMAT_DATE_TIME_ALT
+      });
     }
   };
-  const getDateDistanceAutoFormatBy = (dateString: string | undefined, locale: string = 'th') => {
-    if (!dateString) {
+  const getDateDistanceAutoFormatBy = (options: {
+    date: string,
+    iso?: boolean,
+  }) => {
+    if (!options.date) {
       return '';
     }
-    const difDays = getDateDiffNow(dateString);
+    const difDays = getDateDiffNow(options.date);
     if (difDays >= 0 && difDays < 1) {
-      return formatDistanceFromNow(dateString, locale);
+      return formatDistanceFromNow({
+        date: options.date,
+        suffix: false,
+        iso: false
+      });
     } else if (difDays >= 1 && difDays < 365) {
-      return formatDateTime(dateString, FORMAT_DATE_DD_MM_HH_MM, locale);
+      return formatDateTime({
+        date: options.date,
+        iso: options.iso,
+        format: FORMAT_DATE_DD_MM_HH_MM
+      });
     } else {
-      return formatDateTime(dateString, FORMAT_DATE_TIME_ALT, locale);
+
+      return formatDateTime({
+        date: options.date,
+        iso: options.iso,
+        format: FORMAT_DATE_TIME_ALT
+      });
     }
   };
   /**
    * formatRelativeFromNow('2022-05-25 17:26:31', locale.value)
    * @param dateString
-   * @param locale
    * @returns
    */
   const formatRelativeFromNow = (
-    dateString: string | undefined,
-    locale: string = 'th'
+    options: {
+    date: string,
+    iso?: boolean,
+    format?: string,
+  }
   ) => {
-    if (!dateString) {
+    if (!options.date) {
       return;
     }
-    return $datefns.formatRelative(Date.parse(dateString), new Date(), {
-      locale: locale == 'th' ? th : enUS
+   const d= convertStringToDate(options.date, options.iso || false, options.format || FORMAT_DATE_TIME_ALT)
+    return $datefns.formatRelative(d, {
+      locale: locale.value == 'th' ? th : enUS
     });
   };
   /**
    * formatDistanceFromNow('2022-05-25 17:26:31', locale.value)
    * @param dateString
-   * @param locale
    * @param suffix
    * @returns
    */
-  const formatDistanceFromNow = (
-    dateString: string,
-    locale: string | unknown,
-    suffix: boolean = false
-  ) => {
-    return $datefns.formatDistanceToNow(convertStringToDate(dateString), {
-      locale: locale == 'th' ? th : enUS,
-      addSuffix: suffix
-    });
+  const formatDistanceFromNow = (options: {
+    date: string,
+    suffix?: boolean,
+    iso?: boolean,
+    format?: string,
+  }) => {
+    return $datefns.formatDistanceToNow(
+      convertStringToDate(options.date, options.iso || false, options.format || FORMAT_DATE_TIME_ALT),
+      {
+        locale: locale.value == 'th' ? th : enUS,
+        addSuffix: options.suffix || false
+      });
   };
   const getCurrentDateByFormat = (
     forMatString: string | undefined = FORMAT_DATE_YYYY_MM_DD//yyyy-MM-dd
@@ -112,33 +181,36 @@ export const useDateFns = () => {
    * formatDate('2022-05-25 17:26:31', 'dd MMMM yyyy', locale.value)
    * @param dateString
    * @param forMatString
-   * @param locale
    * @returns
    */
   const formatDateTime = (
-    dateString: string | undefined | null,
-    forMatString: string,
-    locale: string | unknown
+    options: {
+      date: string,
+      iso?: boolean,
+      format?: string,
+    }
   ) => {
-    if (!dateString) {
+    if (!options.date) {
       return '';
     }
-    return $datefns.format(convertStringToDate(dateString), forMatString, {
-      locale: locale == 'th' ? th : enUS
+    return $datefns.format(convertStringToDate(options.date, options.iso || false, options.format || FORMAT_DATE_TIME_ALT), options.format || FORMAT_DATE_TIME_ALT, {
+      locale: locale.value == 'th' ? th : enUS
     });
   };
-  const formatDate = (
-    dateString: string | undefined | null,
-    forMatString: string,
-    locale: string | unknown
+  const formatDate = (options: {
+    date: string,
+    suffix?: boolean,
+    iso?: boolean,
+    format?: string,
+  }
   ) => {
-    if (!dateString) {
+    if (!options.date) {
       return undefined;
     }
-    const d = removeTime(dateString);
+    const d = removeTime(options.date);
     return d
-      ? $datefns.format(convertStringToDate(d, FORMAT_DATE_YYYY_MM_DD), forMatString, {
-        locale: locale == 'th' ? th : enUS
+      ? $datefns.format(convertStringToDate(options.date, options.iso || false, options.format || FORMAT_DATE_YYYY_MM_DD), options.format || FORMAT_DATE_YYYY_MM_DD, {
+        locale: locale.value == 'th' ? th : enUS
       })
       : undefined;
   };
@@ -146,42 +218,54 @@ export const useDateFns = () => {
     return $datefns.format(d, forMatString);
   };
   const formatDistanceFrom = (
-    dateString: string,
-    fromDateString: string | undefined,
-    locale: string | unknown
+    options: {
+      date: string,
+      iso?: boolean,
+      format?: string,
+    }
+
   ) => {
     return $datefns.formatDistance(
-      convertStringToDate(dateString),
-      fromDateString ? convertStringToDate(fromDateString) : new Date(),
+      convertStringToDate(options.date, options.iso || false, options.format || FORMAT_DATE_TIME_ALT),
+      new Date(),
       {
-        locale: locale == 'th' ? th : enUS,
+        locale: locale.value == 'th' ? th : enUS,
         addSuffix: true
       }
     );
   };
-  const formatIos = (d: string, forMatString: string) => {
-    return $datefns.format($datefns.parseISO(d), forMatString);
+  const formatIso = (options: { date: string, forMatString: string }) => {
+    return $datefns.format($datefns.parseISO(options.date), options.forMatString);
   };
-  const convertStringToDate = (
-    dateString: string,
-    format = 'yyyy-MM-dd HH:mm:ss'
-  ): Date => {
-    return $datefns.parse(dateString, format, new Date());
-    // return new Date(dateString);
-  };
-  const isDateEqua = (dateLeft: string, dateRight: string) => {
-    const d1 = convertStringToDate(dateLeft, FORMAT_DATE_YYYY_MM_DD);
-    const d2 = convertStringToDate(dateRight, FORMAT_DATE_YYYY_MM_DD);
+
+  const isDateEqua = (options: {
+    dateLeft: string,
+    dateRight: string,
+    iso?: boolean,
+    format?: string,
+  }) => {
+    const d1 = convertStringToDate(options.dateLeft, options.iso || false, options.format || FORMAT_DATE_YYYY_MM_DD);
+    const d2 = convertStringToDate(options.dateRight, options.iso || false, options.format || FORMAT_DATE_YYYY_MM_DD);
     return $datefns.isEqual(d1, d2);
   };
-  const isDateAfter = (dateLeft: string, dateRight: string) => {
-    const d1 = convertStringToDate(dateLeft, FORMAT_DATE_YYYY_MM_DD);
-    const d2 = convertStringToDate(dateRight, FORMAT_DATE_YYYY_MM_DD);
+  const isDateAfter = (options: {
+    dateLeft: string,
+    dateRight: string,
+    iso?: boolean,
+    format?: string,
+  }) => {
+    const d1 = convertStringToDate(options.dateLeft, options.iso || false, options.format || FORMAT_DATE_YYYY_MM_DD);
+    const d2 = convertStringToDate(options.dateRight, options.iso || false, options.format || FORMAT_DATE_YYYY_MM_DD);
     return $datefns.isAfter(d1, d2);
   };
-  const isDateBefore = (dateLeft: string, dateRight: string) => {
-    const d1 = convertStringToDate(dateLeft, FORMAT_DATE_YYYY_MM_DD);
-    const d2 = convertStringToDate(dateRight, FORMAT_DATE_YYYY_MM_DD);
+  const isDateBefore = (options: {
+    dateLeft: string,
+    dateRight: string,
+    iso?: boolean,
+    format?: string,
+  }) => {
+    const d1 = convertStringToDate(options.dateLeft, options.iso || false, options.format || FORMAT_DATE_YYYY_MM_DD);
+    const d2 = convertStringToDate(options.dateRight, options.iso || false, options.format || FORMAT_DATE_YYYY_MM_DD);
     return $datefns.isBefore(d1, d2);
   };
   return {
@@ -190,6 +274,7 @@ export const useDateFns = () => {
     formatDistanceFromNow,
     formatDate,
     formatDateTime,
-    getDateTimeAutoFormatBy
+    getDateTimeAutoFormatBy,
+    parseISO
   };
 };
