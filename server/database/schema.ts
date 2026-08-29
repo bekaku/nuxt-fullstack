@@ -4,6 +4,7 @@ import {
   bigint,
   boolean,
   check,
+  date,
   doublePrecision,
   index,
   integer,
@@ -446,3 +447,30 @@ export const aiChatMessageRelations = relations(aiChatMessage, ({ one }) => ({
     references: [aiChat.id]
   }),
 }))
+
+
+
+
+// test
+export const appUserTest = pgTable('app_user_test', {
+  id: integer('id').primaryKey(),
+  loginName: varchar('login_name', { length: 20 }).notNull().unique(),
+  password: varchar('password', { length: 50 }).notNull(),
+  salt: varchar('salt', { length: 128 }),
+  reqToken: varchar('req_token', { length: 125 }),
+  reqTokenExpire: timestamp('req_token_expire'),
+  lastLogin: date('last_login'),
+  teacher: integer('teacher'),
+  establishment: integer('establishment'),
+  departmentGroup: integer('department_group'),
+  collegeOfficial: boolean('college_official').notNull(),
+  active: boolean('active').notNull(),
+  pollData: text('poll_data'),
+  imageName: varchar('image_name', { length: 100 }),
+  useMobileApp: boolean('use_mobile_app').notNull(),
+  useManagerApp: boolean('use_manager_app').default(false).notNull(),
+  createdUser: integer('created_user'),
+  createdDate: timestamp('created_date').notNull(),
+  updatedUser: integer('updated_user'),
+  updatedDate: timestamp('updated_date').notNull(),
+});

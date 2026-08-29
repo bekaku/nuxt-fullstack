@@ -6,7 +6,36 @@ useSeoMeta({
   title: "Test page",
 });
 
+const api = useApi();
 const { fetchMe } = useAuth();
+
+const testMyql = async () => {
+  try {
+    const response = await api.raw<any>("/api/test/mysql", {
+      method: "GET",
+    });
+  } catch (error) {
+    console.error("Failed ", error);
+  }
+};
+const testMyqlToPg = async () => {
+  try {
+    await api.raw<any>("/api/test/mysql-to-pg/app_user", {
+      method: "POST",
+    });
+  } catch (error) {
+    console.error("Failed ", error);
+  }
+};
+const testMyqlToPgSql = async () => {
+  try {
+    await api.raw<any>("/api/test/mysql-to-pg/app_user_to_sql", {
+      method: "POST",
+    });
+  } catch (error) {
+    console.error("Failed ", error);
+  }
+};
 </script>
 <template>
   <div class="flex flex-col gap-4 p-4">
@@ -19,6 +48,13 @@ const { fetchMe } = useAuth();
     />
 
     <div class="w-full flex flex-col gap-4">
+      <UCard title="Test Mysql">
+        <div class="flex gap-2">
+          <UButton label="Test Mysql" class="w-fit" @click="testMyql" />
+          <UButton label="Test Mysql to pg" class="w-fit" @click="testMyqlToPg" />
+          <UButton label="Test Mysql to pg.sql" class="w-fit" @click="testMyqlToPgSql" />
+        </div>
+      </UCard>
       <UCard title="Variant">
         <div class="flex flex-col gap-4">
           <div class="flex gap-2 items-center">
