@@ -242,3 +242,16 @@ export interface ChatMessage {
   isThinkingOpen?: boolean,
   sources?: any[]
 }
+export interface AiDocumentMeta extends Id {
+  fileMime: string
+  fileName: string
+  active: boolean
+  metadata: {
+    [key: string]: string
+  }
+}
+export interface IngestionResponse extends Id {
+  fileName: string
+  fileMime: string
+  chunkCount: number
+}

@@ -225,6 +225,7 @@ const getDropdownItems = (): DropdownMenuItem[][] => [
     class="relative min-h-0"
     :ui="{ body: 'p-0 sm:p-0 overscroll-none' }"
     body-class="w-full max-w-[1440px] mx-auto  flex flex-col flex-1 min-h-0"
+    navbar-transparent
   >
     <template #navbarRight>
       <UDropdownMenu

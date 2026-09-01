@@ -76,7 +76,7 @@ onBeforeUnmount(() => {
 });
 </script>
 <template>
-  <div class="flex flex-col md:flex-row min-h-dvh">
+  <div class="flex flex-col md:flex-row min-h-dvh bg-white dark:bg-neutral-950">
     <!-- Left: Hero Image Panel -->
     <div class="relative flex-none h-65 mx-3 mt-3 md:m-4 md:h-auto md:basis-1/2 overflow-hidden rounded-3xl">
       <img

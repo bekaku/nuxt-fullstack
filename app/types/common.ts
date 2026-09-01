@@ -434,6 +434,7 @@ export interface LabelValue<Type> {
     tooltip?: boolean | string
     progress?: boolean | number
     numberOfMonths?: number
+    acceptFiles?: string
   }
   onHandle?: (...params: any[] | []) => void;
 }

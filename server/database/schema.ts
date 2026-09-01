@@ -70,7 +70,7 @@ export const district = pgTable('district', {
 
 export const subDistrict = pgTable('sub_district', {
   id: id(),
- ...auditFieldsSoftDelete(),
+  ...auditFieldsSoftDelete(),
   latitude: doublePrecision('latitude'),
   longitude: doublePrecision('longitude'),
   name: varchar('name', { length: 255 }).notNull(),
@@ -224,7 +224,7 @@ export const apiClientIp = pgTable('api_client_ip', {
   apiClient: bigint('api_client', { mode: 'bigint' })
     .notNull()
     .references(() => apiClient.id, { onDelete: 'cascade' }),
-    ...auditFieldsSoftDelete(),
+  ...auditFieldsSoftDelete(),
 })
 
 export const userAgent = pgTable('user_agent', {
@@ -311,25 +311,39 @@ export const aiDocumentMeta = pgTable(
   'ai_document_meta',
   {
     id: id(),
-    documentType: varchar('document_type', { length: 255 }),
     fileName: varchar('file_name', { length: 255 }),
-    isActive: boolean('is_active').notNull(),
+    active: boolean('active').notNull(),
+    fileMime: bigint('file_mime', { mode: 'bigint' }).references(() => fileMime.id),
     ...auditFieldsSoftDelete(),
-  },
-  (t) => [
-    check(
-      'ai_document_meta_document_type_check',
-      sql`${t.documentType} IN ('GENERAL', 'FAQ', 'USER_GUIDE', 'WI')`,
-    ),
-  ],
+  }
 )
 
-export const aiDocumentVectorIds = pgTable('ai_document_vector_ids', {
-  documentId: bigint('document_id', { mode: 'bigint' })
-    .primaryKey()
-    .references(() => aiDocumentMeta.id),
-  vectorId: varchar('vector_id', { length: 255 }),
-})
+export const aiDocumentVectorIds = pgTable(
+  'ai_document_vector_ids',
+  {
+    documentId: bigint('document_id', { mode: 'bigint' })
+      .notNull()
+      .references(() => aiDocumentMeta.id),
+    vectorId: varchar('vector_id', { length: 255 }).notNull(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.documentId, table.vectorId] }),
+  ]
+)
+
+export const aiDocumentMetadata = pgTable(
+  'ai_document_metadata',
+  {
+    documentId: bigint('document_id', { mode: 'bigint' })
+      .notNull()
+      .references(() => aiDocumentMeta.id),
+    metaKey: varchar('meta_key', { length: 255 }).notNull(),
+    metaValue: text('meta_value'),
+  },
+  (table) => [
+    primaryKey({ columns: [table.documentId, table.metaKey] }),
+  ]
+)
 
 
 export const aiChat = pgTable(
@@ -338,7 +352,7 @@ export const aiChat = pgTable(
     id: id(),
     title: varchar('title', { length: 255 }),
     pin: boolean('pin').default(false),
-   ...auditFieldsSoftDelete()
+    ...auditFieldsSoftDelete()
   },
   (t) => [
     index('idx_ai_chat_created_user').on(t.createdUser),

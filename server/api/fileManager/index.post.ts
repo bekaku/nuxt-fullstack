@@ -13,9 +13,6 @@ const DEFAULT_MAX_FILE_SIZE_BYTES = 52428800
 
 export default defineEventHandler(async (event): Promise<ResponseEntity<FileManager | void>> => {
   const auth = getAuthUser(event)
-  if (!auth) {
-    throw createError({ statusCode: 403, statusMessage: 'Unauthorized.' })
-  }
 
   const formData = await readMultipartFormData(event)
   if (!formData) {

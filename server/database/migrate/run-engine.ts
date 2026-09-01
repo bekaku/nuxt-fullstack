@@ -2,9 +2,11 @@ import 'dotenv/config'
 import { sql } from 'drizzle-orm'
 import { join } from 'path'
 import { mkdir, writeFile, appendFile } from 'fs/promises'
+
 import { useMysqlDb } from '../mysql'
 import { escapeSql } from './helpers'
 import { tableMappings } from './mappings'
+import { existsSync } from 'fs'
 
 // npx tsx server/database/migrate/run-engine.ts
 /**
@@ -35,6 +37,12 @@ export async function runEngine() {
 
     const filePrefix = String(i + 1).padStart(3, '0')
     const filePath = join(targetDir, `V1_${filePrefix}__init_${config.sourceTable}.sql`)
+
+        // Check if the file already exists. If it does, skip to the next table.
+    if (existsSync(filePath)) {
+      console.log(`\n[${i + 1}/${tableMappings.length}] ⏭️ Skipping: ${config.sourceTable} (File already exists)`)
+      continue
+    }
 
     console.log(`\n[${i + 1}/${tableMappings.length}] Exporting: ${config.sourceTable} -> ${config.targetTable}`)
     const fileHeader = `-- Custom Migration for ${config.sourceTable}

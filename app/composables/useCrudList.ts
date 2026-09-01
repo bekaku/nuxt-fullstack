@@ -43,7 +43,7 @@ export const useCrudList = <T>(options: CrudListApiOptions) => {
     endpointDelete.value
       ? endpointDelete.value
       : crudName.value
-        ? `/api/${pascalToKebab(crudName.value)}`//springboot: pascalToCamelCase(crudName.value), pascalToKebab(crudName.value)
+        ? `/api/${pascalToCamelCase(crudName.value)}`//springboot: pascalToCamelCase(crudName.value), pascalToKebab(crudName.value)
         : ''
   );
 

@@ -9,6 +9,7 @@ const {
   bordered = true,
   showName = true,
   showSize = true,
+  formatSize= true
 } = defineProps<{
   layout?: "list" | "grid";
   items: FileManager[];

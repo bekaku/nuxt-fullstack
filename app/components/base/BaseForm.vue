@@ -1,5 +1,5 @@
 <script setup lang="ts" generic="T">
-import { UAvatar, UChip, UIcon, USeparator } from "#components";
+import { USeparator } from "#components";
 import type { FormSubmitEvent } from "@nuxt/ui";
 import z, { ZodType } from "zod";
 import type { ICrudAction } from "~/types/common";
@@ -669,6 +669,7 @@ const onDelete = async (event: any) => {
                     :description="field?.description"
                     :multiple="field.ui?.multiple"
                     :max-files="field.ui?.max"
+                    :accept="field.ui?.acceptFiles"
                     :disabled="field.disable || loading"
                     :icon="field.icon || 'lucide:paperclip'"
                     v-model="state[field.name]"
@@ -701,7 +702,7 @@ const onDelete = async (event: any) => {
               <template v-if="isHaveAddPermission || isHaveEditPermission">
                 <UButton
                   icon="lucide:save"
-                  :disabled="canSubmit"
+                  :disabled="!canSubmit"
                   :loading
                   :label="
                     crudAction == 'edit' ||

@@ -39,6 +39,11 @@ export const useMenu = () => {
         defaultOpen: true,
         children: [
           {
+            label: t('model.ai_document_meta.table'),
+            icon: "lucide:brain-circuit",
+            to: "/ai-document-meta",
+          },
+          {
             label: t("nav.userRole"),
             icon: "lucide:users",
             to: "/app-role",

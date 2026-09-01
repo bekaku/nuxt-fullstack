@@ -104,6 +104,10 @@
       "full_name": "ชื่อ-สกุล",
       "mobilePhone": "เบอร์โทรศัพท์",
       "positionName": "ตำแหน่ง"
+    },
+    "ai_document_meta": {
+      "table": "คลังความรู้ AI",
+      "metadata": "แท็ก"
     }
   }
 }

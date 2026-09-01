@@ -95,6 +95,10 @@
       "full_name": "Fullname",
       "mobilePhone": "Phone no",
       "positionName": "Position"
+    },
+    "ai_document_meta": {
+      "table": "AI Knowledge Base",
+      "metadata": "Tags"
     }
   }
 }

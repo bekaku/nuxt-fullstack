@@ -188,7 +188,13 @@ export default defineNuxtConfig({
     refreshTokenDays: 7,
     cdnDirectory: 'cdn',
     openrouterApiKey: 'OPENROUTER_API_KEY',
+    ollamaBaseUrl: 'http://localhost:11434/api',
     ollamaApiKey: 'OLLAMA_API_KEY',
+    ollamaEmbeddingModel: 'bge-m3',
+    tavilyApiKey: 'TAVILY_API_KEY',
+    qdrantUrl: 'http://localhost:6333',
+    qdrantApiKey: 'api_key_123',
+    qdrantCollectionName: 'rag_documents',
     // Keys within public, will be also exposed to the client-side
     public: {
       apiDomain: 'localhost',//override by NUXT_PUBLIC_API_BASE in .env
@@ -228,6 +234,8 @@ export default defineNuxtConfig({
         'image/webp',
         'text/plain',
         'text/csv',
+        'text/markdown',
+        'text/x-rst',
         'video/mpeg',
         'video/mp4',
         'video/quicktime',
@@ -238,6 +246,50 @@ export default defineNuxtConfig({
         'audio/ogg',
         'audio/flac',
         'audio/mp4'
+      ],
+      acceptIngestFiles: [
+        // PDF
+        'application/pdf',
+
+        // Documents (.doc, .docx)
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+
+        // Presentations (.ppt, .pptx, .ppsx)
+        'application/vnd.ms-powerpoint',
+        'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+        'application/vnd.openxmlformats-officedocument.presentationml.slideshow',
+
+        // Spreadsheets (.xls, .xlsx, .xlsm)
+        'application/vnd.ms-excel',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'application/vnd.ms-excel.sheet.macroEnabled.12',
+
+        // Images (.jpg, .png, .gif, .webp, .tiff, .bmp, .svg)
+        'image/jpeg',
+        'image/png',
+        'image/gif',
+        'image/webp',
+        'image/tiff',
+        'image/bmp',
+        'image/svg+xml',
+
+        // Text & Logs (.txt, .md, .rst, .log)
+        'text/plain',
+        'text/markdown',
+        'text/x-rst',
+
+        // Structured Data (.json, .csv, .tsv, .yaml, .xml)
+        'application/json',
+        'text/csv',
+        'text/tab-separated-values',
+        'application/x-yaml',
+        'text/yaml',
+        'application/xml',
+        'text/xml',
+
+        // Web (.html, .htm)
+        'text/html'
       ]
     }
   },

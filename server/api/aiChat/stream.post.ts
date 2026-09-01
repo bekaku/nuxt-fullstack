@@ -2,10 +2,13 @@ import { schema, useDb } from "~~/server/database/client"
 import type { UIMessage } from 'ai'
 import { z } from 'zod'
 import { and, desc, eq } from 'drizzle-orm'
-import { convertToModelMessages, createUIMessageStream, createUIMessageStreamResponse, generateText, isStepCount, smoothStream, streamText, toUIMessageStream } from 'ai'
+import { convertToModelMessages, createUIMessageStream, createUIMessageStreamResponse, embed, generateText, isStepCount, smoothStream, streamText, tool, toUIMessageStream } from 'ai'
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 import { createOllama } from 'ollama-ai-provider-v2';
-
+import { chartTool } from "~~/server/utils/tools/chart"
+import { weatherTool } from "~~/server/utils/tools/weather"
+import { webSearchTool } from "~~/server/utils/tools/webSearch"
+import { QdrantClient } from '@qdrant/js-client-rest'
 
 const bodySchema = z.object({
   id: z.string().nullish(),
@@ -15,6 +18,7 @@ const bodySchema = z.object({
   filterNames: z.array(z.string()).nullish(),
 })
 
+
 export default defineEventHandler(async (event) => {
   const auth = getAuthUser(event)
   if (!auth) {
@@ -22,22 +26,34 @@ export default defineEventHandler(async (event) => {
   }
 
   const config = useRuntimeConfig()
+
+
+  console.log('config.qdrant', config.qdrantUrl, config.qdrantApiKey, config.qdrantCollectionName)
+
+  const qdrant = new QdrantClient({
+    url: config.qdrantUrl,
+    apiKey: config.qdrantApiKey,
+    checkCompatibility: false,
+  })
   const openrouter = createOpenRouter({
     apiKey: config.openrouterApiKey,
   });
+  const ollamaLacal = createOllama({
+    baseURL:  config.ollamaBaseUrl || process.env.NUXT_OLLAMA_BASE_URL,
+  });
   const ollama = createOllama({
-    // optional settings, e.g.
-    // baseURL: 'http://localhost:11434/api',
+    // baseURL:  config.ollamaBaseUrl || 'http://localhost:11434/api',
     baseURL: 'https://ollama.com/api',
     headers: {
-      Authorization: `Bearer ${config.ollamaApiKey || process.env.OLLAMA_API_KEY}`,
+      Authorization: `Bearer ${config.ollamaApiKey || process.env.NUXT_OLLAMA_API_KEY}`,
     },
   });
 
   const getModel = () => {
-    // return openrouter.chat('minimax/minimax-m3:free');
-    // return ollama('ornith-1.5:9b');
+    // return openrouter.chat('inclusionai/ling-3.0-flash-fin:free');
     return ollama('gemma4:31b');
+    //local
+    // return ollama('ornith-1.5:9b');
   }
 
 
@@ -56,6 +72,72 @@ export default defineEventHandler(async (event) => {
   // @ts-ignore
   const lastUserText = lastUserMessage?.parts?.find((p: any) => p.type === 'text')?.text ?? ''
 
+
+  // ==========================================
+  // 🔍 3. ทำ Qdrant Vector Search (RAG)
+  // ==========================================
+  let ragContext = ""
+  if (lastUserText) {
+    try {
+      // 3.1 แปลงคำถามล่าสุดเป็น Vector ด้วย bge-m3 ผ่าน Ollama
+      const { embedding } = await embed({
+        model: ollamaLacal.embeddingModel(config.ollamaEmbeddingModel || 'bge-m3'),
+        value: lastUserText,
+      })
+
+      // 3.2 กรองด้วย filterNames (ถ้า client ส่งมา)
+      let filterCondition: any = undefined
+      if (filterNames && filterNames.length > 0) {
+        filterCondition = {
+          should: filterNames.map(name => ({
+            key: 'fileName', // หรือฟิลด์ metadata ที่คุณเก็บไว้ใน Qdrant
+            match: { value: name }
+          }))
+        }
+      }
+
+      // 3.3 ค้นหา Vectors ที่ใกล้เคียงที่สุดจาก Qdrant
+      const searchResults = await qdrant.query(config.qdrantCollectionName, {
+        query: embedding,           // ส่ง vector array เข้าไปที่ query
+        limit: 4,
+        filter: filterCondition,
+        with_payload: true,
+      })
+
+      // ==========================================
+      // 🛠️ DEBUG ZONE
+      // ==========================================
+      const points = searchResults?.points ?? []
+      console.log(`\n🔍 [Qdrant RAG Debug] ---------------------------------`)
+      console.log(`- Query Text: "${lastUserText}"`)
+      console.log(`- Total Hits: ${points.length} documents`)
+
+      if (points.length === 0) {
+        console.log(`⚠️ No documents matched. Check filters or collection data.`)
+      } else {
+        points.forEach((point: any, index: number) => {
+          console.log(`\n  [Doc #${index + 1}] ID: ${point.id} | Score: ${point.score?.toFixed(4)}`)
+          console.log(`  Payload preview:`, JSON.stringify(point.payload, null, 2))
+        })
+      }
+      console.log(`------------------------------------------------------\n`)
+
+      if (searchResults?.points?.length) {
+        ragContext = searchResults.points
+          .map((res: any, i: number) => {
+            const content = res.payload?.doc_content || res.payload?.content || res.payload?.text || ''
+            const fileName = res.payload?.fileName ? ` [File: ${res.payload.fileName}]` : ''
+            return `[Source ${i + 1}${fileName}]:\n${content}`
+          })
+          .join('\n\n---\n\n')
+      }
+    } catch (error) {
+      console.error('Qdrant Search Error:', error)
+    }
+  }
+
+
+
   if (!conversationId) {
     isNew = true;
     const [chat] = await db
@@ -73,7 +155,6 @@ export default defineEventHandler(async (event) => {
     }
 
     chatId = chat.id
-    // memmoryMessages คงค่าจาก client ไว้ (ถูกต้องอยู่แล้ว มีคำถามล่าสุดครบ)
   } else {
     isNew = false;
     chatId = conversationId;
@@ -178,6 +259,11 @@ Return plain text only.`,
         abortSignal: abortController.signal,
         model: getModel(),
         instructions: `You are a knowledgeable and helpful AI assistant. ${auth.sub ? `The user's name is ${auth.sub}.` : ''} Your goal is to provide clear, accurate, and well-structured responses.
+
+**CONTEXT INFORMATION (KNOWLEDGE BASE):**
+Use the following retrieved context to answer the user's question accurately:
+${ragContext ? ragContext : 'No relevant internal documents found. Answer using your baseline knowledge.'}
+
 **WEB SEARCH:**
 - You have access to a web search tool to find current, up-to-date information
 - Only use it when the user explicitly asks about recent events, real-time data, or current facts
@@ -190,7 +276,11 @@ Return plain text only.`,
 - Break down complex topics into digestible parts
 - Maintain a friendly, professional tone`,
         messages: await convertToModelMessages(memmoryMessages),
-        tools: {},
+        tools: {
+          chart: chartTool,
+          weather: weatherTool,
+          // webSearch: webSearchTool,
+        },
         providerOptions: {
           ollama: {
             think: true

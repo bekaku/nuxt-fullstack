@@ -5,8 +5,6 @@ import { AiChat, AiChatMessage } from "~/types/models"
 import { paginate } from '~~/server/utils/dbPaging'
 
 export default defineEventHandler(async (event): Promise<ResponseEntity<ApiResponse<AiChatMessage>>> => {
-
-  console.log('api/aiChat/index.get')
   const auth = getAuthUser(event)
   if (!auth) {
     // เปลี่ยนจาก 403 เป็น 401 (Unauthenticated) เพื่อความถูกต้องทาง Semantic

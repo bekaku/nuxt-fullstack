@@ -5,6 +5,7 @@ allowBuilds:
   esbuild: false
   maplibre-gl: false
   sharp: false
+  tesseract.js: false
   unrs-resolver: false
   vue-demi: false
 minimumReleaseAgeExclude:

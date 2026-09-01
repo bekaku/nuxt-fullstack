@@ -19,7 +19,7 @@ const client = postgres(connectionString, { max: 1 })
 const db = drizzle(client, { schema })
 
 // Permission code convention: "<table_name>_<action>"
-const RESOURCES = ['app_user', 'app_role', 'permission', 'api_client', 'files_directory', 'file_manager'] as const
+const RESOURCES = ['app_user', 'app_role', 'permission', 'api_client', 'files_directory', 'file_manager', 'ai_document_meta'] as const
 const ACTIONS = ['list', 'view', 'add', 'edit', 'delete'] as const
 
 async function main() {

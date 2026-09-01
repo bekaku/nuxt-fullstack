@@ -11,10 +11,12 @@ const props = withDefaults(
     collapseable?: boolean;
     ui?: DashboardPanelProps["ui"];
     bodyClass?: string;
+    navbarTransparent?: boolean;
   }>(),
   {
     resizable: false,
     collapseable: false,
+    navbarTransparent: false,
     ui: () => ({
       root: "gap-1",
       body: "pt-(--ui-header-height)",
@@ -54,7 +56,8 @@ const items = [
         <!-- class="bg-default" -->
         <UDashboardNavbar
           :title="title"
-          class="absolute top-0 inset-x-0 z-20 h-(--ui-header-height) bg-default/70 backdrop-blur-xl border-b border-default/60"
+          class="absolute top-0 inset-x-0 z-20 h-(--ui-header-height) "
+          :class="navbarTransparent ? 'bg-transparent border-0' : 'bg-default/70 backdrop-blur-xl border-b border-default/60'"
         >
           <template #leading>
             <slot name="leading">
