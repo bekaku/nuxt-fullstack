@@ -797,6 +797,7 @@ watch(
             v-if="loading || !firstLoaded"
             :title="$t('base.pleaseWait')"
             :description="$t('base.pleaseWaitWhileLoading2')"
+            variant="soft"
             loading
           />
           <UEmpty
@@ -805,6 +806,7 @@ watch(
             icon="lucide:inbox"
             :title="emptyTitle || $t('error.dataNotfound')"
             :description="emptyDescription || $t('helper.emptyDescription')"
+            variant="soft"
             :actions="
               isHaveAddPermission && showNewBtn
                 ? [

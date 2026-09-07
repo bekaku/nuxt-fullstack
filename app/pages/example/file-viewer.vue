@@ -161,6 +161,8 @@ const onClosePefView = () => {
             :items="imageItems"
             :format-size="false"
             image-class="h-32"
+            :limit="10"
+            hover-effect
             show-view-dialog
           />
         </div>

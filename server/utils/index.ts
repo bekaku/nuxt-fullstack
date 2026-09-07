@@ -26,3 +26,10 @@ export const getFileMimeType = (mime?: string | null): FileMimeType => {
 
   return 'FILE';
 };
+
+export const toBigInt = (num: number): BigInt | null => {
+  if (typeof num !== 'number') {
+    return null
+  }
+  return BigInt(num);
+};

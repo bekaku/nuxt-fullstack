@@ -233,6 +233,8 @@ const onUnFav = async (e: any, item: AppNavigationMenuItem) => {
     >
       <slot />
     </div>
-    <NotificationsSlideover />
+    <LazyNotificationsSlideover />
+    <LazyChatNotificationsSlideover />
+    <LazyChatMini />
   </UDashboardGroup>
 </template>

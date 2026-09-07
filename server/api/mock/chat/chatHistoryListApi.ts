@@ -5,7 +5,7 @@ export default defineEventHandler(async (event): Promise<ApiResponse<GroupChat>>
     return {
         dataList: [
             {
-                id: 1,
+                id: '1',
                 dtoAvatar: {
                     image: 'https://www.primefaces.org/cdn/primevue/images/landing/apps/avatar13.jpg',
                     thumbnail: 'https://www.primefaces.org/cdn/primevue/images/landing/apps/avatar13.jpg'
@@ -23,7 +23,7 @@ export default defineEventHandler(async (event): Promise<ApiResponse<GroupChat>>
                 online: true,
             },
             {
-                id: 2,
+                id: '2',
                 dtoAvatar: null,
                 chatType: 'GROUP',
                 groupName: 'Vue Team',
@@ -38,7 +38,7 @@ export default defineEventHandler(async (event): Promise<ApiResponse<GroupChat>>
                 online: true,
             },
             {
-                id: 3,
+                id: '3',
                 dtoAvatar: {
                     image: 'https://randomuser.me/api/portraits/men/1.jpg',
                     thumbnail: 'https://randomuser.me/api/portraits/men/1.jpg'
@@ -56,7 +56,7 @@ export default defineEventHandler(async (event): Promise<ApiResponse<GroupChat>>
                 online: false,
             },
             {
-                id: 4,
+                id: '4',
                 dtoAvatar: {
                     image: 'https://randomuser.me/api/portraits/men/3.jpg',
                     thumbnail: 'https://randomuser.me/api/portraits/men/3.jpg'
@@ -74,7 +74,7 @@ export default defineEventHandler(async (event): Promise<ApiResponse<GroupChat>>
                 online: true,
             },
             {
-                id: 5,
+                id: '5',
                 dtoAvatar: {
                     image: 'https://randomuser.me/api/portraits/women/79.jpg',
                     thumbnail: 'https://randomuser.me/api/portraits/women/79.jpg'
@@ -92,7 +92,7 @@ export default defineEventHandler(async (event): Promise<ApiResponse<GroupChat>>
                 online: false,
             },
             {
-                id: 6,
+                id: '6',
                 dtoAvatar: {
                     image: 'https://randomuser.me/api/portraits/women/21.jpg',
                     thumbnail: 'https://randomuser.me/api/portraits/women/21.jpg'
@@ -112,7 +112,7 @@ export default defineEventHandler(async (event): Promise<ApiResponse<GroupChat>>
                 totalFile: 1,
             },
             {
-                id: 7,
+                id: '7',
                 dtoAvatar: {
                     image: 'https://randomuser.me/api/portraits/men/44.jpg',
                     thumbnail: 'https://randomuser.me/api/portraits/men/44.jpg'
@@ -130,7 +130,7 @@ export default defineEventHandler(async (event): Promise<ApiResponse<GroupChat>>
                 online: true,
             },
             {
-                id: 8,
+                id: '8',
                 dtoAvatar: null,
                 chatType: 'PERSONAL',
                 groupName: 'SA-Tester',
@@ -145,7 +145,7 @@ export default defineEventHandler(async (event): Promise<ApiResponse<GroupChat>>
                 online: false,
             },
             {
-                id: 9,
+                id: '9',
                 dtoAvatar: {
                     image: 'https://randomuser.me/api/portraits/men/22.jpg',
                     thumbnail: 'https://randomuser.me/api/portraits/men/22.jpg'
@@ -163,7 +163,7 @@ export default defineEventHandler(async (event): Promise<ApiResponse<GroupChat>>
                 online: false,
             },
             {
-                id: 10,
+                id: '10',
                 dtoAvatar: {
                     image: 'https://randomuser.me/api/portraits/women/44.jpg',
                     thumbnail: 'https://randomuser.me/api/portraits/women/44.jpg'

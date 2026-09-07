@@ -1,8 +1,6 @@
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
-import { Snowflake } from "~/libs/Snowflake";
 import type { ApiResponse, AppException, IHrefTarget, IMenuPageItem, LabelValue, ResponseMessage, ServerException } from "~/types/common";
-const snowflakeIdGenerator = new Snowflake(1, 1);
 
 export const uiConfig = (config: LabelValue<any>) => JSON.stringify(config);
 export function cssMerge(...inputs: ClassValue[]) {
@@ -374,9 +372,6 @@ export const generateUniqueFilename = (originalName: string): string => {
   const timestamp = Date.now()
   return `${timestamp}_${uuid}${ext}`
 }
-export const generateSnowflakeID = (): string => {
-  return snowflakeIdGenerator.nextId();
-};
 export const getMockAvatarByIndex = (index: number = 0, size: number = 150) => {
   return getMockAvatarById(((index % 70) + 1), size);
 

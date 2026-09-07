@@ -6,7 +6,7 @@ export default defineConfig({
   out: './drizzle',
   dialect: 'postgresql',
   dbCredentials: {
-    url: process.env.NUXT_DATABASE_URL || 'postgres://app_user:app_password@localhost:5432/nuxt4_rbac',
+    url: process.env.NUXT_DATABASE_URL || 'postgres://app_user:app_password@localhost:5432/nuxt_fullstack',
   },
   strict: true,
   verbose: true,

@@ -35,22 +35,32 @@ const onClose = () => {
 };
 </script>
 <template>
-  <LazyUModal v-if="modelValue" v-model:open="modelValue" fullscreen class="bg-neutral-950">
+  <LazyUModal
+    v-if="modelValue"
+    v-model:open="modelValue"
+    fullscreen
+    class="bg-neutral-950"
+  >
     <template #content>
       <div :style="{ width: width, height: height }">
         <BaseImageView
-        dark
+          dark
           :files
           :selected-index
           :show-delete-image
           :show-arrow
           :fetch="fetch"
           :images="images"
-          show-thumbnails
+          :show-thumbnails="false"
           @on-close="onClose"
         >
           <template #header-right-apppend>
-            <UButton variant="ghost" icon="lucide:x" class="rounded-full text-white hover:bg-neutral-700" @click="onClose" />
+            <UButton
+              variant="ghost"
+              icon="lucide:x"
+              class="rounded-full text-white hover:bg-neutral-700"
+              @click="onClose"
+            />
           </template>
         </BaseImageView>
       </div>

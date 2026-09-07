@@ -180,8 +180,8 @@ export default defineNuxtConfig({
   runtimeConfig: {
     // The private keys which are only available within server-side
     apiSecret: '123',// can be overridden by NUXT_API_SECRET environment variable
-    databaseUrl: 'postgres://app_user:app_password@localhost:5432/nuxt4_rbac',
-    mysqlDatabaseUrl: 'mysql://app_user:app_password@localhost:3306/nuxt4_rbac',
+    databaseUrl: 'postgres://app_user:app_password@localhost:5432/nuxt_fullstack',
+    mysqlDatabaseUrl: 'mysql://app_user:app_password@localhost:3306/nuxt_fullstack',
     jwtAccessSecret: 'change-this-access-secret-in-production',
     jwtRefreshSecret: 'change-this-access-secret-in-production',
     accessTokenTtl: '15m',// default 15m

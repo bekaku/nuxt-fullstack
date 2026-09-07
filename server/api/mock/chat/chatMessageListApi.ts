@@ -5,7 +5,7 @@ export default defineEventHandler(async (event): Promise<ApiResponse<GroupChatMs
     return {
         dataList: [
             {
-                id: 667,
+                id: '667',
                 chatMsg: 'The rest of the documentation assumes basic familiarity with HTML, CSS, and JavaScript. If you are totally new to frontend development, it might not be the best idea to jump right into a framework as your first step - grasp the basics and then come back! You can check your knowledge level with these overviews for JavaScript, HTML and CSS if needed. Prior experience with other frameworks helps, but is not required.',
                 msgDateTime: '2025-03-21 13:55:25',
                 groupId: 17,
@@ -13,7 +13,7 @@ export default defineEventHandler(async (event): Promise<ApiResponse<GroupChatMs
                 unsend: false,
                 sent: true,
                 sendUser: {
-                    id: 1,
+                    id: '1',
                     email: 'Cody@mydomain.com',
                     username: 'Cody Fisher',
                     avatar: {
@@ -33,7 +33,7 @@ export default defineEventHandler(async (event): Promise<ApiResponse<GroupChatMs
                 chatMessageType: 'TEXT'
             },
             {
-                id: 666,
+                id: '666',
                 chatMsg: 'Just sent emoji \uD83D\uDCAF \uD83D\uDE0C ✨️ \uD83D\uDE42 \uD83D\uDE43 \uD83D\uDC4C \uD83D\uDCAF \uD83D\uDE0C ✨️ \uD83D\uDE42 \uD83D\uDE43',
                 msgDateTime: '2025-03-21 13:55:12',
                 groupId: 17,
@@ -41,7 +41,7 @@ export default defineEventHandler(async (event): Promise<ApiResponse<GroupChatMs
                 unsend: false,
                 sent: true,
                 sendUser: {
-                    id: 2,
+                    id: '2',
                     email: 'vue@mydomain.com',
                     username: 'Vue Team',
                     avatar: {
@@ -58,7 +58,7 @@ export default defineEventHandler(async (event): Promise<ApiResponse<GroupChatMs
                 chatMessageType: 'TEXT'
             },
             {
-                id: 567,
+                id: '567',
                 chatMsg: '13.9795581,100.6267777',
                 msgDateTime: '2024-10-11 15:36:47',
                 groupId: 17,
@@ -66,7 +66,7 @@ export default defineEventHandler(async (event): Promise<ApiResponse<GroupChatMs
                 unsend: false,
                 sent: true,
                 sendUser: {
-                    id: 3,
+                    id: '3',
                     email: 'fox@mydomain.com',
                     username: 'Robert Fox',
                     avatar: {
@@ -83,7 +83,7 @@ export default defineEventHandler(async (event): Promise<ApiResponse<GroupChatMs
                 chatMessageType: 'LOCATION'
             },
             {
-                id: 665,
+                id: '665',
                 chatMsg: 'https://www.youtube.com/watch?v=_5hAk3ic5Ok',
                 msgDateTime: '2025-03-21 13:54:12',
                 groupId: 17,
@@ -91,7 +91,7 @@ export default defineEventHandler(async (event): Promise<ApiResponse<GroupChatMs
                 unsend: false,
                 sent: false,
                 sendUser: {
-                    id: 3,
+                    id: '3',
                     email: 'fox@mydomain.com',
                     username: 'Robert Fox',
                     avatar: {
@@ -108,7 +108,7 @@ export default defineEventHandler(async (event): Promise<ApiResponse<GroupChatMs
                 chatMessageType: 'TEXT'
             },
             {
-                id: 664,
+                id: '664',
                 chatMsg: null,
                 msgDateTime: '2025-03-21 13:53:04',
                 groupId: 17,
@@ -116,7 +116,7 @@ export default defineEventHandler(async (event): Promise<ApiResponse<GroupChatMs
                 unsend: false,
                 sent: false,
                 sendUser: {
-                    id: 4,
+                    id: '4',
                     email: 'Esther@mydomain.com',
                     username: 'Esther Howard',
                     avatar: {
@@ -127,9 +127,9 @@ export default defineEventHandler(async (event): Promise<ApiResponse<GroupChatMs
                 },
                 files: [
                     {
-                        id: 152,
+                        id: '152',
                         fileManager: {
-                            id: 1,
+                            id: '1',
                             fileMime: 'application/pdf',
                             fileName: 'Trace-based Just-in-Time Type Specialization for Dynamic Languages',
                             filePath: 'https://mozilla.github.io/pdf.js/web/compressed.tracemonkey-pldi-09.pdf',
@@ -146,7 +146,7 @@ export default defineEventHandler(async (event): Promise<ApiResponse<GroupChatMs
                 chatMessageType: 'FILE'
             },
             {
-                id: 663,
+                id: '663',
                 chatMsg: null,
                 msgDateTime: '2025-03-21 13:52:48',
                 groupId: 17,
@@ -154,7 +154,7 @@ export default defineEventHandler(async (event): Promise<ApiResponse<GroupChatMs
                 unsend: false,
                 sent: true,
                 sendUser: {
-                    id: 5,
+                    id: '5',
                     email: 'Darlene@mydomain.com',
                     username: 'Darlene Robertson',
                     avatar: {
@@ -165,9 +165,9 @@ export default defineEventHandler(async (event): Promise<ApiResponse<GroupChatMs
                 },
                 files: [
                     {
-                        id: 147,
+                        id: '147',
                         fileManager: {
-                            id: 1,
+                            id: '1',
                             fileMime: 'image/jpeg',
                             fileName: 'Img001.jpg',
                             filePath:
@@ -178,9 +178,9 @@ export default defineEventHandler(async (event): Promise<ApiResponse<GroupChatMs
                         },
                     },
                     {
-                        id: 148,
+                        id: '148',
                         fileManager: {
-                            id: 2,
+                            id: '2',
                             fileMime: 'image/jpeg',
                             fileName: 'Img002.jpg',
                             filePath:
@@ -191,9 +191,9 @@ export default defineEventHandler(async (event): Promise<ApiResponse<GroupChatMs
                         },
                     },
                     {
-                        id: 149,
+                        id: '149',
                         fileManager: {
-                            id: 3,
+                            id: '3',
                             fileMime: 'image/jpeg',
                             fileName: 'Img003.jpg',
                             filePath:
@@ -204,9 +204,9 @@ export default defineEventHandler(async (event): Promise<ApiResponse<GroupChatMs
                         },
                     },
                     {
-                        id: 150,
+                        id: '150',
                         fileManager: {
-                            id: 4,
+                            id: '4',
                             fileMime: 'image/jpeg',
                             fileName: 'Img004.jpg',
                             filePath:
@@ -217,9 +217,9 @@ export default defineEventHandler(async (event): Promise<ApiResponse<GroupChatMs
                         },
                     },
                     {
-                        id: 151,
+                        id: '151',
                         fileManager: {
-                            id: 5,
+                            id: '5',
                             fileMime: 'image/jpeg',
                             fileName: 'Img005.jpg',
                             filePath:
@@ -230,9 +230,9 @@ export default defineEventHandler(async (event): Promise<ApiResponse<GroupChatMs
                         },
                     },
                     {
-                        id: 152,
+                        id: '152',
                         fileManager: {
-                            id: 6,
+                            id: '6',
                             fileMime: 'image/jpeg',
                             fileName: 'Img006.jpg',
                             filePath:
@@ -243,9 +243,9 @@ export default defineEventHandler(async (event): Promise<ApiResponse<GroupChatMs
                         },
                     },
                     {
-                        id: 153,
+                        id: '153',
                         fileManager: {
-                            id: 7,
+                            id: '7',
                             fileMime: 'image/jpeg',
                             fileName: 'Img007.jpg',
                             filePath:
@@ -256,9 +256,9 @@ export default defineEventHandler(async (event): Promise<ApiResponse<GroupChatMs
                         },
                     },
                     {
-                        id: 154,
+                        id: '154',
                         fileManager: {
-                            id: 8,
+                            id: '8',
                             fileMime: 'image/jpeg',
                             fileName: 'Img008.jpg',
                             filePath:
@@ -281,7 +281,7 @@ export default defineEventHandler(async (event): Promise<ApiResponse<GroupChatMs
                 chatMessageType: 'IMAGE'
             },
             {
-                id: 662,
+                id: '662',
                 chatMsg: 'An approachable, performant and versatile framework for building web user interfaces.',
                 msgDateTime: '2025-03-21 13:52:10',
                 groupId: 17,
@@ -289,7 +289,7 @@ export default defineEventHandler(async (event): Promise<ApiResponse<GroupChatMs
                 unsend: false,
                 sent: true,
                 sendUser: {
-                    id: 5,
+                    id: '5',
                     email: 'Darlene@mydomain.com',
                     username: 'Darlene Robertson',
                     avatar: {
@@ -303,7 +303,7 @@ export default defineEventHandler(async (event): Promise<ApiResponse<GroupChatMs
                 emojiType: null,
                 reactionEngage: [],
                 dtoReplyTo: {
-                    id: 667,
+                    id: '667',
                     chatMsg: 'they will have to be a topic to see the deference of options and show the Silly things that the world on the way are not the same as you want me vuejs I don\'t want you change springboot I don\'t have any plans ',
                     msgDateTime: '2024-10-02 19:36:56',
                     groupId: 17,
@@ -311,7 +311,7 @@ export default defineEventHandler(async (event): Promise<ApiResponse<GroupChatMs
                     unsend: false,
                     sent: false,
                     sendUser: {
-                        id: 1,
+                        id: '1',
                         email: 'Cody@mydomain.com',
                         username: 'Cody Fisher',
                         avatar: {
@@ -330,7 +330,7 @@ export default defineEventHandler(async (event): Promise<ApiResponse<GroupChatMs
                 chatMessageType: 'TEXT'
             },
             {
-                id: 646,
+                id: '646',
                 chatMsg: 'Message unsent.',
                 msgDateTime: '2025-01-11 11:55:03',
                 groupId: 17,
@@ -338,7 +338,7 @@ export default defineEventHandler(async (event): Promise<ApiResponse<GroupChatMs
                 unsend: true,
                 sent: false,
                 sendUser: {
-                    id: 7,
+                    id: '7',
                     email: 'Darrell@mydomain.com',
                     username: 'Darrell Steward',
                     avatar: {
@@ -355,7 +355,7 @@ export default defineEventHandler(async (event): Promise<ApiResponse<GroupChatMs
                 chatMessageType: 'LOCATION'
             },
             {
-                id: 645,
+                id: '645',
                 chatMsg: 'Message with photo',
                 msgDateTime: '2025-01-10 12:59:52',
                 groupId: 17,
@@ -363,7 +363,7 @@ export default defineEventHandler(async (event): Promise<ApiResponse<GroupChatMs
                 unsend: false,
                 sent: true,
                 sendUser: {
-                    id: 8,
+                    id: '8',
                     email: 'Chanavee@mydomain.com',
                     username: 'Chanavee Steward',
                     avatar: {
@@ -374,9 +374,9 @@ export default defineEventHandler(async (event): Promise<ApiResponse<GroupChatMs
                 },
                 files: [
                     {
-                        id: 142,
+                        id: '142',
                         fileManager: {
-                            id: 6,
+                            id: '6',
                             fileMime: 'image/jpeg',
                             fileName: 'Img006.jpg',
                             filePath:
@@ -399,7 +399,7 @@ export default defineEventHandler(async (event): Promise<ApiResponse<GroupChatMs
                 chatMessageType: 'IMAGE'
             },
             {
-                id: 649,
+                id: '649',
                 chatMsg: 'Vue (pronounced /vjuː/, like view) is a JavaScript framework for building user interfaces. It builds on top of standard HTML, CSS, and JavaScript and provides a declarative, component-based programming model that helps you efficiently develop user interfaces of any complexity.',
                 msgDateTime: '2025-01-10 12:42:20',
                 groupId: 17,
@@ -407,7 +407,7 @@ export default defineEventHandler(async (event): Promise<ApiResponse<GroupChatMs
                 unsend: false,
                 sent: false,
                 sendUser: {
-                    id: 9,
+                    id: '9',
                     email: 'Fisher@mydomain.com',
                     username: 'Cody Fisher',
                     avatar: {
@@ -449,7 +449,7 @@ export default defineEventHandler(async (event): Promise<ApiResponse<GroupChatMs
                 chatMessageType: 'TEXT'
             },
             {
-                id: 644,
+                id: '644',
                 chatMsg: null,
                 msgDateTime: '2025-01-10 12:42:20',
                 groupId: 17,
@@ -457,7 +457,7 @@ export default defineEventHandler(async (event): Promise<ApiResponse<GroupChatMs
                 unsend: false,
                 sent: false,
                 sendUser: {
-                    id: 9,
+                    id: '9',
                     email: 'Fisher@mydomain.com',
                     username: 'Cody Fisher',
                     avatar: {
@@ -468,9 +468,9 @@ export default defineEventHandler(async (event): Promise<ApiResponse<GroupChatMs
                 },
                 files: [
                     {
-                        id: 141,
+                        id: '141',
                         fileManager: {
-                            id: 5,
+                            id: '5',
                             fileMime: 'image/jpeg',
                             fileName: 'Img005.jpg',
                             filePath:

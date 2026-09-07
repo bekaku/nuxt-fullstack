@@ -9,6 +9,7 @@ const {
   placeholder = "/images/no_picture.jpg",
   format = "webp",
   fit = "cover",
+  hoverEffect = false,
 } = defineProps<{
   src: string;
   alt?: string;
@@ -21,6 +22,7 @@ const {
   format?: "webp" | "avif" | "jpeg" | "jpg" | "png" | "gif" | "svg";
   fit?: "cover" | "contain" | "fill" | "inside" | "outside";
   quality?: string;
+  hoverEffect?: boolean;
 }>();
 defineEmits<{
   "on-click": [payload: any];
@@ -41,7 +43,7 @@ const objectFitClass = computed(() => {
 </script>
 <template>
   <div
-    class="relative overflow-hidden inline-block"
+    class="group relative overflow-hidden inline-block"
     :class="attrs.class"
     @click="$emit('on-click', $event)"
   >
@@ -58,14 +60,22 @@ const objectFitClass = computed(() => {
       :format
       :quality
       :fit
-      :class="['w-full h-full', objectFitClass, attrs.class]"
+      :class="[
+        'w-full h-full ',
+        objectFitClass,
+        hoverEffect &&
+          'transition-transform duration-200 group-hover:scale-105',
+      ]"
       loading="lazy"
     />
     <div
       v-if="$slots.default"
-      class="absolute inset-0 z-10 flex flex-col items-center justify-center pointer-events-auto"
+      class="absolute inset-0 z-10 flex flex-col items-center justify-center pointer-events-none"
     >
-      <slot />
+      <!-- ถ้าใน slot มีปุ่มกด ให้ใส่ pointer-events-auto เฉพาะ element นั้น -->
+      <div class="pointer-events-auto">
+        <slot />
+      </div>
     </div>
   </div>
 </template>

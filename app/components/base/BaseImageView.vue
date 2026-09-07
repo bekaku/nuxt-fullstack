@@ -32,6 +32,7 @@ const translateY = ref(0);
 const isDragging = ref(false);
 const startX = ref(0);
 const startY = ref(0);
+const fade = ref(true);
 const menuItems = ref<DropdownMenuItem[]>([
   {
     label: t("base.download") || "",
@@ -42,12 +43,6 @@ const menuItems = ref<DropdownMenuItem[]>([
     },
   },
 ]);
-onMounted(async () => {
-  await setList();
-  if (props.selectedIndex) {
-    select(props.selectedIndex);
-  }
-});
 
 const getTextColor = computed(() => {
   return !props.dark
@@ -145,15 +140,17 @@ const setList = async () => {
 };
 
 function onClickPrev() {
-  if (activeIndex.value === 0) return;
-  activeIndex.value--;
-  select(activeIndex.value);
+  // if (activeIndex.value === 0) return;
+  // activeIndex.value--;
+  // select(activeIndex.value);
+  carousel.value?.emblaApi?.scrollPrev();
 }
 
 function onClickNext() {
-  if (activeIndex.value === items.value.length - 1) return;
-  activeIndex.value++;
-  select(activeIndex.value);
+  // if (activeIndex.value === items.value.length - 1) return;
+  // activeIndex.value++;
+  // select(activeIndex.value);
+  carousel.value?.emblaApi?.scrollNext();
 }
 
 function onSelect(index: number) {
@@ -161,12 +158,54 @@ function onSelect(index: number) {
 }
 
 function select(index: number) {
-  activeIndex.value = index;
-  carousel.value?.emblaApi?.scrollTo(index);
+  if (!carousel.value?.emblaApi) return;
+  // carousel.value.emblaApi.scrollTo(index);
+  const api = carousel.value?.emblaApi;
+  api?.scrollTo(index);
 }
 
+const waitForCarousel = () =>
+  new Promise<void>((resolve) => {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          resolve();
+        });
+      });
+    });
+  });
 // รองรับการกดปุ่มซ้าย-ขวา และ ESC บนคีย์บอร์ด
-onMounted(() => {
+onMounted(async () => {
+  await setList();
+  if (props.selectedIndex !== undefined) {
+    await nextTick();
+    await waitForCarousel();
+    // select(props.selectedIndex);
+    // await nextTick();
+
+    const index = props.selectedIndex;
+
+    // initial position
+    activeIndex.value = index;
+
+    const api = carousel.value?.emblaApi;
+
+    if (api) {
+      api.scrollTo(index, true);
+    }
+
+    // รอ Vue เปลี่ยน fade
+    await nextTick();
+
+    fade.value = false;
+
+    // หลัง fade ถูกถอดออก ให้ยืนยันตำแหน่งอีกครั้ง
+    await nextTick();
+
+    requestAnimationFrame(() => {
+      carousel.value?.emblaApi?.scrollTo(index, true);
+    });
+  }
   if (props.allowKeyboard) {
     window.addEventListener("keydown", handleKeydown);
   }
@@ -183,7 +222,18 @@ const handleKeydown = (e: KeyboardEvent) => {
   if (e.key === "ArrowLeft") onClickPrev();
   if (e.key === "Escape" && props.closeable) emit("close");
 };
+// watch(
+//   () => carousel.value?.emblaApi,
+//   (api) => {
+//     if (!api) return;
 
+//     if (props.selectedIndex !== undefined) {
+//       api.scrollTo(props.selectedIndex, true);
+//       activeIndex.value = props.selectedIndex;
+//     }
+//   },
+//   { immediate: true }
+// );
 watch(
   () => activeIndex.value,
   () => {
@@ -266,6 +316,7 @@ watch(
           ref="carousel"
           v-slot="{ item }"
           :items="items"
+          :fade="fade"
           class="w-full h-full"
           :ui="{
             root: 'w-full h-full',

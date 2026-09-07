@@ -13,7 +13,7 @@ const props = withDefaults(defineProps<{
   collapseText?: string;
   charsPerLine?: number | string;
   showMore?: boolean;
-  class?: string;
+  class?: string | string[];
   textClass?: string;
   lineHeight?: string;
   isEscapeHtml?: boolean;
@@ -74,7 +74,7 @@ const getSanitizeHtml = computed(() => {
 
   if (props.urlify) {
     text = text.replace(urlRegex, (url) => {
-      return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline hover:opacity-80">${url}</a>`;
+      return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline hover:opacity-80 break-all">${url}</a>`;
     });
   }
 
@@ -113,8 +113,8 @@ const toggleExpand = () => {
       <div class="text-sm font-semibold text-primary cursor-pointer">
         {{
           isExpanded
-            ? collapseText || t("base.seeMore")
-            : expandText || t("base.seeLess")
+            ? collapseText || t("base.seeLess")
+            : expandText || t("base.seeMore")
         }}
       </div>
     </div>

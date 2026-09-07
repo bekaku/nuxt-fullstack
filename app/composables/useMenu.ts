@@ -114,7 +114,7 @@ export const useMenu = () => {
           {
             label: "Chats",
             icon: "lucide:message-circle",
-            to: "/example/chats",
+            to: "/chats/g/empty",
           },
           {
             label: "Charts",

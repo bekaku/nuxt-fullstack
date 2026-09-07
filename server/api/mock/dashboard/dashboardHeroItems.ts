@@ -11,7 +11,7 @@ export default defineEventHandler(async (event): Promise<LabelValue<string>[]> =
         {
             label: 'Chats',
             description: 'Chat layout example',
-            to: '/example/chats',
+            to: '/chats/g/empty',
             icon: { name: 'lucide:message-circle-more' },
         },
         {

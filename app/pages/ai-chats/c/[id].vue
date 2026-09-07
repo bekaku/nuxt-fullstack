@@ -222,10 +222,9 @@ const getDropdownItems = (): DropdownMenuItem[][] => [
   <BaseDashboardPanel
     id="ai-chats"
     :title="currentChat?.title || 'New chat'"
-    class="relative min-h-0"
-    :ui="{ body: 'p-0 sm:p-0 overscroll-none' }"
-    body-class="w-full max-w-[1440px] mx-auto  flex flex-col flex-1 min-h-0"
-    navbar-transparent
+    class="relative h-full"
+    :ui="{ body: 'p-0 sm:p-0 overflow-hidden flex flex-col h-full' }"
+    body-class="w-full max-w-[1440px] mx-auto flex flex-col flex-1 h-full min-h-0 overflow-hidden"
   >
     <template #navbarRight>
       <UDropdownMenu
@@ -238,88 +237,122 @@ const getDropdownItems = (): DropdownMenuItem[][] => [
         <UButton variant="ghost" icon="lucide:more-vertical" />
       </UDropdownMenu>
     </template>
-    <div class="flex flex-1 justify-center min-h-0">
+
+    <!-- Main Wrapper: จัดการ layout ทั้งหมดไม่ให้เกินหน้าจอ -->
+    <div class="flex flex-col flex-1 h-full min-h-0 overflow-hidden">
+
+      <!-- Scroll Area: เลื่อนเฉพาะรายการข้อความ -->
       <div
         ref="chatContainerRef"
-        class="w-full min-w-0 max-w-3xl flex flex-col gap-4 sm:gap-6 px-4"
+        class="flex-1 min-h-0 overflow-y-auto px-4"
       >
-        <BaseLoadmore
-          v-if="currentChat && currentChat.id"
-          :disabled="isLastPage || loadingMore"
-          :loading="loadingMore"
-          icon="lucide:chevron-up"
-          @on-next="loadMoreMessages"
-        />
-        <UChatMessages
-          ref="chatRef"
-           :ui="{
-            autoScroll: 'mb-15',
-          }"
-          :assistant="{
-            variant: 'naked',
-            actions: [
-              {
-                label: $t('base.copyToClipboard'),
-                icon: 'i-lucide-copy',
-                onClick: onCopyMessage,
-              },
-            ],
-          }"
-          :user="{
-            variant: 'subtle',
-            actions: [
-              {
-                label: $t('base.copyToClipboard'),
-                icon: 'i-lucide-copy',
-                onClick: onCopyMessage,
-              },
-            ],
-          }"
-          should-auto-scroll
-          should-scroll-to-bottom
-          :messages="messages as any[]"
-          :status="status"
-        >
-          <template #indicator>
-            <div class="flex items-center gap-1.5">
-              <ChatIndicator />
-              <UChatShimmer :text="`${$t('ai.thinking')}...`" class="text-sm" />
-            </div>
-          </template>
+        <div class="w-full max-w-3xl mx-auto flex flex-col gap-4 sm:gap-6 py-4">
+          <BaseLoadmore
+            v-if="currentChat && currentChat.id"
+            :disabled="isLastPage || loadingMore"
+            :loading="loadingMore"
+            icon="lucide:chevron-up"
+            @on-next="loadMoreMessages"
+          />
 
-          <template #content="{ message }">
-            <!-- หุ้มด้วย div flex-col เพื่อให้เรียงจากบนลงล่าง -->
-            <div class="flex flex-col">
-              <!-- 1. ดึงเฉพาะส่วน Reasoning มาแสดงก่อน (บังคับอยู่บนสุด) -->
-              <template
-                v-for="(part, i) in message.parts"
-                :key="`think-${message.id}-${i}`"
-              >
-                <UCollapsible
-                  v-if="isReasoningUIPart(part)"
-                  :open="openThinking[message.id] ?? part.state !== 'done'"
-                  @update:open="(val) => (openThinking[message.id] = val)"
-                  class="mb-2"
+          <UChatMessages
+            ref="chatRef"
+            :ui="{
+              autoScroll: 'mb-4',
+            }"
+            :assistant="{
+              variant: 'naked',
+              actions: [
+                {
+                  label: $t('base.copyToClipboard'),
+                  icon: 'i-lucide-copy',
+                  onClick: onCopyMessage,
+                },
+              ],
+            }"
+            :user="{
+              variant: 'subtle',
+              actions: [
+                {
+                  label: $t('base.copyToClipboard'),
+                  icon: 'i-lucide-copy',
+                  onClick: onCopyMessage,
+                },
+              ],
+            }"
+            should-auto-scroll
+            :should-scroll-to-bottom="false"
+            :messages="messages"
+            :status="status"
+          >
+            <template #indicator>
+              <div class="flex items-center gap-1.5">
+                <ChatIndicator />
+                <UChatShimmer :text="`${$t('ai.thinking')}...`" class="text-sm" />
+              </div>
+            </template>
+
+            <template #content="{ message }">
+              <div class="flex flex-col">
+                <template
+                  v-for="(part, i) in message.parts"
+                  :key="`think-${message.id}-${i}`"
                 >
-                  <UButton
-                    color="neutral"
-                    variant="ghost"
-                    size="xs"
-                    icon="i-lucide-chevron-down"
-                    :ui="{
-                      trailingIcon:
-                        'group-data-[state=open]:rotate-180 transition-transform',
-                    }"
+                  <UCollapsible
+                    v-if="isReasoningUIPart(part)"
+                    :open="openThinking[message.id] ?? part.state !== 'done'"
+                    @update:open="(val) => (openThinking[message.id] = val)"
+                    class="mb-2"
                   >
-                    <UChatShimmer
-                      v-if="part.state !== 'done'"
-                      :text="`${$t('ai.thinking')}...`"
+                    <UButton
+                      color="neutral"
+                      variant="ghost"
+                      size="xs"
+                      icon="i-lucide-chevron-down"
+                      :ui="{
+                        trailingIcon:
+                          'group-data-[state=open]:rotate-180 transition-transform',
+                      }"
+                    >
+                      <UChatShimmer
+                        v-if="part.state !== 'done'"
+                        :text="`${$t('ai.thinking')}...`"
+                      />
+                      <span v-else>{{ $t("ai.thinkingShow") }}</span>
+                    </UButton>
+                    <template #content>
+                      <div
+                        class="text-sm text-muted/60 border-l-2 border-default pl-3 py-1 my-2 [&_p]:my-1.5 [&_p:first-child]:mt-0 [&_p:last-child]:mb-0 [&_ul]:my-1.5 [&_ol]:my-1.5 [&_li]:my-0 [&_strong]:font-medium"
+                      >
+                        <MdPreview
+                          :modelValue="part.text"
+                          :theme="isDark ? 'dark' : 'light'"
+                          language="en-US"
+                          preview-theme="github"
+                          code-theme="github"
+                          :show-code-row-number="true"
+                          class="think-mode-preview bg-transparent!"
+                        />
+                      </div>
+                    </template>
+                  </UCollapsible>
+                </template>
+
+                <template
+                  v-for="(part, i) in message.parts"
+                  :key="`text-${message.id}-${i}`"
+                >
+                  <div v-if="isTextUIPart(part)">
+                    <BaseContentText
+                      v-if="message.role === 'user'"
+                      :rows="4"
+                      :content="part.text"
+                      show-more
+                      :urlify="false"
                     />
-                    <span v-else>{{ $t("ai.thinkingShow") }}</span>
-                  </UButton>
-                  <template #content>
                     <div
-                      class="text-sm text-muted/60 border-l-2 border-default pl-3 py-1 my-2 [&_p]:my-1.5 [&_p:first-child]:mt-0 [&_p:last-child]:mb-0 [&_ul]:my-1.5 [&_ol]:my-1.5 [&_li]:my-0 [&_strong]:font-medium"
+                      v-else
+                      class="prose prose-sm dark:prose-invert max-w-none prose-p:my-1.5 prose-p:first:mt-0 prose-p:last:mb-0 prose-pre:my-2 prose-ul:my-1.5 prose-ol:my-1.5"
                     >
                       <MdPreview
                         :modelValue="part.text"
@@ -328,92 +361,71 @@ const getDropdownItems = (): DropdownMenuItem[][] => [
                         preview-theme="github"
                         code-theme="github"
                         :show-code-row-number="true"
-                        class="think-mode-preview bg-transparent!"
+                        class="bg-transparent!"
+                        :code-foldable="false"
                       />
                     </div>
-                  </template>
-                </UCollapsible>
-              </template>
+                  </div>
+                </template>
 
-              <!-- 2. ดึงเฉพาะส่วน Text มาแสดง (บังคับอยู่ตรงกลาง) -->
-              <template
-                v-for="(part, i) in message.parts"
-                :key="`text-${message.id}-${i}`"
-              >
-                <div
-                  v-if="isTextUIPart(part)"
-                  class="prose prose-sm dark:prose-invert max-w-none prose-p:my-1.5 prose-p:first:mt-0 prose-p:last:mb-0 prose-pre:my-2 prose-ul:my-1.5 prose-ol:my-1.5"
+                <template
+                  v-for="(part, i) in message.parts"
+                  :key="`sources-${message.id}-${i}`"
                 >
-                  <MdPreview
-                    :modelValue="part.text"
-                    :theme="isDark ? 'dark' : 'light'"
-                    language="en-US"
-                    preview-theme="github"
-                    code-theme="github"
-                    :show-code-row-number="true"
-                    class="bg-transparent!"
-                    :code-foldable="false"
-                  />
-                </div>
-              </template>
-
-              <!-- 3. ดึงเฉพาะส่วน Sources มาแสดง (บังคับอยู่ล่างสุด) -->
-              <template
-                v-for="(part, i) in message.parts"
-                :key="`sources-${message.id}-${i}`"
-              >
-                <div
-                  v-if="part.type === 'data-sources'"
-                  class="mt-3 flex flex-wrap gap-1.5"
-                >
-                  <UBadge
-                    v-for="(source, si) in part.data"
-                    :key="si"
-                    :icon="getSourceIcon(source)"
+                  <div
+                    v-if="part.type === 'data-sources'"
+                    class="mt-3 flex flex-wrap gap-1.5"
                   >
-                    {{ getSourceLabel(source, si) }}
-                  </UBadge>
-                </div>
-              </template>
-            </div>
-          </template>
-        </UChatMessages>
-        <div
-          ref="bottomAnchor"
-          class="h-px w-full opacity-0 shrink-0 "
-        ></div>
-        <div class="sticky bottom-0 z-10 pb-4 sm:pb-6">
-          <UChatPrompt
-            v-model="inputMessage"
-            :placeholder="$t('ai.promtLabel')"
-            :error="error"
-            color="primary"
-            variant="subtle"
-            class="[view-transition-name:chat-prompt]"
-            :ui="{ base: 'px-1.5' }"
-            @submit="onSubmit"
-          >
-            <template #footer>
-              <div class="flex items-center gap-1">
-                <UButton size="sm" icon="lucide:search" />
+                    <UBadge
+                      v-for="(source, si) in part.data"
+                      :key="si"
+                      :icon="getSourceIcon(source)"
+                    >
+                      {{ getSourceLabel(source, si) }}
+                    </UBadge>
+                  </div>
+                </template>
               </div>
-
-              <UChatPromptSubmit
-                :status="status"
-                size="sm"
-                color="primary"
-                variant="solid"
-                @stop="stop()"
-                @reload="onReload()"
-              />
             </template>
-          </UChatPrompt>
+          </UChatMessages>
 
-          <p class="text-center text-xs text-muted mt-2">
-            {{ $t("ai.aiMistakeable") }}
-          </p>
+          <div ref="bottomAnchor" class="h-px w-full opacity-0 shrink-0"></div>
         </div>
       </div>
+
+      <!-- Prompt Footer: อยู่นอก Scroll Area ตรึงไว้ล่างสุดแบบ Static Shrink-0 -->
+      <div class="w-full max-w-3xl mx-auto px-4 pb-4 sm:pb-6 shrink-0">
+        <UChatPrompt
+          v-model="inputMessage"
+          :placeholder="$t('ai.promtLabel')"
+          :error="error"
+          color="primary"
+          variant="subtle"
+          class="[view-transition-name:chat-prompt]"
+          :ui="{ base: 'px-1.5' }"
+          @submit="onSubmit"
+        >
+          <template #footer>
+            <div class="flex items-center gap-1">
+              <UButton size="sm" icon="lucide:search" />
+            </div>
+
+            <UChatPromptSubmit
+              :status="status"
+              size="sm"
+              color="primary"
+              variant="solid"
+              @stop="stop()"
+              @reload="onReload()"
+            />
+          </template>
+        </UChatPrompt>
+
+        <p class="text-center text-xs text-muted mt-2">
+          {{ $t("ai.aiMistakeable") }}
+        </p>
+      </div>
+
     </div>
   </BaseDashboardPanel>
 
@@ -438,26 +450,57 @@ const getDropdownItems = (): DropdownMenuItem[][] => [
 .md-editor-preview h5,
 .md-editor-preview h6 {
   font-family: inherit !important;
+  font-size: inherit !important;
 }
+
 .md-editor-code-head {
   z-index: 1 !important;
 }
+
 .md-editor-preview pre,
 .md-editor-preview code {
   font-family:
     ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
     "Courier New", monospace !important;
 }
+
 .md-editor-preview-wrapper {
   padding: 0 !important;
 }
+
 .md-editor {
   background-color: transparent !important;
 }
+
 .md-editor-dark {
   --md-bk-color: transparent !important;
 }
 
+/* ====================================================
+   จัดการ Table ให้เลื่อน Scrollbar แนวนอนแทนการบีบคอลัมน์
+   ==================================================== */
+.md-editor-preview table {
+  display: block !important;
+  width: max-content !important;
+  max-width: 100% !important;
+  overflow-x: auto !important;
+  border-collapse: collapse !important;
+}
+
+.md-editor-preview th {
+  white-space: nowrap !important;
+  padding: 8px 12px !important;
+}
+
+.md-editor-preview td {
+  min-width: 140px !important;
+  white-space: normal !important;
+  padding: 8px 12px !important;
+}
+
+/* ====================================================
+   Thinking Mode Styling
+   ==================================================== */
 .think-mode-preview .md-editor-preview {
   font-size: 0.85rem !important;
   color: #9ca3af !important;

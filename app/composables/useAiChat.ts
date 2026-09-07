@@ -4,7 +4,7 @@ import { useChat } from '@ai-sdk/vue'
 import { DefaultChatTransport } from 'ai'
 
 export type ChatStatus = 'ready' | 'submitted' | 'streaming' | 'error'
-export type ChatAction = 'delete' | 'rename'
+type ChatAction = 'delete' | 'rename'
 
 interface AiChatOptions {
   bottomAnchor?: Ref<HTMLElement | null>
@@ -190,16 +190,24 @@ export const useAiChat = (options: AiChatOptions = {}) => {
       if (data && data?.dataList?.length) {
         const olderMessages = [...data.dataList].reverse().map(mapDbMessage);
 
-        const scrollContainer = getScrollParent(options?.chatContainerRef?.value ?? null);
-        const previousScrollHeight = scrollContainer ? scrollContainer.scrollHeight : 0;
+        // const scrollContainer = getScrollParent(options?.chatContainerRef?.value ?? null);
+        // const previousScrollHeight = scrollContainer ? scrollContainer.scrollHeight : 0;
+
+
+        const container = options?.chatContainerRef?.value;
+        const previousScrollHeight = container ? container.scrollHeight : 0;
+        const previousScrollTop = container ? container.scrollTop : 0;
 
         // @ts-ignore
         messages.value = [...olderMessages, ...messages.value];
 
         await nextTick();
-        if (scrollContainer) {
-          const currentScrollHeight = scrollContainer.scrollHeight;
-          scrollContainer.scrollTop += (currentScrollHeight - previousScrollHeight);
+        if (container) {
+          // const currentScrollHeight = scrollContainer.scrollHeight;
+          // scrollContainer.scrollTop += (currentScrollHeight - previousScrollHeight);
+          const heightDifference = container.scrollHeight - previousScrollHeight;
+          // ปรับตำแหน่ง scroll คืนค่าเดิมทันทีโดยไม่ใช้ smooth animation เพื่อไม่ให้ภาพกระตุก
+          container.scrollTop = previousScrollTop + heightDifference;
         }
       }
     } catch (error) {

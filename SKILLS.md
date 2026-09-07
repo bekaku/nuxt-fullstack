@@ -67,11 +67,485 @@ There are NO tests. Verify work with `pnpm lint && pnpm typecheck`.
   ```
 - Permissions are carried inside the JWT access token payload — after changing a user's roles, tokens must be refreshed.
 
-### Adding a CRUD module
-1. Add table to `server/database/schema.ts`, then `pnpm db:generate && pnpm db:migrate`.
-2. Add permission rows to seed (`server/database/seed.ts` — extend `RESOURCES`/`ACTIONS`) or insert directly.
-3. Create `server/api/<module>/index.get.ts`, `index.post.ts`, `[id].get.ts`, `[id].delete.ts` — follow the existing `appUser/` routes, validate bodies with Zod (`readValidatedBody`), and use `paginate()` from `dbPaging.ts` for lists.
-4. Create pages at `app/pages/<module>/index.vue` (list) and `app/pages/<module>/[crud]/[id].vue` (form/detail) using `useCrudList` / `useCrudForm` composables.
+### CRUD Module Creation Workflow
+
+1. **Define Database Schema**
+   * Add the table definition in `server/database/schema.ts`.
+   * Run migration commands:
+     ```bash
+     pnpm db:generate && pnpm db:migrate
+     ```
+
+2. **Seed Permissions**
+   * Create an SQL migration query under `drizzle/` to insert permission rows using the pattern: `<table_name>_list`, `<table_name>_view`, `<table_name>_add`, `<table_name>_edit`, and `<table_name>_delete`.
+   * Generate each permission record ID using `nextId()` from `server/utils/snowflake.ts`.
+
+3. **Define TypeScript Model Interface**
+   * Add the table model interface in `app/types/models.ts`, extending base types (e.g. `Id`):
+     ```ts
+     export interface UserProfile extends Id {
+       name: string;
+       department?: string;
+       description?: string;
+       statusType?: number | string;
+       enable?: boolean;
+       joinDate?: string;
+       createdDate?: string;
+       updatedDate?: string;
+     }
+     ```
+
+4. **Configure Localization (i18n)**
+   * Add field and table translations to `i18n/locales/th/model.json` and `i18n/locales/en/model.json` under the `model` namespace:
+     ```json
+     "model": {
+       "tableName": {
+         "table": "User data",
+         "employeeId": "Employee id",
+         "fullName": "Fullname",
+         "mobilePhone": "Phone no",
+         "positionName": "Position"
+       }
+     }
+     ```
+
+5. **Implement Server API Endpoints**
+   * Use **camelCase** for the server module directory name (e.g., `userProfile/`).
+   * Create the route handlers:
+     * `server/api/<moduleName>/index.get.ts`
+     * `server/api/<moduleName>/index.post.ts`
+     * `server/api/<moduleName>/[id].get.ts`
+     * `server/api/<moduleName>/[id].delete.ts`
+   * Follow the conventions in `appUser/`: validate request bodies using Zod via `readValidatedBody`, and wrap listing responses using `paginate()` from `dbPaging.ts`.
+
+6. **Build Frontend Views**
+   * Use **kebab-case** for the frontend module directory name (e.g., `user-profile/`).
+   * Create pages using the `useCrudList` and `useCrudForm` composables:
+     * `app/pages/<module-name>/index.vue` (List view)
+     * `app/pages/<module-name>/[crud]/[id].vue` (Form / Detail view)
+
+#### CRUD List Types & Options Reference
+
+```ts
+export interface ICrudFilterOptions {
+  searchable?: boolean;
+  searchType?: ICrudListHeaderOptionSearchType;
+  searchModel?: any;
+  searchColunm?: string;
+  sortable?: boolean;
+  sortColunm?: string;
+  label?: string;
+  searchOperation?: SearchOperation;
+  searchOperationReadonly?: boolean;
+  func?: any;
+  selectOption?: {
+    items: LabelValue<any>[];
+    multiple?: boolean;
+  };
+}
+
+export enum ICrudListHeaderOptionSearchType {
+  TEXT,
+  NUMBER,
+  BOOLEAN,
+  DATE,
+  DATETIME,
+  OPTIONS,
+}
+
+export type SearchOperation = ':' | '>' | '>=' | '<' | '<=' | '=' | '!=';
+```
+
+#### Example List Page: `app/pages/<module>/index.vue`
+
+```vue
+<script setup lang="ts">
+import type { TableColumn } from "@nuxt/ui";
+import {
+  ICrudListHeaderOptionSearchType,
+  type ICrudFilterOptions,
+} from "~/types/common";
+import type { UserProfile } from "~/types/models"; // Example model (PascalCase)
+
+definePageMeta({
+  pageName: "model.userProfile.table",
+  requiresPermission: ["user_profile_list"],
+});
+
+const UButton = resolveComponent("UButton");
+const { t } = useLang();
+
+const {
+  dataList,
+  loading,
+  firstLoaded,
+  pages,
+  sorts,
+  onPageChange,
+  onPerPageChange,
+  onSort,
+  onReload,
+  onSearch,
+  onItemDelete,
+  onNewForm,
+  onItemClick,
+  onItemCopy,
+  crudName,
+  onKeywordSearch,
+} = useCrudList<UserProfile>({
+  crudName: "UserProfile", // PascalCase (e.g. UserProfile, AppRole, OrderItem)
+  apiEndpoint: "/api/userProfile", // camelCase (e.g. /api/userProfile, /api/appRole)
+  headers: [],
+  itemsPerPage: 10,
+  defaultSorts: [
+    {
+      column: "name",
+      mode: "asc",
+    },
+    {
+      column: "id",
+      mode: "desc",
+    },
+  ],
+});
+
+const columns = ref<TableColumn<UserProfile>[]>([
+  {
+    accessorKey: "department",
+    header: t("model.userProfile.department"),
+    cell: ({ row }) => row.getValue("department"),
+  },
+  {
+    accessorKey: "name",
+    header: t("model.userProfile.name"),
+    cell: ({ row }) => row.getValue("name"),
+    meta: {
+      options: {
+        sortable: true,
+        searchable: true,
+        searchType: ICrudListHeaderOptionSearchType.TEXT,
+        searchOperation: ":",
+        searchModel: "",
+      } as ICrudFilterOptions,
+    } as any,
+  },
+  {
+    accessorKey: "description",
+    header: t("model.userProfile.description"),
+    cell: ({ row }) => row.getValue("description"),
+    meta: {
+      options: {
+        sortable: true,
+        searchable: true,
+        searchType: ICrudListHeaderOptionSearchType.TEXT,
+        searchOperation: ":",
+        searchModel: "",
+      } as ICrudFilterOptions,
+    } as any,
+  },
+  {
+    accessorKey: "statusType",
+    header: t("model.userProfile.statusType"),
+    cell: ({ row }) => {
+      const typeVal = row.getValue("statusType");
+      if (!typeVal) {
+        return null;
+      }
+      return h(
+        UButton,
+        {
+          class: "rounded-full",
+          variant: "soft",
+          color: "primary",
+          size: "xs",
+          onClick: () => {
+            onCellTypeClick(row.index);
+          },
+        },
+        () => typeVal,
+      );
+    },
+    meta: {
+      options: {
+        searchable: true,
+        searchType: ICrudListHeaderOptionSearchType.OPTIONS,
+        searchOperation: ":",
+        searchModel: "",
+        selectOption: {
+          items: [
+            {
+              label: "Active",
+              value: 1,
+            },
+            {
+              label: "Inactive",
+              value: 2,
+            },
+            {
+              label: "Pending",
+              value: 3,
+            },
+          ],
+        },
+      } as ICrudFilterOptions,
+    } as any,
+  },
+]);
+
+const onCellTypeClick = (index: number) => {
+  const rowItem = dataList.value[index];
+  console.log("rowItem", rowItem);
+};
+</script>
+
+<template>
+  <BaseDashboardPanel :title="$t('model.userProfile.table')" id="user-profile-index">
+    <BaseTable :add-permission="{
+        permissions: ['user_profile_add'],
+      }" :columns="columns" :crud-name="crudName" :delete-permission="{
+        permissions: ['user_profile_delete'],
+      }" :edit-permission="{
+        permissions: ['user_profile_edit'],
+      }" :first-loaded="firstLoaded" :list="dataList" :loading="loading" :show-checkbox="true" :title="$t('model.userProfile.table')" :view-permission="{
+        permissions: ['user_profile_view'],
+      }" @on-item-click="onItemClick" @on-item-copy="onItemCopy" @on-item-delete="onItemDelete" @on-items-perpage-change="onPerPageChange" @on-keyword-search="onKeywordSearch" @on-new-form="onNewForm" @on-page-no-change="onPageChange" @on-reload="onReload" @on-search="onSearch" @on-sort="onSort" description="User profile management" icon="lucide:user-check" show-keword-search v-model:paging="pages" v-model:sorts="sorts">
+      <!--
+      accessorKey or id of column can be used as slots everywhere inside BaseTable
+      <template #actions-cell="{ row }">
+        Action slot
+      </template>
+      <template #name-cell="{ row }">
+        Name slot
+      </template>
+      -->
+    </BaseTable>
+  </BaseDashboardPanel>
+</template>
+```
+
+#### CRUD Form Types & Options Reference
+
+Form generation uses Zod schemas annotated with `.describe(uiConfig(...))` to configure auto-generated UI components mapped to PostgreSQL types.
+
+```ts
+export const uiConfig = (config: LabelValue<any>) => JSON.stringify(config);
+
+export interface LabelValue<Type> {
+  avatar?: AvatarProps;
+  border?: boolean;
+  children?: LabelValue<Type>[];
+  color?: AppColor;
+  disable?: boolean;
+  description?: string;
+  fetch?: boolean;
+  icon?: IconProps | string;
+  trailingIcon?: IconProps | string;
+  label?: string;
+  id?: any;
+  noActiveLink?: boolean;
+  params?: string[];
+  queries?: string[];
+  rbac?: RBACProps;
+  translateLabel?: boolean;
+  to?: string;
+  value?: Type;
+  additionalValue?: any;
+  ui?: {
+    type?:
+      | 'text'
+      | 'date'
+      | 'date-range'
+      | 'password'
+      | 'email'
+      | 'number'
+      | 'number-step'
+      | 'file'
+      | 'search'
+      | 'select'
+      | 'textarea'
+      | 'checkbox'
+      | 'switch'
+      | 'checkbox-group'
+      | 'radio-group'
+      | 'input-menu'
+      | 'input-tags'
+      | 'input-pin'
+      | 'slider';
+    placeholder?: string;
+    variant?: 'outline' | 'soft' | 'subtle' | 'ghost' | 'none' | 'list' | 'card' | 'table';
+    required?: boolean;
+    size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+    clearable?: boolean;
+    readonly?: boolean;
+    multiple?: boolean;
+    separator?: boolean;
+    separatorLength?: number | number[];
+    maxlength?: number;
+    rows?: number;
+    min?: number;
+    max?: number;
+    step?: number;
+    orientation?: 'horizontal' | 'vertical';
+    layout?: 'list' | 'grid';
+    class?: string;
+    tooltip?: boolean | string;
+    progress?: boolean | number;
+    numberOfMonths?: number;
+    acceptFiles?: string;
+  };
+  onHandle?: (...params: any[] | []) => void;
+}
+```
+
+##### PostgreSQL to Auto-Form UI Mapping
+
+| PostgreSQL Column Type | Zod Type | `ui.type` Config |
+| :--- | :--- | :--- |
+| `varchar`, `text` (short) | `z.string()` | `'text'` |
+| `text` (long) | `z.string()` | `'textarea'` |
+| `int`, `serial`, `numeric` | `z.number()` | `'number'` or `'number-step'` |
+| `boolean` | `z.boolean()` | `'switch'` or `'checkbox'` |
+| `date`, `timestamp` | `z.string()` | `'date'` |
+| `date` range (composite) | `z.object({ start, end })` | `'date-range'` |
+| `enum` | `z.enum([...])` | `'select'` or `'radio-group'` (use `children` for options) |
+| `jsonb` / array (relations) | `z.array(z.string())` | `'checkbox-group'` or `'input-tags'` |
+
+---
+
+#### Example Form Page: `app/pages/<module-name>/[crud]/[id].vue`
+
+```vue
+<script setup lang="ts">
+import z from "zod";
+import type { UserProfile } from "~/types/models";
+
+const { t } = useLang();
+
+useSeoMeta({
+  title: t("model.userProfile.table"),
+});
+
+// Auto-generated Form Schema based on DB types & i18n
+const schema = z.object({
+  name: z
+    .string()
+    .min(1, t("error.validateRequireField"))
+    .describe(
+      uiConfig({
+        label: t("model.userProfile.name"),
+        icon: "lucide:user",
+        ui: {
+          type: "text",
+          required: true,
+          placeholder: t("model.userProfile.name"),
+          clearable: true,
+          maxlength: 100,
+        },
+      }),
+    ),
+  description: z
+    .string()
+    .describe(
+      uiConfig({
+        label: t("model.userProfile.description"),
+        ui: {
+          type: "textarea",
+          maxlength: 500,
+          clearable: true,
+        },
+      }),
+    )
+    .optional(),
+  statusType: z
+    .enum(["ACTIVE", "INACTIVE", "PENDING"])
+    .describe(
+      uiConfig({
+        label: t("model.userProfile.statusType"),
+        icon: "lucide:activity",
+        ui: {
+          type: "select",
+          required: true,
+        },
+        children: [
+          { label: "Active", value: "ACTIVE" },
+          { label: "Inactive", value: "INACTIVE" },
+          { label: "Pending", value: "PENDING" },
+        ],
+      }),
+    ),
+  enable: z
+    .boolean()
+    .describe(
+      uiConfig({
+        label: t("model.userProfile.active"),
+        ui: {
+          type: "switch",
+          required: true,
+        },
+      }),
+    )
+    .optional(),
+  joinDate: z
+    .string()
+    .describe(
+      uiConfig({
+        label: t("model.userProfile.joinDate"),
+        ui: {
+          type: "date",
+        },
+      }),
+    )
+    .optional(),
+});
+
+type Schema = z.output<typeof schema>;
+
+const state = ref<Partial<Schema>>({
+  name: "",
+  description: "",
+  statusType: "ACTIVE",
+  enable: true,
+  joinDate: "",
+});
+
+const {
+  crudAction,
+  loading,
+  crudName,
+  onDelete,
+  onBack,
+  onEnableEditForm,
+  onSubmit,
+} = useCrudForm<UserProfile>(
+  {
+    crudName: "UserProfile", // PascalCase (must match useCrudList)
+    preValidate: false,
+  },
+  state,
+);
+
+const orientation = ref<"horizontal" | "vertical">("horizontal");
+</script>
+
+<template>
+  <BaseDashboardPanel :title="$t('model.userProfile.table')" id="user-profile-form">
+    <BaseForm :crud-action="crudAction" :crud-name="crudName" :loading="loading" :orientation="orientation" :title="$t('model.userProfile.table')" :zod-schema="schema" @on-back="onBack" @on-delete="onDelete" @on-edit-enable="onEnableEditForm" @on-submit="onSubmit" by-pass-permission class="max-w-[1020px]" description="User profile management and configuration" icon="lucide:user-check" v-model="state">
+      <template #header-end>
+        <URadioGroup :items="['horizontal', 'vertical']" orientation="horizontal" v-model="orientation"/>
+      </template>
+
+      <!-- Override specific field using slot: #field-<key> -->
+      <!--
+      <template #field-name>
+        <UFormField :label="$t('model.userProfile.name')" class="w-full" name="name">
+          Custom input here
+        </UFormField>
+      </template>
+      -->
+    </BaseForm>
+  </BaseDashboardPanel>
+</template>
+```
 
 ### Auth flow
 - Access JWT carries `permissions[]` in its payload. Refresh token is opaque and validated against the DB `access_token` table (revocation-aware).

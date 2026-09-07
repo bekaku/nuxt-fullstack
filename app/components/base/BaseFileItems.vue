@@ -3,16 +3,17 @@ import type { FileManager } from "~/types/models";
 
 const {
   layout = "grid",
-  showViewDialog,
-  items,
+  items = [],
   clickable = true,
   bordered = true,
   showName = true,
   showSize = true,
-  formatSize= true
+  formatSize = true,
+  limit = 0,
+  showViewDialog
 } = defineProps<{
-  layout?: "list" | "grid";
   items: FileManager[];
+  layout?: "list" | "grid";
   softDelete?: boolean;
   showDelete?: boolean;
   containerClass?: string;
@@ -24,123 +25,136 @@ const {
   clickable?: boolean;
   bordered?: boolean;
   imageClass?: string;
+  iconClass?: string;
   showName?: boolean;
   showSize?: boolean;
-  progress?:number
+  progress?: number;
+  limit?: number;
+  hoverEffect?: boolean;
 }>();
+
 const emit = defineEmits<{
   "on-remove": [index: number];
   "on-click": [index: number];
   "on-soft-delete": [index: number];
 }>();
 
-const fileForView = ref<FileManager>();
+// จัดการ Limit แบบ Reactive
+const currentLimit = ref<number>(limit);
+watch(() => limit, (newVal) => {
+  currentLimit.value = newVal;
+});
+
+// View Dialog State
+const fileForView = ref<FileManager | null>(null);
 const showFileView = ref(false);
 const fileImageItemsForView = ref<FileManager[]>([]);
 const fileImageSelectIndex = ref<number>(0);
-const onClick = async (event: any, index: number) => {
-  console.log("onClick", { index, event, showViewDialog });
-  if (!showViewDialog) {
+
+// คำนวณรายการที่จะแสดงผล
+const displayItems = computed(() => {
+  if (layout === "list" || currentLimit.value <= 0) {
+    return items;
+  }
+  return items.slice(0, currentLimit.value);
+});
+
+const remainingCount = computed(() => {
+  if (currentLimit.value <= 0) return 0;
+  return Math.max(0, items.length - currentLimit.value);
+});
+
+const imageItems = computed(() => {
+  return items.filter((f) => f.fileMimeType === "IMAGE");
+});
+
+const handleItemClick = (event: MouseEvent, index: number) => {
+  emit("on-click", index);
+
+  // ถ้าคลิกตัวสุดท้ายที่มีตัวเลข +X ซ้อนอยู่ สามารถเลือกที่จะขยายหรือเปิดดูได้
+  if (layout === "grid" && index === currentLimit.value - 1 && remainingCount.value > 0) {
+    currentLimit.value = items.length;
     return;
   }
-  showFileView.value = false;
-  fileImageSelectIndex.value = 0;
-  fileImageItemsForView.value.length = 0;
+
+  if (!showViewDialog) return;
 
   const file = items[index];
-  if (file) {
-    if (file.fileMimeType == "IMAGE") {
-      await setImagesFileView(file);
-    }
-    fileForView.value = file;
-    showFileView.value = true;
-  }
-};
-const onRemove = (index: number) => {
-  emit("on-remove", index);
-};
-const onSoftDelete = (index: number) => {
-  emit("on-soft-delete", index);
-};
+  if (!file) return;
 
-const getImageItems = computed(() => {
-  if (items && items.length > 0) {
-    return items.filter((f) => f.fileMimeType == "IMAGE");
+  if (file.fileMimeType === "IMAGE") {
+    fileImageItemsForView.value = [...imageItems.value];
+    const imageIndex = imageItems.value.findIndex((t) => t.id === file.id);
+    fileImageSelectIndex.value = imageIndex >= 0 ? imageIndex : 0;
+  } else {
+    fileImageItemsForView.value = [];
+    fileImageSelectIndex.value = 0;
   }
-  return [];
-});
-const setImagesFileView = (file: FileManager) => {
-  return new Promise((resolve) => {
-    const index = getImageItems.value.findIndex((t) => t.id == file.id);
-    if (index >= 0) {
-      const list = getImageItems.value;
-      // for (const f of list) {
-      //   fileImageItemsForView.value.push(f)
-      // }
-      fileImageItemsForView.value.push(...list);
-      fileImageSelectIndex.value = index;
-    }
-    resolve(true);
-  });
+
+  fileForView.value = file;
+  showFileView.value = true;
 };
 </script>
+
 <template>
-  <div
-    v-if="items.length > 0"
-    class="w-full sm:min-w-100 flex flex-col overflow-hidden mt-4 text-left"
-  >
-    <div v-if="layout == 'list'" :class="['w-full', containerClass]">
-      <BaseFileItem
-        v-for="(item, index) in items"
-        :key="item.uniqueId || item.id + ''"
-        :index="index"
-        :item="item"
-        :clickable="clickable"
-        :soft-delete="softDelete"
-        :show-delete="showDelete"
-        :item-class="itemClass"
-        :format-size="formatSize"
-        :bordered="bordered"
-        :image-class="imageClass"
-        :show-name="showName"
-        :show-size="showSize"
-        @on-click="onClick"
-        @on-remove="onRemove"
-        @on-soft-delete="onSoftDelete"
-      >
-      </BaseFileItem>
-    </div>
-    <div v-else :class="['w-full', containerClass]">
+  <div v-if="items.length > 0" class="w-full flex flex-col overflow-hidden text-left">
+    <!-- Items Wrapper -->
+    <div
+      :class="[
+        'w-full',
+        containerClass,
+        layout === 'grid' && cssMerge('grid grid-cols-2 md:grid-cols-4 gap-4', gridClass)
+      ]"
+    >
       <div
-        :class="cssMerge('grid grid-cols-2 md:grid-cols-4 gap-4', gridClass)"
+        v-for="(item, index) in displayItems"
+        :key="item.uniqueId || String(item.id)"
+        :class="layout === 'grid' && 'relative w-full'"
       >
-        <div
-          v-for="(item, index) in items"
-          :key="item.uniqueId || item.id + ''"
-          class="relative w-full"
+        <BaseFileItem
+          :index="index"
+          :item="item"
+          :layout="layout"
+          :clickable="clickable"
+          :soft-delete="softDelete"
+          :show-delete="showDelete"
+          :item-class="itemClass"
+          :format-size="formatSize"
+          :bordered="bordered"
+          :image-class="imageClass"
+          :icon-class="iconClass"
+          :show-name="showName"
+          :show-size="showSize"
+          :hover-effect="hoverEffect"
+          @on-click="handleItemClick($event, index)"
+          @on-remove="emit('on-remove', index)"
+          @on-soft-delete="emit('on-soft-delete', index)"
         >
-          <BaseFileItem
-            :index="index"
-            :item="item"
-            :item-class="itemClass"
-            :clickable="clickable"
-            layout="grid"
-            :soft-delete="softDelete"
-            :show-delete="showDelete"
-            :format-size="formatSize"
-            :image-class="imageClass"
-            :show-name="showName"
-            :show-size="showSize"
-            @on-click="onClick"
-            @on-remove="onRemove"
-            @on-soft-delete="onSoftDelete"
+          <!-- Badge "+X" แสดงจำนวนไฟล์ที่เหลือในรูปสุดท้ายของ Grid -->
+          <template
+            v-if="layout === 'grid' && index === currentLimit - 1 && remainingCount > 0"
+            #image-inner
           >
-          </BaseFileItem>
-        </div>
+            <div
+              class="absolute inset-0 bg-black/50 rounded-lg flex items-center justify-center z-10 cursor-pointer backdrop-blur-[1px] transition-opacity hover:bg-black/60"
+            >
+              <span class="text-white text-xl font-bold tracking-wide">+{{ remainingCount }}</span>
+            </div>
+          </template>
+        </BaseFileItem>
       </div>
     </div>
-    <UProgress v-if="showProgress && progress" :model-value="Math.min(Math.max(progress, 0), 100)" status />
+
+    <!-- Upload Progress Bar -->
+    <UProgress
+      v-if="showProgress && progress !== undefined"
+      :model-value="Math.min(Math.max(progress, 0), 100)"
+      status
+      class="mt-2"
+    />
   </div>
+
+  <!-- Preview Dialog -->
   <LazyBaseFileViewDialog
     v-if="showFileView && fileForView"
     v-model:show="showFileView"
@@ -148,6 +162,6 @@ const setImagesFileView = (file: FileManager) => {
     :image-list="fileImageItemsForView"
     :select-index="fileImageSelectIndex"
     :title="fileForView.fileName"
-    :show-arrow="true"
+    show-arrow
   />
 </template>

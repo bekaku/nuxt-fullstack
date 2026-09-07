@@ -8,7 +8,14 @@ useSeoMeta({
 
 const api = useApi();
 const { fetchMe } = useAuth();
-
+const { getDateTimeAutoFormatBy } = useDateFns();
+const testDate = ()=>{
+const d = getDateTimeAutoFormatBy({
+  date:'2026-04-20 15:45:12',
+  iso:false
+})
+console.log('d',d)
+}
 const testMyql = async () => {
   try {
     const response = await api.raw<any>("/api/test/mysql", {
@@ -49,7 +56,9 @@ const testMyqlToPgSql = async () => {
 
     <div class="w-full flex flex-col gap-4">
       <UCard title="Test Mysql">
+         <UButton label="Test date" class="w-fit" @click="testDate" />
         <div class="flex gap-2">
+
           <UButton label="Test Mysql" class="w-fit" @click="testMyql" />
           <UButton label="Test Mysql to pg" class="w-fit" @click="testMyqlToPg" />
           <UButton label="Test Mysql to pg.sql" class="w-fit" @click="testMyqlToPgSql" />
@@ -150,4 +159,6 @@ const testMyqlToPgSql = async () => {
       <UBadge label="Badge" class="w-fit" />
     </div>
   </div>
+
+
 </template>

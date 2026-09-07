@@ -6,7 +6,7 @@ services:
     environment:
       POSTGRES_USER: app_user
       POSTGRES_PASSWORD: app_password
-      POSTGRES_DB: nuxt4_rbac
+      POSTGRES_DB: nuxt_fullstack
     ports:
       - '5432:5432'
     volumes:

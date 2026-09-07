@@ -10,7 +10,7 @@ const { data: notifications } = await useFetch<Notification[]>('/api/mock/notifi
 <template>
   <USlideover
     v-model:open="isNotificationsSlideoverOpen"
-    title="Notifications"
+    :title="$t('nav.notifications')"
   >
     <template #body>
       <NuxtLink

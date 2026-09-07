@@ -9,8 +9,6 @@ import type { Permission } from "~/types/models";
 definePageMeta({
   pageName: "model_permission",
   requiresPermission: ["permission_list"],
-  // breadcrumbs: ExampleHomeBreadcrumb,
-  // tabs: TabTest,
 });
 const UButton = resolveComponent("UButton");
 const { t } = useLang();

@@ -1,16 +1,20 @@
 <script setup lang="ts">
 import type { DropdownMenuItem } from "@nuxt/ui";
+import { ChatMesageFocusableId } from "~/libs/constants";
 import type { ApiResponse, LabelValue } from "~/types/common";
-import type { GroupChatMsg } from "~/types/models";
+import type { GroupChatMsg, IdType } from "~/types/models";
 
 const {
   showHeader = true,
   square = false,
   inputAvata = true,
-  scrollAreaHeight = '65vh',
+  scrollAreaHeight = "65vh",
   miniChat = false,
   miniminze = false,
+  id,
+  bordered = true,
 } = defineProps<{
+  id: string;
   showHeader?: boolean;
   square?: boolean;
   inputDense?: boolean;
@@ -18,19 +22,21 @@ const {
   scrollAreaHeight?: string;
   miniChat?: boolean;
   miniminze?: boolean;
+  bordered?: boolean;
 }>();
 const emit = defineEmits<{
-  'toggle-mute': [chatId: number];
-  'toggle-pin': [chatId: number];
-  'toggle-fav': [chatId: number];
-  'toggle-chat': [chatId: number];
-  'delete-chat': [chatId: number];
-  'leave-group': [chatId: number];
-  'on-close': [chatId: number];
+  "toggle-mute": [chatId: number];
+  "toggle-pin": [chatId: number];
+  "toggle-fav": [chatId: number];
+  "toggle-chat": [chatId: number];
+  "delete-chat": [chatId: number];
+  "leave-group": [chatId: number];
+  "on-close": [chatId: number];
 }>();
 
 const dataList = ref<GroupChatMsg[]>([]);
 const { t } = useLang();
+const { onSetMessageFocus } = useAppChat();
 const infiniteRef = useTemplateRef<any>("infiniteRef");
 const totalItems = 100;
 const items = ref<LabelValue<any>[]>([]);
@@ -40,11 +46,8 @@ const hasMore = ref(true);
 const isFetching = ref(false);
 
 const isScrollingoToTop = ref(false);
-const { data } = await useFetch<ApiResponse<GroupChatMsg>>(
-  "/api/mock/chat/chatMessageListApi",
-);
 const fetchMoreData = async () => {
-  console.log("Fetching older messages...");
+  console.log("fetchMoreData > Fetching older messages...");
   if (isFetching.value || !hasMore.value) return;
   const scrollEl = infiniteRef.value?.$el; // อ้างอิงถึงกล่อง Scroll
   const previousScrollHeight = scrollEl ? scrollEl.scrollHeight : 0;
@@ -53,57 +56,70 @@ const fetchMoreData = async () => {
   isFetching.value = true;
   await new Promise((resolve) => setTimeout(resolve, 1000));
 
-  // คำนวณหา ID เริ่มต้นของรอบนี้
-  // รอบที่ 1: 100 - (1 * 25) + 1 = เริ่มที่ 76 (จบที่ 100)
-  // รอบที่ 2: 100 - (2 * 25) + 1 = เริ่มที่ 51 (จบที่ 75)
   const startId = totalItems - page.value * limit + 1;
 
   const newItems = Array.from({ length: limit }, (_, i) => {
     return {
-      label: `Item ${startId + i}`, // จะได้ Item 76, 77, 78 ... 100
+      label: `Item ${startId + i}`,
       avatar: {
         src: getMockAvatarByIndex(i),
       },
     };
   });
 
-  // ใช้ unshift เพื่อนำข้อมูลใหม่ (ข้อความเก่า) ไปแทรกไว้ "ด้านบนสุด" ของ Array เสมอ
   items.value.unshift(...newItems);
 
-  // เช็กว่าโหลดจนถึง Item ที่ 1 หรือยัง
-  if (startId <= 1) {
-    hasMore.value = false; // ไม่มีให้โหลดแล้ว
-  } else {
-    page.value++; // ไปหน้าต่อไปสำหรับรอบหน้า
-  }
+  hasMore.value = false;
+  // if (startId <= 1) {
+  //   hasMore.value = false;
+  // } else {
+  //   page.value++;
+  // }
 
   await nextTick();
 
   if (scrollEl) {
-    // ความสูงของข้อความชุดใหม่ = ความสูงรวมใหม่ - ความสูงรวมเก่า
     const heightDifference = scrollEl.scrollHeight - previousScrollHeight;
 
-    // ดันหน้าจอลงมาเท่ากับความสูงของข้อความที่เพิ่งแทรกเข้ามา
     scrollEl.scrollTo({
       top: previousScrollTop + heightDifference,
-      behavior: "auto", // สำคัญมาก: ต้องใช้ auto เพื่อไม่ให้เห็นแอนิเมชันกระตุก
+      behavior: "auto",
     });
   }
-  // เคลียร์สถานะโหลดทีหลังสุด เพื่อไม่ให้ infinite scroll ทำงานซ้ำซ้อนตอนที่เรากำลังดันจอ
   setTimeout(() => {
     isFetching.value = false;
   }, 100);
 };
-
 const initData = async () => {
+  isFetching.value = true;
+  try {
+    const messages = await $fetch<ApiResponse<GroupChatMsg>>(
+      "/api/mock/chat/chatMessageListApi",
+      { method: "GET" },
+    );
+    dataList.value = messages.dataList;
 
-  const messages = await $fetch<ApiResponse<GroupChatMsg>>('/api/mock/chat/chatMessageListApi', {
-    method: 'GET',
-  })
-  console.log('messages', messages);
-  dataList.value = messages.dataList;
-  await nextTick(); // 2. รอให้ Vue อัปเดต HTML (วาดกล่องข้อความลงจอ) ให้เสร็จ
-  infiniteRef.value?.scrollToBottom(); // 3. เลื่อนจอลงไปล่างสุด
+    await nextTick();
+
+    // ดึง container element จาก infiniteRef (หรือ ref ของกล่องแชต)
+    const container = infiniteRef.value?.$el || infiniteRef.value;
+    if (!container) return;
+
+    // สั่ง scroll ทันที 1 รอบ
+    infiniteRef.value?.scrollToBottom();
+
+    // ดักจับการเปลี่ยนแปลงขนาด (เช่น รูปโหลดเสร็จ, ฟอนต์มา)
+    const observer = new ResizeObserver(() => {
+      infiniteRef.value?.scrollToBottom();
+    });
+
+    observer.observe(container);
+
+    // ปิด observer เมื่อผ่านช่วง initial render ไปสักครู่สั้นๆ
+    setTimeout(() => observer.disconnect(), 300);
+  } finally {
+    isFetching.value = false;
+  }
 };
 initData();
 
@@ -117,33 +133,38 @@ const scrollingTop = (state: boolean) => {
   isScrollingoToTop.value = state;
 };
 
-const getDropdownItems = (): DropdownMenuItem[][] => [
-  [
-    {
-      label: t("chats.favorite"),
-      icon: "lucide:star",
-      color: "neutral",
-      onSelect() {},
-    },
-    {
-      label: t("drive.changName"),
-      icon: "lucide:pencil",
-      onSelect() {},
-    },
-  ],
-  [
-    {
-      label: t("base.delete"),
-      icon: "i-lucide-trash",
-      color: "error",
-      async onSelect() {},
-    },
-  ],
-];
+const findMessageByID = (
+  messageId: string,
+): Promise<GroupChatMsg | undefined> => {
+  return new Promise((resolve) => {
+    const i = dataList.value.find((t) => t.id == messageId);
+    resolve(i);
+  });
+};
+const onReplyClick = async (messageId: string) => {
+  if (!messageId || import.meta.server) {
+    return;
+  }
+  const item = await findMessageByID(messageId);
+  if (item != undefined) {
+    const divId = `${ChatMesageFocusableId}-${messageId}`;
+    const element = document.getElementById(divId);
+    if (element) {
+      element.scrollIntoView();
+    }
+    onSetMessageFocus("MESSAGE_FOCUS", item);
+    // onScrollToItem(itemIndex, false);
+  } else {
+    console.log("Show Message Dialog" + ": " + messageId);
+    // messageSelectdId.value = messageId;
+    // showMessageDialog.value = true;
+  }
+};
 </script>
 <template>
   <div
-    class="h-full flex flex-col min-h-0 bg-neutral-50 dark:bg-neutral-950 rounded-xl p-4 gap-3"
+    class="h-full flex flex-col min-h-0 rounded-t-lg gap-3"
+    :class="[bordered && 'border border-default']"
   >
     <BaseInfiniteScroll
       ref="infiniteRef"
@@ -155,12 +176,20 @@ const getDropdownItems = (): DropdownMenuItem[][] => [
       @scrolling-top="scrollingTop"
     >
       <div class="relative flex flex-col gap-3 py-2">
-        <UUser
+        <!-- <UUser
           v-for="(item, index) in items"
           :key="index"
           :name="item.label"
           :avatar="item.avatar"
           size="xl"
+        /> -->
+        <ChatItem
+          v-for="(item, index) in dataList"
+          :key="index"
+          :item="item"
+          :index="index"
+          :miniChat="miniChat"
+          @on-focus-message-reply="onReplyClick"
         />
 
         <div v-if="isScrollingoToTop" class="sticky bottom-4 self-center z-10">
@@ -172,8 +201,7 @@ const getDropdownItems = (): DropdownMenuItem[][] => [
         </div>
       </div>
     </BaseInfiniteScroll>
-    <!-- ช่อง Prompt ด้านล่าง ไม่ให้โดนบีบ -->
-    <div class="shrink-0 mb-4">
+    <div v-if="!miniChat" class="shrink-0 mb-4 px-4">
       <UChatPrompt
         :placeholder="$t('ai.promtLabel')"
         color="primary"
@@ -183,7 +211,7 @@ const getDropdownItems = (): DropdownMenuItem[][] => [
       >
         <template #footer>
           <div class="flex items-center gap-1">
-            <UButton size="sm" icon="lucide:search" />
+            <UButton size="sm" icon="lucide:plus" />
           </div>
 
           <UChatPromptSubmit size="sm" color="primary" variant="solid" />

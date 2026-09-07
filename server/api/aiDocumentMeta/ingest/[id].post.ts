@@ -70,6 +70,9 @@ export default defineEventHandler(async (event): Promise<ResponseEntity<Ingestio
       updatedUser: BigInt(auth.sub),
     })
 
+    //delete file
+    await deleteFileManager(BigInt(id));
+
     return {
       status: 200,
       message: 'Document ingested successfully',

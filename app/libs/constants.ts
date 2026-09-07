@@ -75,3 +75,4 @@ export const AuthNoFilterPage: string[] = [
   'test',
   'layer-01',
 ];
+export const ChatMesageFocusableId = 'web-chat-message-focusable';

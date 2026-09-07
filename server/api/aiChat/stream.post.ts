@@ -9,6 +9,7 @@ import { chartTool } from "~~/server/utils/tools/chart"
 import { weatherTool } from "~~/server/utils/tools/weather"
 import { webSearchTool } from "~~/server/utils/tools/webSearch"
 import { QdrantClient } from '@qdrant/js-client-rest'
+import { buildChatSystemPrompt, SYSTEM_PROMPTS } from "~~/server/utils/prompts"
 
 const bodySchema = z.object({
   id: z.string().nullish(),
@@ -25,33 +26,32 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 401, statusMessage: 'Unauthorized.' })
   }
 
-  const config = useRuntimeConfig()
+  const { qdrantUrl, qdrantApiKey, openrouterApiKey, ollamaBaseUrl, ollamaApiKey, ollamaEmbeddingModel, qdrantCollectionName } = useRuntimeConfig()
 
 
-  console.log('config.qdrant', config.qdrantUrl, config.qdrantApiKey, config.qdrantCollectionName)
 
   const qdrant = new QdrantClient({
-    url: config.qdrantUrl,
-    apiKey: config.qdrantApiKey,
+    url: qdrantUrl,
+    apiKey: qdrantApiKey,
     checkCompatibility: false,
   })
   const openrouter = createOpenRouter({
-    apiKey: config.openrouterApiKey,
+    apiKey: openrouterApiKey,
   });
   const ollamaLacal = createOllama({
-    baseURL:  config.ollamaBaseUrl || process.env.NUXT_OLLAMA_BASE_URL,
+    baseURL: ollamaBaseUrl || process.env.NUXT_OLLAMA_BASE_URL,
   });
   const ollama = createOllama({
     // baseURL:  config.ollamaBaseUrl || 'http://localhost:11434/api',
-    baseURL: 'https://ollama.com/api',
+    baseURL: 'https://ollama.com/api',// cloud usage
     headers: {
-      Authorization: `Bearer ${config.ollamaApiKey || process.env.NUXT_OLLAMA_API_KEY}`,
+      Authorization: `Bearer ${ollamaApiKey || process.env.NUXT_OLLAMA_API_KEY}`,
     },
   });
 
   const getModel = () => {
     // return openrouter.chat('inclusionai/ling-3.0-flash-fin:free');
-    return ollama('gemma4:31b');
+    return ollama('gpt-oss:120b');
     //local
     // return ollama('ornith-1.5:9b');
   }
@@ -81,7 +81,7 @@ export default defineEventHandler(async (event) => {
     try {
       // 3.1 แปลงคำถามล่าสุดเป็น Vector ด้วย bge-m3 ผ่าน Ollama
       const { embedding } = await embed({
-        model: ollamaLacal.embeddingModel(config.ollamaEmbeddingModel || 'bge-m3'),
+        model: ollamaLacal.embeddingModel(ollamaEmbeddingModel || 'bge-m3'),
         value: lastUserText,
       })
 
@@ -97,7 +97,7 @@ export default defineEventHandler(async (event) => {
       }
 
       // 3.3 ค้นหา Vectors ที่ใกล้เคียงที่สุดจาก Qdrant
-      const searchResults = await qdrant.query(config.qdrantCollectionName, {
+      const searchResults = await qdrant.query(qdrantCollectionName, {
         query: embedding,           // ส่ง vector array เข้าไปที่ query
         limit: 4,
         filter: filterCondition,
@@ -226,12 +226,7 @@ export default defineEventHandler(async (event) => {
 
         titleTask = generateText({
           model: getModel(),
-          instructions: `You are a title generator for a chat.
-Generate a short title based on the first user's message.
-The title should be less than 30 characters long.
-Do not use quotes or punctuation.
-Do not use markdown.
-Return plain text only.`,
+          instructions: SYSTEM_PROMPTS.CHAT_TITLE_GENERATOR,
           prompt: lastUserText
         })
           .then(async ({ text }) => {
@@ -254,27 +249,14 @@ Return plain text only.`,
           })
       }
 
-
+      const systemPrompt = buildChatSystemPrompt({
+        userName: auth?.sub,
+        ragContext: ragContext
+      })
       const result = streamText({
         abortSignal: abortController.signal,
         model: getModel(),
-        instructions: `You are a knowledgeable and helpful AI assistant. ${auth.sub ? `The user's name is ${auth.sub}.` : ''} Your goal is to provide clear, accurate, and well-structured responses.
-
-**CONTEXT INFORMATION (KNOWLEDGE BASE):**
-Use the following retrieved context to answer the user's question accurately:
-${ragContext ? ragContext : 'No relevant internal documents found. Answer using your baseline knowledge.'}
-
-**WEB SEARCH:**
-- You have access to a web search tool to find current, up-to-date information
-- Only use it when the user explicitly asks about recent events, real-time data, or current facts
-- Do NOT search proactively — rely on your knowledge first
-- Cite your sources when providing information from web search results
-
-**RESPONSE QUALITY:**
-- Be concise yet comprehensive
-- Use examples when helpful
-- Break down complex topics into digestible parts
-- Maintain a friendly, professional tone`,
+        instructions: systemPrompt,
         messages: await convertToModelMessages(memmoryMessages),
         tools: {
           chart: chartTool,

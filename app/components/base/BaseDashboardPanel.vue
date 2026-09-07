@@ -23,7 +23,7 @@ const props = withDefaults(
     }),
   },
 );
-
+const { isChatNotificationsSlideoverOpen } = useAppChat()
 const { isNotificationsSlideoverOpen } = useDashboard();
 
 const items = [
@@ -71,7 +71,22 @@ const items = [
           <template #right>
             <slot name="navbarRight">
               <BaseThemeSwitcher />
-              <UTooltip text="Notifications" :shortcuts="['N']">
+              <UTooltip :text="$t('chats.chats')">
+                <UButton
+                  color="neutral"
+                  variant="ghost"
+                    @click="
+                    () => {
+                      isChatNotificationsSlideoverOpen = true;
+                    }
+                  "
+                >
+                  <UChip color="error" inset>
+                    <Icon name="lucide:message-circle" class="size-5 shrink-0" />
+                  </UChip>
+                </UButton>
+              </UTooltip>
+              <UTooltip :text="$t('nav.notifications') " :shortcuts="['N']">
                 <UButton
                   color="neutral"
                   variant="ghost"

@@ -16,11 +16,11 @@ export const useDateFns = () => {
     iso: boolean = false,
     format = FORMAT_DATE_TIME_ALT,
   ): Date => {
-    if (iso) {
-      return $datefns.parseISO(date);
-    }
-    return $datefns.parse(date, format, new Date());
-    // return new Date(dateString);
+    // if (iso) {
+    //   return $datefns.parseISO(date);
+    // }
+    // return $datefns.parse(date, format, new Date());
+    return $datefns.parseISO(date);
   };
   /**
    *
@@ -44,8 +44,7 @@ export const useDateFns = () => {
     if (d == undefined || currentDate == undefined) {
       return 0;
     }
-    // return getDateDiff(Date.parse(d), new Date());
-    return getDateDiff(Date.parse(d), Date.parse(currentDate));
+    return getDateDiff(parseISO(d), parseISO(currentDate));
   };
   const getDateAutoFormatBy = (options: {
     date: string,
@@ -56,6 +55,7 @@ export const useDateFns = () => {
     }
 
     const difDays = getDateDiffNow(options.date);
+
     if (difDays >= 365) {
       return formatDateTime({
         date: options.date,
@@ -268,6 +268,7 @@ export const useDateFns = () => {
     const d2 = convertStringToDate(options.dateRight, options.iso || false, options.format || FORMAT_DATE_YYYY_MM_DD);
     return $datefns.isBefore(d1, d2);
   };
+
   return {
     getCurrentDateByFormat,
     getDateDiffMinutes,
@@ -275,6 +276,7 @@ export const useDateFns = () => {
     formatDate,
     formatDateTime,
     getDateTimeAutoFormatBy,
+    getDateAutoFormatBy,
     parseISO
   };
 };
