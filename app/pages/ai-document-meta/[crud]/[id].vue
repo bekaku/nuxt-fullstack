@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import z from "zod";
+import type { ResponseEntity } from "~/types/common";
 import type {
   AiDocumentMeta,
   FileManager,
@@ -91,7 +92,7 @@ const onUploadAndIngest = async (f: FileManager) => {
     });
     if (response && response.id) {
       //ingest file
-      const ingestResponse = await api.raw<IngestionResponse>(
+      const ingestResponse = await api.raw<ResponseEntity<IngestionResponse>>(
         `/api/aiDocumentMeta/ingest/${response.id}`,
         {
           method: "POST",
@@ -101,10 +102,11 @@ const onUploadAndIngest = async (f: FileManager) => {
         ingestResponse &&
         ingestResponse?.status == 200 &&
         ingestResponse._data &&
+        ingestResponse._data.data &&
         !isAppException(ingestResponse._data)
       ) {
         uploadFileSuccess.value++;
-        ingestITems.value.push(ingestResponse._data);
+        ingestITems.value.push(ingestResponse._data.data);
       }
     }
   } catch (error) {
@@ -167,7 +169,6 @@ const testIngest = async () => {
         </UScrollArea>
       </UCard>
 
-      <UButton label="Test Ingest" @click="testIngest"/>
     </BaseForm>
   </BaseDashboardPanel>
 </template>
