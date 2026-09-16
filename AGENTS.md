@@ -58,8 +58,6 @@ Current canonical gate:
 pnpm typecheck
 ```
 
-`pnpm lint` is currently broken because the repository's TypeScript 7 / typescript-eslint versions are incompatible. Do not use it as the completion gate until the toolchain is fixed.
-
 For runtime-affecting changes, run `pnpm build` when appropriate.
 
 For schema changes, follow the database skill and use generated migrations.

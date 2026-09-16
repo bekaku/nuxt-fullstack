@@ -4,7 +4,7 @@ import {
   ICrudListHeaderOptionSearchType,
   type ICrudFilterOptions,
 } from "~/types/common";
-import type { AppUser } from "~/types/models";
+import type { AiDocumentMeta } from "~/types/models";
 
 definePageMeta({
   pageName: "model.ai_document_meta.table",
@@ -36,7 +36,7 @@ const {
   onItemCopy,
   crudName,
   onKeywordSearch,
-} = useCrudList<AppUser>({
+} = useCrudList<AiDocumentMeta>({
   crudName: "AiDocumentMeta", //PascalCase only eg: User, AppRole
   apiEndpoint: "/api/aiDocumentMeta",
   headers: [],
@@ -48,7 +48,7 @@ const {
     },
   ],
 });
-const columns = ref<TableColumn<AppUser>[]>([
+const columns = ref<TableColumn<AiDocumentMeta>[]>([
   {
     accessorKey: "fileMime",
     header: t("model_files_manager_mime"),

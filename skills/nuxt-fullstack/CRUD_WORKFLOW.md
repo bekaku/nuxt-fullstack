@@ -19,7 +19,7 @@ Use when creating a new CRUD module or making changes that span schema + permiss
 
 ## Before you commit checklist
 
-- [ ] `pnpm typecheck` passes (canonical gate; `pnpm lint` known-broken — still hand-check: no trailing commas, 1tbs braces, ≤3 attrs per single-line element, kebab-case emits).
+- [ ] `pnpm typecheck` passes (canonical gate; still hand-check: no trailing commas, 1tbs braces, ≤3 attrs per single-line element, kebab-case emits).
 
 - [ ] New/edited tables: `pnpm db:generate && pnpm db:migrate` applied; no hand-edited SQL; `db:push` never used beyond local dev.
 

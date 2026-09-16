@@ -73,9 +73,7 @@ Use this skill for work in this Nuxt 4 + Drizzle + PostgreSQL fullstack reposito
 
 pnpm dev              # dev server on 0.0.0.0:3000
 
-pnpm lint             # eslint (BROKEN 2026-09: TS 7.0 vs typescript-eslint 8.x, exits 2 — see Gotchas)
-
-pnpm typecheck        # nuxt typecheck (vue-tsc; canonical verifier while lint is broken)
+pnpm typecheck        # nuxt typecheck (vue-tsc; canonical verifier)
 
 pnpm build            # production build
 
@@ -107,7 +105,7 @@ There are NO tests (`**/*.{test,spec}.*` = 0 hits, no vitest/jest/playwright). V
 
 - Actual config (`eslint.config.mjs` + `nuxt.config.ts:112-119` + `.editorconfig`): 2-space indent, LF, `commaDangle: never`, `braceStyle: 1tbs`, `vue/max-attributes-per-line: singleline 3` (max 3 attrs per line — split BaseTable/BaseForm prop lists multiline like existing pages), custom events kebab-case, `vue/attributes-order` + `vue/html-self-closing` + `vue/require-explicit-emits` as warn, `no-console: off`, `no-explicit-any: off`, `multi-word-component-names: off`. No `.prettierrc` (stylistic via eslint + editorconfig).
 
-- `pnpm lint` is currently BROKEN (typescript-eslint 8.x does not support TS 7.0, exits code 2). MUST use `pnpm typecheck` as the gate until toolchain is fixed; MUST still hand-match the style rules above (no trailing commas, 1tbs braces, ≤3 attrs/line).
+- MUST use `pnpm typecheck` as the gate; MUST still hand-match the style rules above (no trailing commas, 1tbs braces, ≤3 attrs/line).
 
 
 ## Task Routing

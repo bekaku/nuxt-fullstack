@@ -1,5 +1,5 @@
 # Build stage
-FROM node:24 AS build
+FROM --platform=$BUILDPLATFORM node:24 AS build
 
 # Install necessary tools
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -30,7 +30,7 @@ ENV NODE_OPTIONS="--max-old-space-size=4096"
 RUN pnpm build
 
 # Production stage
-FROM node:24-alpine
+FROM --platform=$TARGETPLATFORM node:24-alpine
 
 # Set timezone
 ENV TZ=Asia/Bangkok
