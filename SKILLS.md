@@ -1,32 +1,34 @@
 # SKILLS.md
 
-This repository uses task-scoped skills so agents do not load the full fullstack guide for every task.
+Canonical skills: `.agents/skills/` (Agent Skills spec). Load only what the task needs.
 
-## Core
-
-- `skills/nuxt-fullstack/SKILL.md`
-
-## Load by task
+## Skills
 
 - Frontend / Vue / Nuxt UI / state / styling / TypeScript / i18n:
-  - `skills/nuxt-fullstack/FRONTEND.md`
+  - `.agents/skills/nuxt-frontend/SKILL.md`
 
-- Nitro API routes / request validation / response conventions / pagination:
-  - `skills/nuxt-fullstack/SERVER_API.md`
+- Nitro API routes / validation / responses / pagination:
+  - `.agents/skills/nitro-backend/SKILL.md`
 
-- Drizzle / PostgreSQL / schema / migrations / bigint DB boundaries:
-  - `skills/nuxt-fullstack/DATABASE.md`
+- Drizzle / PostgreSQL / schema / migrations / bigint boundaries:
+  - `.agents/skills/drizzle-database/SKILL.md`
 
 - Login / refresh / cookies / RBAC / permissions:
-  - `skills/nuxt-fullstack/AUTH_RBAC.md`
+  - `.agents/skills/authentication-security/SKILL.md`
 
-- Creating or modifying a complete CRUD module:
-  - `skills/nuxt-fullstack/CRUD_WORKFLOW.md`
+- Complete CRUD module / cross-layer change:
+  - `.agents/skills/fullstack-feature/SKILL.md`
+
+- Verification / debugging (no test framework):
+  - `.agents/skills/testing-debugging/SKILL.md`
 
 ## References
 
+- `AGENTS.md` (canonical rules)
+- `docs/agent/skills-index.md` (task-to-skill mapping)
+- `docs/agent/project-map.md` (architecture)
 - `docs/OPEN_QUESTIONS.md`
 - `docs/FOOTGUNS.md`
-- `docs/SPLIT_MAP.md`
 
-Read only what the current task needs.
+Read only what the current task needs. Legacy `skills/nuxt-fullstack/` files are
+pointers to the canonical skills above.
