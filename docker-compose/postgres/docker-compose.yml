@@ -1,0 +1,38 @@
+name: postgres
+services:
+  postgres:
+    container_name: ${POSTGRES_CONTAINER_NAME:-postgres}
+    #image: "postgres:18-alpine"
+    image: "${POSTGRES_IMAGE:-pgvector/pgvector:pg18}"
+    volumes:
+      - pg_data:/var/lib/postgresql
+      - ./log:/var/log/postgresql
+      - ./conf/postgres.conf:/usr/local/share/postgresql/postgresql.conf
+      - ./conf/pg_hba.conf:/usr/local/share/postgresql/pg_hba.conf
+      # - ./init:/docker-entrypoint-initdb.d
+    restart: unless-stopped
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    #    networks:
+    #      - docker-network
+    env_file:
+      - .env
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    command:   [
+      "postgres",
+      "-c", "config_file=/usr/local/share/postgresql/postgresql.conf",
+      "-c", "hba_file=/usr/local/share/postgresql/pg_hba.conf"
+    ]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+#networks:
+#  docker-network:
+#    external: true
+volumes:
+  pg_data:
