@@ -168,6 +168,17 @@ No Pinia. No test framework.
 6. Review the diff; confirm only relevant files changed and no secrets leaked.
 7. Stop when success criteria pass; report unverifiable checks and residual risks.
 
+### Git rules
+
+- Commit only when the user asks.
+- Commit directly on the **current branch**, including `main`. Do NOT create a
+  new branch (or worktree) unless the user explicitly asks for one.
+- Split unrelated work into separate, focused commits (e.g. docs / code / deps);
+  write a conventional message (`fix:`, `feat:`, `docs:`, `chore(deps):`).
+- Before committing, check `git status` and the diff for secrets; never commit
+  `.env`, `.output/`, or `data/`.
+- Do not push, open a PR, rewrite history, or force-push unless the user asks.
+
 ## 14. Skill Discovery and Selection
 
 1. Read `AGENTS.md`.
