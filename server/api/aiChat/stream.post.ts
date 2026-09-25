@@ -26,7 +26,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 401, statusMessage: 'Unauthorized.' })
   }
 
-  const { qdrantUrl, qdrantApiKey, openrouterApiKey, ollamaBaseUrl, ollamaApiKey, ollamaEmbeddingModel, qdrantCollectionName } = useRuntimeConfig()
+  const { qdrantUrl, qdrantApiKey, openrouterApiKey, ollamaBaseUrl, ollamaApiKey, ollamaEmbeddingModel, ollamaChatBaseUrl, ollamaChatModel, qdrantCollectionName } = useRuntimeConfig()
 
 
 
@@ -42,8 +42,9 @@ export default defineEventHandler(async (event) => {
     baseURL: ollamaBaseUrl || process.env.NUXT_OLLAMA_BASE_URL,
   });
   const ollama = createOllama({
-    // baseURL:  config.ollamaBaseUrl || 'http://localhost:11434/api',
-    baseURL: 'https://ollama.com/api',// cloud usage
+    // Chat provider from runtime config (NUXT_OLLAMA_CHAT_BASE_URL); defaults to Ollama cloud.
+    // For a local model set it to the same value as ollamaBaseUrl.
+    baseURL: ollamaChatBaseUrl || 'https://ollama.com/api',
     headers: {
       Authorization: `Bearer ${ollamaApiKey || process.env.NUXT_OLLAMA_API_KEY}`,
     },
@@ -51,7 +52,7 @@ export default defineEventHandler(async (event) => {
 
   const getModel = () => {
     // return openrouter.chat('inclusionai/ling-3.0-flash-fin:free');
-    return ollama('gpt-oss:120b');
+    return ollama(ollamaChatModel || 'gpt-oss:120b');
     //local
     // return ollama('ornith-1.5:9b');
   }
@@ -104,23 +105,12 @@ export default defineEventHandler(async (event) => {
         with_payload: true,
       })
 
-      // ==========================================
-      // 🛠️ DEBUG ZONE
-      // ==========================================
-      const points = searchResults?.points ?? []
-      console.log(`\n🔍 [Qdrant RAG Debug] ---------------------------------`)
-      console.log(`- Query Text: "${lastUserText}"`)
-      console.log(`- Total Hits: ${points.length} documents`)
-
-      if (points.length === 0) {
-        console.log(`⚠️ No documents matched. Check filters or collection data.`)
-      } else {
-        points.forEach((point: any, index: number) => {
-          console.log(`\n  [Doc #${index + 1}] ID: ${point.id} | Score: ${point.score?.toFixed(4)}`)
-          console.log(`  Payload preview:`, JSON.stringify(point.payload, null, 2))
-        })
+      // Dev-only diagnostics: hit count and scores only. Never log the query text
+      // or Qdrant payloads — they contain user questions and document content.
+      if (import.meta.dev) {
+        const points = searchResults?.points ?? []
+        console.log(`[RAG] hits=${points.length} scores=${points.map((p: any) => p.score?.toFixed(3)).join(',')}`)
       }
-      console.log(`------------------------------------------------------\n`)
 
       if (searchResults?.points?.length) {
         ragContext = searchResults.points
@@ -165,7 +155,8 @@ export default defineEventHandler(async (event) => {
       .from(schema.aiChat)
       .where(and(
         eq(schema.aiChat.id, BigInt(chatId)),
-        eq(schema.aiChat.createdUser, BigInt(auth.sub))
+        eq(schema.aiChat.createdUser, BigInt(auth.sub)),
+        eq(schema.aiChat.deleted, false)
       ))
       .limit(1)
 

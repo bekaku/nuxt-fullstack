@@ -1,5 +1,5 @@
-import { ApiResponse } from "~/types/common"
-import { GroupChat } from "~/types/models"
+import type { ApiResponse } from "~/types/common"
+import type { GroupChat } from "~/types/models"
 
 export default defineEventHandler(async (event): Promise<ApiResponse<GroupChat>> => {
     return {

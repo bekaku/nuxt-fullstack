@@ -4,6 +4,8 @@ import { sql } from 'drizzle-orm'
 
 
 export default defineEventHandler(async (event) => {
+  // Test/import endpoint: dev builds only + admin permission (see server/utils/devOnly.ts).
+  await requireDevEndpoint(event)
   const mysqlDb = useMysqlDb()
   const [result] = await mysqlDb.execute(
     sql`SELECT * FROM app_user LIMIT 10`

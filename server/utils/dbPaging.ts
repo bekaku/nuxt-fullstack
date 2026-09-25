@@ -1,6 +1,6 @@
 import { getQuery, type H3Event } from 'h3'
 import { asc, desc, ilike, eq, ne, gt, gte, lt, lte, and, type AnyColumn, type SQL, or, inArray } from 'drizzle-orm'
-import { SearchOperation } from '~/types/common';
+import type { SearchOperation } from '~/types/common';
 
 
 interface PaginateConfig<T> {

@@ -191,6 +191,8 @@ export default defineNuxtConfig({
     ollamaBaseUrl: 'http://localhost:11434/api',
     ollamaApiKey: 'OLLAMA_API_KEY',
     ollamaEmbeddingModel: 'bge-m3',
+    ollamaChatBaseUrl: 'https://ollama.com/api',// chat provider (Ollama cloud by default), override by NUXT_OLLAMA_CHAT_BASE_URL
+    ollamaChatModel: 'gpt-oss:120b',// override by NUXT_OLLAMA_CHAT_MODEL
     tavilyApiKey: 'TAVILY_API_KEY',
     qdrantUrl: 'http://localhost:6333',
     qdrantApiKey: 'api_key_123',
@@ -315,6 +317,13 @@ export default defineNuxtConfig({
       '0 3 * * *': ['cleanup-temp'],
       // Change it to run every 2 minutes for testing.
       // '*/2 * * * *': ['cleanup-temp']
+    },
+    storage: {
+      // Login rate-limit counters (server/utils/loginRateLimit.ts).
+      // 'memory' is per process: correct while ecosystem.config.cjs runs ONE instance.
+      // Before scaling to more instances, switch to a shared driver, e.g.
+      // { driver: 'redis', url: process.env.NUXT_REDIS_URL } (needs a Redis server).
+      'login-rate-limit': { driver: 'memory' }
     }
   },
   experimental: { nitroAutoImports: true },

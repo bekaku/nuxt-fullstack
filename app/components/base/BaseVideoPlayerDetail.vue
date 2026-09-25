@@ -6,7 +6,6 @@ const { file } = defineProps<{
 }>();
 const contentUniqeId = useId();
 const { formatDistanceFromNow } = useDateFns();
-const { locale } = useLang();
 const getViews = computed(() => readableNumber(file.view || 0));
 </script>
 <template>
@@ -16,7 +15,7 @@ const getViews = computed(() => readableNumber(file.view || 0));
     </div>
     <div class="flex items-center gap-2 p-2">
       <span v-if="file.createdDate" class="text-sm text-muted">{{
-        formatDistanceFromNow(file.createdDate, locale, true)
+        formatDistanceFromNow({ date: file.createdDate, suffix: true, iso: true })
       }}</span>
 
       <UButton variant="soft">

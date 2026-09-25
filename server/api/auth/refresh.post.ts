@@ -2,8 +2,8 @@ import { and, eq, isNull } from 'drizzle-orm'
 import { useDb, schema } from '../../database/client'
 import { signAccessToken, generateRefreshToken, refreshTokenExpiryDate } from '../../utils/jwt'
 import { loadUserPermissions } from '../../utils/permission'
-import { AppUser } from '~/types/models'
-import { ResponseEntity } from '~/types/common'
+import type { AppUser } from '~/types/models'
+import type { ResponseEntity } from '~/types/common'
 
 const COOKIE_BASE = {
   httpOnly: true,

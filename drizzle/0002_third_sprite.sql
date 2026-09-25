@@ -1,1 +1,0 @@
-ALTER TABLE "file_manager" ADD CONSTRAINT "file_manager_owner_app_user_id_fk" FOREIGN KEY ("owner") REFERENCES "public"."app_user"("id") ON DELETE no action ON UPDATE no action;

@@ -1,6 +1,6 @@
 import { createError } from 'h3'
-import { ResponseEntity } from '~/types/common'
-import { AppUser } from '~/types/models'
+import type { ResponseEntity } from '~/types/common'
+import type { AppUser } from '~/types/models'
 import { validateID } from '~~/server/utils/validate'
 
 export default defineEventHandler(async (event): Promise<ResponseEntity<AppUser>> => {

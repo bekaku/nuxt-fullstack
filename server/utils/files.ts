@@ -1,7 +1,9 @@
-import { FileManager } from "~/types/models";
+import type { H3Event } from "h3";
+import type { FileManager } from "~/types/models";
 import { schema, useDb } from "../database/client"
 import { aliasedTable, eq, getTableColumns, sql } from 'drizzle-orm'
 import { mapToFileManager } from "./modelMapper";
+import { getAuthUser, isHasPermission } from "./permission";
 import { getFileMimeType } from ".";
 import { alias } from "drizzle-orm/pg-core";
 
@@ -127,10 +129,43 @@ export const deleteFileManager = async (id: bigint): Promise<{
       fileName: record.fileName || ''
     };
 
-  } catch (error) {
+  } catch (error: any) {
+    // Keep authored errors such as the 404 above; hide storage/driver errors.
+    if (error?.statusCode && error.statusCode < 500) throw error
+    console.error('[deleteFileManager]', error)
     throw createError({
       statusCode: 500,
       statusMessage: 'Failed to delete file'
     })
   }
+}
+
+export type FileAccessAction = 'list' | 'view' | 'delete'
+
+/**
+* File access policy: users always manage the files they own; the
+* `file_manager_<action>` permission grants the same action on everyone's files.
+*/
+export const canAccessAllFiles = async (event: H3Event, action: FileAccessAction): Promise<boolean> => {
+  const auth = getAuthUser(event)
+  return isHasPermission(BigInt(auth.sub), `file_manager_${action}`)
+}
+
+/** Load a file's owner and throw 404/403 unless the current user may perform `action` on it. */
+export const assertFileAccess = async (event: H3Event, fileId: bigint, action: FileAccessAction) => {
+  const auth = getAuthUser(event)
+  const [file] = await useDb()
+    .select({ id: schema.fileManager.id, owner: schema.fileManager.owner })
+    .from(schema.fileManager)
+    .where(eq(schema.fileManager.id, fileId))
+    .limit(1)
+
+  if (!file) {
+    throw createError({ statusCode: 404, statusMessage: 'File not found' })
+  }
+  const isOwner = file.owner !== null && file.owner === BigInt(auth.sub)
+  if (!isOwner && !(await canAccessAllFiles(event, action))) {
+    throw createError({ statusCode: 403, statusMessage: 'Forbidden' })
+  }
+  return file
 }

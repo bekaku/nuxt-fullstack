@@ -1,8 +1,7 @@
-import { getRouterParam, createError } from 'h3'
 import { eq } from 'drizzle-orm'
 import { schema, useDb } from '~~/server/database/client'
-import { ResponseEntity } from '~/types/common'
-import { Permission } from '~/types/models'
+import type { ResponseEntity } from '~/types/common'
+import type { Permission } from '~/types/models'
 import { validateID } from '~~/server/utils/validate'
 
 export default defineEventHandler(async (event): Promise<ResponseEntity<Permission>> => {
@@ -11,43 +10,34 @@ export default defineEventHandler(async (event): Promise<ResponseEntity<Permissi
 
   const id = validateID(event)
 
-
   const db = useDb()
 
-  try {
-    const permission = await db.query.permission.findFirst({
-      where: eq(schema.permission.id, BigInt(id)),
-      columns: {
-        id: true,
-        code: true,
-        description: true,
-        module: true,
-        operationType: true,
-      }
-    })
-
-    if (!permission) {
-      throw createError({
-        statusCode: 404,
-        statusMessage: 'Permission not found'
-      })
+  const permission = await db.query.permission.findFirst({
+    where: eq(schema.permission.id, BigInt(id)),
+    columns: {
+      id: true,
+      code: true,
+      description: true,
+      module: true,
+      operationType: true,
     }
+  })
 
-    return {
-      status: 200,
-      data: {
-        id: permission.id.toString(),
-        code: permission.code,
-        description: permission.description,
-        module: permission.module,
-        operationType: permission.operationType as any,
-      }
-    }
-
-  } catch (error) {
+  if (!permission) {
     throw createError({
-      statusCode: 500,
-      statusMessage: 'Internal Server Error'
+      statusCode: 404,
+      statusMessage: 'Permission not found'
     })
+  }
+
+  return {
+    status: 200,
+    data: {
+      id: permission.id.toString(),
+      code: permission.code,
+      description: permission.description,
+      module: permission.module,
+      operationType: permission.operationType as any,
+    }
   }
 })

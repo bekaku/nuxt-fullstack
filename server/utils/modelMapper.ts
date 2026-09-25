@@ -1,6 +1,6 @@
 import type { InferSelectModel } from 'drizzle-orm';
-import { FileMimeType } from '~/types/common';
-import { AppUser, FileManager } from '~/types/models';
+import type { FileMimeType } from '~/types/common';
+import type { AppUser, FileManager } from '~/types/models';
 import { fileManager, appUser } from '~~/server/database/schema';
 
 
@@ -51,7 +51,7 @@ export const mapToAppUser = (
       image: optional?.cdnBase ? `${optional.cdnBase}/${optional.avatarPath}` : optional.avatarPath
     } : null,
     cover: optional?.coverPath ? {
-      image: optional?.coverPath ? `${optional.coverPath}/${optional.coverPath}` : optional.coverPath
+      image: optional?.cdnBase ? `${optional.cdnBase}/${optional.coverPath}` : optional.coverPath
     } : null
   };
 };

@@ -1,7 +1,7 @@
 import { schema, useDb } from '#server/database/client'
 import { and, count, eq } from 'drizzle-orm'
-import { ApiResponse, ResponseEntity } from "~/types/common"
-import { AiChat, AiChatMessage } from "~/types/models"
+import type { ApiResponse, ResponseEntity } from "~/types/common"
+import type { AiChat, AiChatMessage } from "~/types/models"
 import { paginate } from '~~/server/utils/dbPaging'
 
 export default defineEventHandler(async (event): Promise<ResponseEntity<ApiResponse<AiChatMessage>>> => {
@@ -37,6 +37,7 @@ export default defineEventHandler(async (event): Promise<ResponseEntity<ApiRespo
     },
     where: and(
       eq(schema.aiChat.createdUser, BigInt(auth.sub)),
+      eq(schema.aiChat.deleted, false),
     ),
     defaultSort: schema.aiChat.updatedDate,
     defaultSortDirection: 'desc'

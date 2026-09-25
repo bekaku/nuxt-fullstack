@@ -1,8 +1,8 @@
 import { getRouterParam, createError } from 'h3'
 import { eq } from 'drizzle-orm'
 import { schema, useDb } from '~~/server/database/client'
-import { ResponseEntity } from '~/types/common'
-import { AppRole } from '~/types/models'
+import type { ResponseEntity } from '~/types/common'
+import type { AppRole } from '~/types/models'
 import { validateID } from '~~/server/utils/validate'
 
 export default defineEventHandler(async (event): Promise<ResponseEntity<AppRole>> => {

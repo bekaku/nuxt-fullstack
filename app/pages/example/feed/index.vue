@@ -295,7 +295,7 @@ onLoadData();
           src: loginedAvatar,
         }"
         cover-image=""
-        :name="loginedDisplay"
+        :name="loginedDisplay ?? undefined"
         description="Software Engineer"
         height="100px"
         avatar-top="70px"

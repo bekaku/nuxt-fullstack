@@ -1,6 +1,6 @@
 import { createError } from 'h3'
-import { ResponseEntity } from '~/types/common'
-import { AppUser } from '~/types/models'
+import type { ResponseEntity } from '~/types/common'
+import type { AppUser } from '~/types/models'
 import { schema, useDb } from '~~/server/database/client'
 import { validateID } from '~~/server/utils/validate'
 

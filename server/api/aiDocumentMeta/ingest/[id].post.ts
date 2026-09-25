@@ -70,8 +70,13 @@ export default defineEventHandler(async (event): Promise<ResponseEntity<Ingestio
       updatedUser: BigInt(auth.sub),
     })
 
-    //delete file
-    await deleteFileManager(BigInt(id));
+    // The document is already ingested; failing to remove the uploaded source file
+    // must not turn the whole request into an error.
+    try {
+      await deleteFileManager(BigInt(id));
+    } catch (cleanupError) {
+      console.error('Ingested, but failed to delete the source file', cleanupError)
+    }
 
     return {
       status: 200,

@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken'
-import { AccessTokenPayload } from '~/types/common'
+import type { AccessTokenPayload } from '~/types/common'
 import { v7 as uuidv7 } from 'uuid';
 /**
 * Access Token = stateless JWT, short expiry date (default 15 minutes)

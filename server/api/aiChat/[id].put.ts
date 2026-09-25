@@ -1,9 +1,9 @@
-import { readValidatedBody, createError } from 'h3'
 import { eq ,and} from 'drizzle-orm'
 import { schema, useDb } from '~~/server/database/client'
 import { z } from 'zod'
-import { ResponseEntity } from '~/types/common'
-import { AiChat } from '~/types/models'
+import type { ResponseEntity } from '~/types/common'
+import type { AiChat } from '~/types/models'
+import { serverException } from '~~/server/utils/exception'
 
 const bodySchema = z.object({
   id: z.string().nullish(), // ไม่จำเป็นถ้า ID รับมาจาก URL param แต่คงไว้ไม่เสียหาย
@@ -30,7 +30,8 @@ export default defineEventHandler(async (event): Promise<ResponseEntity<AiChat>>
       .from(schema.aiChat)
       .where(and(
         eq(schema.aiChat.id, BigInt(id)),
-        eq(schema.aiChat.createdUser, BigInt(auth.sub))
+        eq(schema.aiChat.createdUser, BigInt(auth.sub)),
+        eq(schema.aiChat.deleted, false)
       ))
       .limit(1)
 
@@ -59,10 +60,7 @@ export default defineEventHandler(async (event): Promise<ResponseEntity<AiChat>>
     // ถ้าเป็น Error ที่เราโยนไว้เอง (เช่น 401, 404) ให้โยนต่อไปเลย
     if (error.statusCode) throw error;
 
-    // ถ้าเป็น Error จากระบบ (เช่น DB พัง) ให้ครอบด้วย 500
-    throw createError({
-      statusCode: 500,
-      statusMessage: error.message || 'Internal Server Error'
-    })
+    // ถ้าเป็น Error จากระบบ (เช่น DB พัง) ให้ครอบด้วย 500 โดยไม่ส่งข้อความของ driver กลับไป
+    throw serverException(error)
   }
 })

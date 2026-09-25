@@ -5,8 +5,9 @@
  * After MAX_ATTEMPTS failures within WINDOW_MS, further attempts are blocked
  * until the window expires. Counters are cleared on successful login.
  *
- * Uses Nitro's useStorage (memory driver) — swap to a Redis/DB-backed driver
- * for multi-instance deployments without changing this API.
+ * Uses Nitro's useStorage('login-rate-limit'), mounted in nuxt.config.ts (nitro.storage).
+ * The memory driver is per process — switch that mount to a shared driver (Redis)
+ * before running more than one instance (ecosystem.config.cjs). This API stays the same.
  */
 
 const WINDOW_MS = 15 * 60 * 1000 // 15 minutes

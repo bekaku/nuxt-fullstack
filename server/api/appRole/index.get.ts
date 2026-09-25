@@ -1,8 +1,8 @@
 import { schema, useDb } from '#server/database/client'
 import { requirePermission } from '#server/utils/permission'
 import { count, eq } from 'drizzle-orm'
-import { ApiResponse, ResponseEntity } from '~/types/common'
-import { AppRole } from '~/types/models'
+import type { ApiResponse, ResponseEntity } from '~/types/common'
+import type { AppRole } from '~/types/models'
 import { paginate } from '~~/server/utils/dbPaging'
 
 export default defineEventHandler(async (event): Promise<ResponseEntity<ApiResponse<AppRole>>> => {

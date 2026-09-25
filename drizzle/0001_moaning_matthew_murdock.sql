@@ -1,1 +1,0 @@
-ALTER TABLE "file_manager" ADD CONSTRAINT "file_manager_thumbnail_file_file_manager_id_fk" FOREIGN KEY ("thumbnail_file") REFERENCES "public"."file_manager"("id") ON DELETE no action ON UPDATE no action;

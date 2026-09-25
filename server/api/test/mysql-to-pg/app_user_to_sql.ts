@@ -29,6 +29,8 @@ interface MysqlAppUser {
 // Helper Function: ป้องกัน SQL Injection และจัด Format ข้อมูลสำหรับใส่ใน Raw SQL
 
 export default defineEventHandler(async (event) => {
+  // Test/import endpoint: dev builds only + admin permission (see server/utils/devOnly.ts).
+  await requireDevEndpoint(event)
   const mysqlDb = useMysqlDb()
 
   const config = useRuntimeConfig()

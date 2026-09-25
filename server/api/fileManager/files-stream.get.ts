@@ -1,5 +1,7 @@
 import { eq } from "drizzle-orm"
 import { schema, useDb } from "~~/server/database/client"
+import { assertFileAccess } from "~~/server/utils/files"
+import { assertNumericId } from "~~/server/utils/validate"
 import path from 'node:path'
 import fs from 'node:fs'
 import { stat } from 'node:fs/promises'
@@ -7,8 +9,11 @@ import { createReadStream } from 'node:fs'
 import { sendStream } from 'h3' // Utility ของ H3 สำหรับส่ง Stream
 
 export default defineEventHandler(async (event) => {
+  // Streaming requires login; only the owner or a user with file_manager_view may read the file.
+  getAuthUser(event)
   const query = getQuery(event)
-  const id = query.id as string
+  const id = assertNumericId(query.id, 'File ID')
+  await assertFileAccess(event, BigInt(id), 'view')
   // Convert chunkSize to bytes (if the frontend sends in KB, multiply by 1024)
   // Normally 8192 bytes = 8KB, the default value for a Node.js stream is 64KB (65536)
   const chunkSize = query.chunkSize ? Number(query.chunkSize) : 65536

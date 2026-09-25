@@ -26,12 +26,19 @@ onMounted(async () => {
   if (content) {
     const matches = catchUrlFromText(content);
     if (matches && matches.length > 0) {
-      const res = await $fetch<OgMeta>(
-        `/api/meta?url=${encodeURIComponent(matches[0])}`,
-      );
-      if (res) {
-        opengraphItem.value = res;
-        showOg.value = true;
+      // Best-effort preview: /api/meta requires login (same-origin cookie is sent by
+      // the browser) and rejects private/unreachable URLs. Any failure simply hides
+      // the preview, so plain $fetch is used instead of useApi() to avoid error toasts.
+      try {
+        const res = await $fetch<OgMeta>("/api/meta", {
+          query: { url: matches[0] },
+        });
+        if (res) {
+          opengraphItem.value = res;
+          showOg.value = true;
+        }
+      } catch {
+        showOg.value = false;
       }
     }
   }

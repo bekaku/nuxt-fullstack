@@ -3,26 +3,28 @@ import { hashPassword } from '#server/utils/password'
 import { requireAnyPermission } from '#server/utils/permission'
 import { and, eq, ne, or } from 'drizzle-orm'
 import { z } from 'zod'
-import { ResponseEntity } from '~/types/common'
-import { AppUser } from '~/types/models'
+import type { ResponseEntity } from '~/types/common'
+import type { AppUser } from '~/types/models'
 import { deleteFileManager } from '~~/server/utils/files'
 import { findUserById } from '~~/server/utils/user'
 
 const bodySchema = z.object({
-  id: z.string().nullish(),
+  id: z.string().regex(/^\d+$/).nullish(),
   email: z.email().min(5),
   username: z.string().min(3).max(100),
   password: z.string().min(8).optional().or(z.literal('')),
   active: z.boolean().nullish(),
-  avatarFileId: z.string().nullish(),
-  coverFileId: z.string().nullish(),
-  selectedRoles: z.array(z.string()).nullish(),
+  avatarFileId: z.string().regex(/^\d+$/).nullish(),
+  coverFileId: z.string().regex(/^\d+$/).nullish(),
+  selectedRoles: z.array(z.string().regex(/^\d+$/)).nullish(),
 })
 
 export default defineEventHandler(async (event): Promise<ResponseEntity<AppUser>> => {
   await requireAnyPermission(event, ['app_user_add', 'app_user_edit'])
 
   const body = await readValidatedBody(event, bodySchema.parse)
+  // Create needs *_add, update needs *_edit (the any-check above is only a cheap first gate).
+  await requirePermission(event, body.id ? 'app_user_edit' : 'app_user_add')
   const db = useDb()
 
   const auth = getAuthUser(event)

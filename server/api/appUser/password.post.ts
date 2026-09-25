@@ -1,7 +1,7 @@
 import { schema, useDb } from '#server/database/client'
 import { and, eq, ne } from 'drizzle-orm'
 import { z } from 'zod'
-import { ResponseEntity } from '~/types/common'
+import type { ResponseEntity } from '~/types/common'
 
 const bodySchema = z.object({
   password: z.string().min(8),

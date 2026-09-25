@@ -1,6 +1,6 @@
 import { eq } from 'drizzle-orm'
-import { ResponseEntity } from '~/types/common'
-import { AppUser } from '~/types/models'
+import type { ResponseEntity } from '~/types/common'
+import type { AppUser } from '~/types/models'
 import { findUserById } from '~~/server/utils/user'
 import { schema, useDb } from '../../database/client'
 import { getAuthUser } from '../../utils/permission'

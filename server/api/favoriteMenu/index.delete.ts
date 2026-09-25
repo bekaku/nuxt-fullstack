@@ -1,10 +1,7 @@
 import { z } from 'zod'
 import { useDb, schema } from '#server/database/client'
-import { requirePermission } from '#server/utils/permission'
-import { hashPassword } from '#server/utils/password'
-import { nextId } from '#server/utils/snowflake'
-import { AppUser, FavoriteMenu } from '~/types/models'
-import { ResponseEntity } from '~/types/common'
+import type { FavoriteMenu } from '~/types/models'
+import type { ResponseEntity } from '~/types/common'
 import { eq, and } from 'drizzle-orm'
 
 const bodySchema = z.object({

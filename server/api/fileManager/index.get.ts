@@ -1,11 +1,14 @@
 import { aliasedTable, count, eq } from 'drizzle-orm'
-import { ApiResponse, ResponseEntity } from '~/types/common'
-import { FileManager, Permission } from '~/types/models'
+import type { ApiResponse, ResponseEntity } from '~/types/common'
+import type { FileManager } from '~/types/models'
 import { paginate } from '~~/server/utils/dbPaging'
 import { schema, useDb } from '#server/database/client'
-import { requirePermission } from '#server/utils/permission'
+import { canAccessAllFiles } from '~~/server/utils/files'
 
 export default defineEventHandler(async (event): Promise<ResponseEntity<ApiResponse<FileManager>>> => {
+  // Login required. Users see their own files; file_manager_list grants the full list.
+  const auth = getAuthUser(event)
+  const canListAll = await canAccessAllFiles(event, 'list')
 
   const db = useDb()
   const config = useRuntimeConfig()
@@ -48,6 +51,7 @@ export default defineEventHandler(async (event): Promise<ResponseEntity<ApiRespo
       fileName: schema.fileManager.fileName,
     },
     defaultSort: schema.fileManager.fileName,
+    where: canListAll ? undefined : eq(schema.fileManager.owner, BigInt(auth.sub)),
     transform: (item) => {
       const fileMimeType = item.fileMime;
       return mapToFileManager(item, {

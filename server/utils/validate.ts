@@ -1,12 +1,22 @@
 import type { H3Event } from 'h3'
-export const validateID = (event: H3Event): string => {
-  const id = getRouterParam(event, 'id')
-  if (!id) {
+
+const NUMERIC_ID = /^\d{1,20}$/
+
+/** True when the value can be safely passed to BigInt() as a Snowflake id. */
+export const isNumericId = (value: unknown): value is string =>
+  typeof value === 'string' && NUMERIC_ID.test(value)
+
+/** Validate a numeric id taken from anywhere (query, body, param); 400 when invalid. */
+export const assertNumericId = (value: unknown, name = 'ID'): string => {
+  if (!isNumericId(value)) {
     throw createError({
       statusCode: 400,
-      statusMessage: 'ID is required'
+      statusMessage: `${name} is required and must be numeric`
     })
   }
+  return value
+}
 
-  return id;
+export const validateID = (event: H3Event): string => {
+  return assertNumericId(getRouterParam(event, 'id'))
 }

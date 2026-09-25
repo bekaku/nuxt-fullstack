@@ -28,6 +28,8 @@ interface MysqlAppUser {
 }
 
 export default defineEventHandler(async (event) => {
+  // Test/import endpoint: dev builds only + admin permission (see server/utils/devOnly.ts).
+  await requireDevEndpoint(event)
   const mysqlDb = useMysqlDb()
   const pgDb = useDb()
 

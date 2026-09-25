@@ -45,6 +45,7 @@ export async function ensureCollection(
 export async function upsertVectors(
   config: QdrantConfig,
   points: UpsertVectorInput[],
+  batchSize = 100
 ) {
   if (!points.length) {
     return
@@ -62,13 +63,19 @@ export async function upsertVectors(
   // สร้าง Collection อัตโนมัติถ้ายังไม่มี
   await ensureCollection(qdrant, config.qdrantCollectionName, vectorSize)
 
-  await qdrant.upsert(
-    config.qdrantCollectionName,
-    {
-      wait: true,
-      points,
-    },
-  )
+  // ไฟล์หน้าเยอะๆ (เช่น 684 หน้า -> ~1478 points, payload ~13MB JSON)
+  // ส่งทีเดียวเสี่ยง timeout / payload ใหญ่เกิน ให้แบ่ง batch
+  for (let i = 0; i < points.length; i += batchSize) {
+    const batch = points.slice(i, i + batchSize)
+
+    await qdrant.upsert(
+      config.qdrantCollectionName,
+      {
+        wait: true,
+        points: batch
+      }
+    )
+  }
 }
 
 export async function deleteVectors(

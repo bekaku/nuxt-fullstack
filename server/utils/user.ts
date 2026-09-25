@@ -1,4 +1,4 @@
-import { AppUser } from "~/types/models";
+import type { AppUser } from "~/types/models";
 import { schema, useDb } from "../database/client";
 import { aliasedTable, eq, and } from "drizzle-orm";
 

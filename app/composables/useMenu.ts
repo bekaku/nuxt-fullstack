@@ -42,6 +42,7 @@ export const useMenu = () => {
             label: t('model.ai_document_meta.table'),
             icon: "lucide:brain-circuit",
             to: "/ai-document-meta",
+            permissions: ['ai_document_meta_list'],
           },
           {
             label: t("nav.userRole"),
@@ -67,7 +68,7 @@ export const useMenu = () => {
             label: t("drive.title"),
             icon: "lucide:folder",
             to: "/my-drive/folder/0",
-            permissions: ['file_manager_manage'],
+            permissions: ['file_manager_list'],
           },
         ]
       },

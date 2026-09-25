@@ -1,5 +1,5 @@
-import { ApiResponse } from "~/types/common"
-import { GroupChatMsg } from "~/types/models"
+import type { ApiResponse } from "~/types/common"
+import type { GroupChatMsg } from "~/types/models"
 
 export default defineEventHandler(async (event): Promise<ApiResponse<GroupChatMsg>> => {
     return {
@@ -134,7 +134,7 @@ export default defineEventHandler(async (event): Promise<ApiResponse<GroupChatMs
                             fileName: 'Trace-based Just-in-Time Type Specialization for Dynamic Languages',
                             filePath: 'https://mozilla.github.io/pdf.js/web/compressed.tracemonkey-pldi-09.pdf',
                             fileThumbnailPath: '',
-                            fileSize: '2 MB',
+                            fileSize: 2097152, // 2 MB
                             fileMimeType: 'FILE',
                         },
                     }
@@ -173,7 +173,7 @@ export default defineEventHandler(async (event): Promise<ApiResponse<GroupChatMs
                             filePath:
                                 'https://images.unsplash.com/photo-1741540420894-46bc55554fc3?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
                             fileThumbnailPath: '',
-                            fileSize: '2 MB',
+                            fileSize: 2097152, // 2 MB
                             fileMimeType: 'IMAGE',
                         },
                     },
@@ -186,7 +186,7 @@ export default defineEventHandler(async (event): Promise<ApiResponse<GroupChatMs
                             filePath:
                                 'https://images.unsplash.com/photo-1734983234384-5a3edcec48ce?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
                             fileThumbnailPath: '',
-                            fileSize: '2 MB',
+                            fileSize: 2097152, // 2 MB
                             fileMimeType: 'IMAGE',
                         },
                     },
@@ -199,7 +199,7 @@ export default defineEventHandler(async (event): Promise<ApiResponse<GroupChatMs
                             filePath:
                                 'https://images.unsplash.com/photo-1741531472824-b3fc55e2ff9c?q=80&w=1964&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
                             fileThumbnailPath: '',
-                            fileSize: '2 MB',
+                            fileSize: 2097152, // 2 MB
                             fileMimeType: 'IMAGE',
                         },
                     },
@@ -212,7 +212,7 @@ export default defineEventHandler(async (event): Promise<ApiResponse<GroupChatMs
                             filePath:
                                 'https://images.unsplash.com/photo-1741509541812-5d8f3e96df23?q=80&w=2127&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
                             fileThumbnailPath: '',
-                            fileSize: '2 MB',
+                            fileSize: 2097152, // 2 MB
                             fileMimeType: 'IMAGE',
                         },
                     },
@@ -225,7 +225,7 @@ export default defineEventHandler(async (event): Promise<ApiResponse<GroupChatMs
                             filePath:
                                 'https://images.unsplash.com/photo-1734630378523-c6735d798820?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
                             fileThumbnailPath: '',
-                            fileSize: '2 MB',
+                            fileSize: 2097152, // 2 MB
                             fileMimeType: 'IMAGE',
                         },
                     },
@@ -238,7 +238,7 @@ export default defineEventHandler(async (event): Promise<ApiResponse<GroupChatMs
                             filePath:
                                 'https://images.pexels.com/photos/21294005/pexels-photo-21294005/free-photo-of-portrait-of-woman-blowing-dandelion-flower.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
                             fileThumbnailPath: '',
-                            fileSize: '2 MB',
+                            fileSize: 2097152, // 2 MB
                             fileMimeType: 'IMAGE',
                         },
                     },
@@ -251,7 +251,7 @@ export default defineEventHandler(async (event): Promise<ApiResponse<GroupChatMs
                             filePath:
                                 'https://images.pexels.com/photos/27869817/pexels-photo-27869817/free-photo-of-two-women-sitting-on-a-couch-together.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
                             fileThumbnailPath: '',
-                            fileSize: '2 MB',
+                            fileSize: 2097152, // 2 MB
                             fileMimeType: 'IMAGE',
                         },
                     },
@@ -264,7 +264,7 @@ export default defineEventHandler(async (event): Promise<ApiResponse<GroupChatMs
                             filePath:
                                 'https://images.pexels.com/photos/28924817/pexels-photo-28924817/free-photo-of-hong-kong-island-dazzling-night-skyline.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
                             fileThumbnailPath: '',
-                            fileSize: '2 MB',
+                            fileSize: 2097152, // 2 MB
                             fileMimeType: 'IMAGE',
                         },
                     }
@@ -382,7 +382,7 @@ export default defineEventHandler(async (event): Promise<ApiResponse<GroupChatMs
                             filePath:
                                 'https://images.pexels.com/photos/21294005/pexels-photo-21294005/free-photo-of-portrait-of-woman-blowing-dandelion-flower.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
                             fileThumbnailPath: '',
-                            fileSize: '2 MB',
+                            fileSize: 2097152, // 2 MB
                             fileMimeType: 'IMAGE',
                         },
                     }
@@ -476,7 +476,7 @@ export default defineEventHandler(async (event): Promise<ApiResponse<GroupChatMs
                             filePath:
                                 'https://images.unsplash.com/photo-1734630378523-c6735d798820?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
                             fileThumbnailPath: '',
-                            fileSize: '2 MB',
+                            fileSize: 2097152, // 2 MB
                             fileMimeType: 'IMAGE',
                         },
                     }

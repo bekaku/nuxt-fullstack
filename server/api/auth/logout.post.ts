@@ -1,6 +1,6 @@
 import { eq } from 'drizzle-orm'
 import { useDb, schema } from '../../database/client'
-import { ResponseEntity } from '~/types/common'
+import type { ResponseEntity } from '~/types/common'
 
 export default defineEventHandler(async (event): Promise<ResponseEntity<void>> => {
 

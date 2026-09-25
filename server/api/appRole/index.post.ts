@@ -1,22 +1,24 @@
-import { readBody, createError } from 'h3'
 import { eq, and, ne } from 'drizzle-orm'
 import { schema, useDb } from '~~/server/database/client'
 import { z } from 'zod'
-import { ResponseEntity } from '~/types/common'
-import { AppRole } from '~/types/models'
+import type { ResponseEntity } from '~/types/common'
+import type { AppRole } from '~/types/models'
+import { serverException } from '~~/server/utils/exception'
 
 
 const bodySchema = z.object({
   name: z.string().min(1),
-  id: z.string().optional(),
+  id: z.string().regex(/^\d+$/).optional(),
   active: z.boolean().optional(),
-  selectdPermissions: z.array(z.string()).optional(),
+  selectdPermissions: z.array(z.string().regex(/^\d+$/)).optional(),
 })
 
 export default defineEventHandler(async (event): Promise<ResponseEntity<AppRole>>  => {
 
   await requireAnyPermission(event, ['app_role_add', 'app_role_edit'])
   const body = await readValidatedBody(event, bodySchema.parse)
+  // Create needs *_add, update needs *_edit (the any-check above is only a cheap first gate).
+  await requirePermission(event, body.id ? 'app_role_edit' : 'app_role_add')
   const { id, name, active, selectdPermissions } = body
 
   if (!name) {
@@ -57,10 +59,15 @@ export default defineEventHandler(async (event): Promise<ResponseEntity<AppRole>
       if (id) {
         //Mode: Update existing data
         currentRoleId = BigInt(id);
-        await tx
+        const [updated] = await tx
           .update(schema.appRole)
           .set({ name, active, updatedUser: BigInt(auth.sub) })
-          .where(eq(schema.appRole.id, currentRoleId));
+          .where(eq(schema.appRole.id, currentRoleId))
+          .returning({ id: schema.appRole.id });
+
+        if (!updated) {
+          throw createError({ statusCode: 404, statusMessage: 'Role not found' })
+        }
 
         // Clear all existing permissions first to prepare for installing new ones.
         await tx
@@ -111,11 +118,8 @@ export default defineEventHandler(async (event): Promise<ResponseEntity<AppRole>
     }
 
   } catch (error: any) {
-    if (error.statusCode) throw error;
-
-    throw createError({
-      statusCode: 500,
-      statusMessage: error.message || 'Internal Server Error'
-    })
+    // Re-throw authored errors (400/404); hide driver errors behind a generic 500.
+    if (error?.statusCode) throw error;
+    throw serverException(error)
   }
 })

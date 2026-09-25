@@ -1,4 +1,4 @@
-import { ISeriresCategories } from '~/types/chart';
+import type { ISeriresCategories } from '~/types/chart';
 
 export default defineEventHandler(async (event): Promise<ISeriresCategories> => {
     return {

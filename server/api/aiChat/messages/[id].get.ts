@@ -1,7 +1,7 @@
 import { schema, useDb } from '#server/database/client'
 import { and, count, eq } from 'drizzle-orm'
-import { ApiResponse, ResponseEntity } from "~/types/common"
-import { AiChat, AiChatMessage } from "~/types/models"
+import type { ApiResponse, ResponseEntity } from "~/types/common"
+import type { AiChat, AiChatMessage } from "~/types/models"
 import { paginate } from '~~/server/utils/dbPaging'
 
 export default defineEventHandler(async (event): Promise<ResponseEntity<ApiResponse<AiChatMessage>>> => {
@@ -21,7 +21,8 @@ export default defineEventHandler(async (event): Promise<ResponseEntity<ApiRespo
     .where(
       and(
         eq(schema.aiChat.id, BigInt(id)),
-        eq(schema.aiChat.createdUser, BigInt(auth.sub)) // เงื่อนไขสำคัญ! ต้องเป็นของ auth.sub เท่านั้น
+        eq(schema.aiChat.createdUser, BigInt(auth.sub)), // เงื่อนไขสำคัญ! ต้องเป็นของ auth.sub เท่านั้น
+        eq(schema.aiChat.deleted, false)
       )
     )
     .limit(1)

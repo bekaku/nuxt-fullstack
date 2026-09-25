@@ -1,7 +1,7 @@
 import { schema, useDb } from '#server/database/client'
 import { asc, eq } from 'drizzle-orm'
-import { ResponseEntity } from '~/types/common'
-import { AppRole } from '~/types/models'
+import type { ResponseEntity } from '~/types/common'
+import type { AppRole } from '~/types/models'
 
 export default defineEventHandler(async (event): Promise<ResponseEntity<AppRole[]>> => {
   await requireAnyPermission(event, ['app_role_list', 'app_user_add', 'app_user_edit'])

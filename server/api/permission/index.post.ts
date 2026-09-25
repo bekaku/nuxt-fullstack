@@ -1,13 +1,13 @@
-import { readValidatedBody, createError } from 'h3'
 import { eq, and, ne } from 'drizzle-orm'
 import { schema, useDb } from '~~/server/database/client'
 import { z } from 'zod'
-import { ResponseEntity } from '~/types/common'
-import { Permission } from '~/types/models'
+import type { ResponseEntity } from '~/types/common'
+import type { Permission } from '~/types/models'
+import { serverException } from '~~/server/utils/exception'
 
 // ใช้ z.enum() เพื่อ Validate ค่าให้ตรงกับ Type PermissionType
 const bodySchema = z.object({
-  id: z.string().nullish(),
+  id: z.string().regex(/^\d+$/).nullish(),
   code: z.string().min(1, 'Code is required'),
   description: z.string().nullish(),
   module: z.string().nullish(),
@@ -19,6 +19,8 @@ export default defineEventHandler(async (event): Promise<ResponseEntity<Permissi
   await requireAnyPermission(event, ['permission_add', 'permission_edit'])
 
   const body = await readValidatedBody(event, bodySchema.parse)
+  // Create needs *_add, update needs *_edit (the any-check above is only a cheap first gate).
+  await requirePermission(event, body.id ? 'permission_edit' : 'permission_add')
 
   const { id, code, module, description, operationType } = body
 
@@ -50,7 +52,7 @@ export default defineEventHandler(async (event): Promise<ResponseEntity<Permissi
       if (id) {
         // Mode: Update
         currentPermissionId = BigInt(id);
-        await tx
+        const [updated] = await tx
           .update(schema.permission)
           .set({
             code,
@@ -58,7 +60,12 @@ export default defineEventHandler(async (event): Promise<ResponseEntity<Permissi
             description,
             operationType
           })
-          .where(eq(schema.permission.id, currentPermissionId));
+          .where(eq(schema.permission.id, currentPermissionId))
+          .returning({ id: schema.permission.id });
+
+        if (!updated) {
+          throw createError({ statusCode: 404, statusMessage: 'Permission not found' })
+        }
 
       } else {
         // Mode: Insert
@@ -90,11 +97,8 @@ export default defineEventHandler(async (event): Promise<ResponseEntity<Permissi
     }
 
   } catch (error: any) {
-    if (error.statusCode) throw error;
-
-    throw createError({
-      statusCode: 500,
-      statusMessage: error.message || 'Internal Server Error'
-    })
+    // Re-throw authored errors (400/404/409); hide driver errors behind a generic 500.
+    if (error?.statusCode) throw error;
+    throw serverException(error)
   }
 })

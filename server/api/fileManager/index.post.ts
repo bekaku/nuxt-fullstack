@@ -1,10 +1,10 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import { ResponseEntity } from '~/types/common'
+import type { ResponseEntity } from '~/types/common'
 import mime from 'mime-types'
 import { schema, useDb } from '~~/server/database/client'
 import { eq } from 'drizzle-orm'
-import { FileManager } from '~/types/models'
+import type { FileManager } from '~/types/models'
 import { mapToFileManager } from '~~/server/utils/modelMapper'
 import { getFileMimeType } from '~~/server/utils'
 

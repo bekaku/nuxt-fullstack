@@ -2,16 +2,16 @@ import { schema, useDb } from '#server/database/client'
 import { requireAnyPermission } from '#server/utils/permission'
 import { and, eq, ne, or } from 'drizzle-orm'
 import { z } from 'zod'
-import { ResponseEntity } from '~/types/common'
-import { AppUser } from '~/types/models'
+import type { ResponseEntity } from '~/types/common'
+import type { AppUser } from '~/types/models'
 import { deleteFileManager } from '~~/server/utils/files'
 import { findUserById } from '~~/server/utils/user'
 
 const bodySchema = z.object({
   email: z.email().min(5),
   username: z.string().min(3).max(100),
-  avatarFileId: z.string().nullish(),
-  coverFileId: z.string().nullish(),
+  avatarFileId: z.string().regex(/^\d+$/).nullish(),
+  coverFileId: z.string().regex(/^\d+$/).nullish(),
 })
 
 export default defineEventHandler(async (event): Promise<ResponseEntity<AppUser>> => {

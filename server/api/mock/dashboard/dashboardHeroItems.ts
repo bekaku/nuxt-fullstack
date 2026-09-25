@@ -1,4 +1,4 @@
-import { LabelValue } from '~/types/common';
+import type { LabelValue } from '~/types/common';
 
 export default defineEventHandler(async (event): Promise<LabelValue<string>[]> => {
     return [

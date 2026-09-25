@@ -5,8 +5,8 @@ import { verifyPassword } from '../../utils/password'
 import { signAccessToken, generateRefreshToken, refreshTokenExpiryDate } from '../../utils/jwt'
 import { loadUserPermissions } from '../../utils/permission'
 import { nextId } from '../../utils/snowflake'
-import { AppUser } from '~/types/models'
-import { ResponseEntity } from '~/types/common'
+import type { AppUser } from '~/types/models'
+import type { ResponseEntity } from '~/types/common'
 import { clearLoginFailures, getLoginRateLimitKey, isLoginBlocked, recordLoginFailure } from '~~/server/utils/loginRateLimit'
 
 const bodySchema = z.object({

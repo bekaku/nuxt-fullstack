@@ -1,7 +1,7 @@
 import { eq, and } from 'drizzle-orm'
 import { useDb, schema } from '#server/database/client'
 import type { H3Event } from 'h3'
-import { AccessTokenPayload } from '~/types/common'
+import type { AccessTokenPayload } from '~/types/common'
 /**
 * Retrieve all user permissions from app_user -> app_user_role -> role_permission -> permission
 * Use during login/refresh to embed the permission code into the JWT payload
