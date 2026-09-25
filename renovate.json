@@ -5,9 +5,22 @@
   "lockFileMaintenance": {
     "enabled": true
   },
-  "packageRules": [{
-    "matchDepTypes": ["resolutions"],
-    "enabled": false
-  }],
-  "postUpdateOptions": ["pnpmDedupe"]
+  "packageRules": [
+    {
+      "matchDepTypes": [
+        "resolutions"
+      ],
+      "enabled": false
+    },
+    {
+      "description": "vue-tsc 3.x cannot load TypeScript 7 (pnpm typecheck crashes); keep TypeScript on 5.x until vue-tsc supports it",
+      "matchPackageNames": [
+        "typescript"
+      ],
+      "allowedVersions": "<6"
+    }
+  ],
+  "postUpdateOptions": [
+    "pnpmDedupe"
+  ]
 }
