@@ -24,11 +24,15 @@ No Pinia. No test framework.
 - `app/` — Nuxt client: `pages/`, `components/<domain>/*.vue`, `composables/use*.ts`,
   `api/use*Api.ts`, `middleware/00|01|02.*.global.ts`, `layouts/`, `plugins/`, `types/`.
 - `server/` — Nitro backend: `api/<camelCaseModule>/` handlers, `middleware/00.auth.ts`,
-  `database/{schema,client,seed}.ts`, `utils/`, `plugins/`, `routes/`, `tasks/`.
+  `database/{schema,client,seed}.ts`, `services/ai/`, `utils/ai/`, `plugins/`,
+  `routes/`, `tasks/`.
 - `shared/types/` — effectively empty; canonical shared types live in `app/types/`.
 - `drizzle/` — generated SQL migrations. `i18n/locales/{en,th}/` — UI strings.
 - Auth boundary: `server/middleware/00.auth.ts` verifies JWT + live session;
-  each handler enforces its own permission. Client `v-rbac`/route middleware is UX only.
+  each protected handler enforces permission or user ownership. Client
+  `v-rbac`/route middleware is UX only.
+- AI flows: document ingestion spans stored files, Ollama embeddings, Qdrant
+  vectors, and PostgreSQL metadata; chat streams via the AI SDK and `useApi().raw`.
 
 ## 4. Required Reading
 
@@ -44,10 +48,13 @@ No Pinia. No test framework.
 - Server handlers: `server/api/<camelCaseModule>/{index.get,index.post,[id].get,[id].delete}.ts`.
 - Schema: `server/database/schema.ts`. Seed/permissions: `server/database/seed.ts`.
 - AuthN/Z helpers: `server/utils/{jwt,permission,password,loginRateLimit}.ts`,
-  `server/utils/validate.ts` (`validateID`), `server/utils/dbPaging.ts` (`paginate`),
-  `server/utils/{exception,modelMapper}.ts`.
+  `server/utils/validate.ts` (`validateID`, `assertNumericId`), `server/utils/dbPaging.ts` (`paginate`),
+  `server/utils/{exception,modelMapper}.ts`, `server/utils/files.ts` (`assertFileAccess`),
+  `server/utils/safeFetch.ts` (outbound fetch of user URLs), `server/utils/devOnly.ts` (`requireDevEndpoint`).
 - Types: `app/types/{common,models,props}.ts`. Response envelope: `ResponseEntity<T>`.
 - Open questions: `docs/OPEN_QUESTIONS.md`. Known traps: `docs/FOOTGUNS.md`.
+- AI: `server/services/ai/`, `server/utils/ai/qdrant.ts`,
+  `server/api/{aiChat,aiDocumentMeta}/`, `app/composables/useAiChat.ts`.
 - Agent architecture docs: `docs/agent/`.
 
 ## 6. Coding Conventions
@@ -75,7 +82,7 @@ No Pinia. No test framework.
 - Protected requests go through `useApi()` (silent refresh, SSR cookie forward);
   never raw `$fetch`/`useFetch`/`useAsyncData` for protected routes.
 - Gate UI with `v-rbac` / `BaseTable` permission props (UX only, never security).
-- Pages declare `definePageMeta({ requiresPermission: [...] })`;
+- Protected pages declare `definePageMeta({ requiresPermission: [...] })`;
   keep middleware order `00.seo → 01.auth → 02.check-permit`.
 - Every user-facing string goes to both `i18n/locales/en/*.json` and `th/*.json`
   via `useLang()`/`$t`; handle `dark:` variants and mobile-first responsive layout.
@@ -85,8 +92,9 @@ No Pinia. No test framework.
 ## 8. Backend Rules
 
 - Every protected handler calls its auth guard FIRST, before any DB work:
-  `requirePermission` (single code), `requireAnyPermission` (upsert POST),
-  or `getAuthUser` (user-scoped only).
+  `requirePermission` (single code), `requireAnyPermission` (upsert POST; new
+  handlers then check the exact `_add`/`_edit` code after parsing the body),
+  or `getAuthUser` (user-scoped only, plus an owner filter in every query).
 - Validate untrusted bodies with `readValidatedBody(event, bodySchema.parse)`
   (Zod 4); `:id` params via `validateID(event)`; filters via `paginate()`.
 - Response shape is `ResponseEntity<T>` (`{ status: 200, data? }`); lists wrap in
@@ -104,13 +112,20 @@ No Pinia. No test framework.
 
 - Schema in `server/database/schema.ts` uses `pgTable` + app-generated
   Snowflake bigint PKs (`bigint('id', { mode: 'bigint' })`); never
-  `serial`/`bigserial`/`uuid` PKs. New tables spread `auditFieldsSoftDelete()`.
-- Day-to-day: `pnpm db:generate && pnpm db:migrate`. `db:push` is local-dev only.
-  Never hand-edit applied SQL; raw SQL/views go through custom migrations.
+  `serial`/`bigserial`/`uuid` PKs. Ordinary data tables spread
+  `auditFieldsSoftDelete()`; inspect existing junction/log tables for exceptions.
+- For an intended schema change, inspect `drizzle/meta/_journal.json`, generate
+  and review SQL with `pnpm db:generate`, then apply with `pnpm db:migrate` only
+  to the intended database. `db:push` is local-dev only. Never hand-edit applied
+  SQL; raw SQL/views go through custom migrations.
 - Bigint boundary: inbound `BigInt(stringId)`, outbound `.toString()`; never
   compare bigint IDs with `===` against numbers.
-- New modules extend `RESOURCES` in `server/database/seed.ts` (all five
-  `<table>_{list,view,add,edit,delete}` permissions), then `pnpm db:seed`.
+- Permission-based modules extend `RESOURCES` in `server/database/seed.ts` (all
+  five `<table>_{list,view,add,edit,delete}` codes). The seed is idempotent: it
+  adds only missing permission codes, the Admin/Viewer roles, their grants, and
+  the default admin user, so `pnpm db:seed` delivers new codes to an existing
+  database. It still writes data — run it only against the intended database,
+  never as a verification step.
 
 ## 10. Security Rules
 
@@ -126,6 +141,10 @@ No Pinia. No test framework.
 
 - No test framework exists; do not add one without an explicit task.
 - Canonical gate: `pnpm typecheck`. Run `pnpm build` for runtime-affecting changes.
+  TypeScript is pinned to 5.x because `vue-tsc` 3.x cannot load TypeScript 7; do
+  not upgrade it without checking `vue-tsc` support.
+- Do not run `pnpm lint` (or `lint:fix`) as part of agent verification, and do not
+  reformat files for lint; run it only when the user explicitly asks.
 - Follow the database skill for schema changes (generated migrations only).
 - Verify affected code and report any tests/checks that could not be executed.
 
@@ -144,7 +163,8 @@ No Pinia. No test framework.
 2. Load only the relevant `SKILL.md` file(s); read references on demand.
 3. Inspect affected source files; plan the minimal change.
 4. Implement, reusing existing utilities/components and preserving conventions.
-5. Verify (`pnpm typecheck`, plus `pnpm build` when runtime-affected).
+5. Verify code (`pnpm typecheck`, plus `pnpm build` when runtime-affected; no
+   `pnpm lint`); for documentation-only edits, validate links and skill frontmatter.
 6. Review the diff; confirm only relevant files changed and no secrets leaked.
 7. Stop when success criteria pass; report unverifiable checks and residual risks.
 

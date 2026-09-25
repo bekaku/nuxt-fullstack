@@ -1,69 +1,64 @@
 ---
 name: testing-debugging
-description: Use for diagnosing failures and verifying changes in this repo, which has no test framework — verification is pnpm typecheck, pnpm build, log inspection, and targeted manual checks. Load when debugging, validating, or reviewing a diff.
+description: Use when verifying a code change, debugging a failure, or reviewing a diff in this repo. Explains which checks to run (typecheck/build/manual; no lint, no test runner) and how to locate a bug by symptom.
 ---
 
 # Testing & Debugging
 
-## Purpose
+Read `AGENTS.md` first. There is **no test framework**; do not add one unless the task asks.
 
-Defines how to verify work and diagnose failures in a repository with no test
-runner: static gates, build checks, log inspection, and focused manual testing.
+## 1. Which check to run
 
-## When to Use
+| Change | Run | Do not run |
+|---|---|---|
+| Docs / SKILL / Markdown only | Check links, paths, frontmatter; read the diff | build, typecheck |
+| TS/Vue code (any) | `pnpm typecheck` | `pnpm lint` (not required for agents) |
+| Server code, SSR, config, dependencies, plugins | `pnpm typecheck` then `pnpm build` | — |
+| Schema | `pnpm db:generate` + review SQL (see `drizzle-database`) | `db:migrate` / `db:seed` / `db:push` just to verify |
+| Behavior of a page/API | Manual flow in section 3 when a local environment exists | Anything against shared/production data |
 
-- Verifying any code change (with the layer skill for the changed code).
-- Debugging runtime errors, SSR/hydration issues, failing builds, or DB problems.
-- Reviewing a diff before finishing a task.
+`pnpm typecheck` must finish with **0 errors** (baseline since 2026-09-25). TypeScript is
+pinned to 5.x (`^5.9.3`): `vue-tsc` 3.x crashes with `ERR_PACKAGE_PATH_NOT_EXPORTED` on
+TypeScript 7, so do not upgrade it. `verbatimModuleSyntax` is on — import types with
+`import type { ... }` (or `import { type X, value }`), otherwise you get TS1484.
 
-## When Not to Use
+`pnpm lint` is **not** part of the agent workflow. Do not run it, and do not
+mass-reformat files. If the user explicitly asks for lint, run it and report results.
 
-- As a substitute for the layer skill that owns the changed code — combine them.
-- To introduce a test framework (requires an explicit task and team sign-off).
+Report every check honestly: command, pass/fail, and anything you could not run and why
+(e.g. no database, no Ollama/Qdrant).
 
-## Required Reading
+## 2. Find the owning layer by symptom
 
-- `AGENTS.md` (sections 11, 12, 13).
-- `docs/FOOTGUNS.md` (known traps) and `docs/OPEN_QUESTIONS.md` (unresolved behavior).
-- `docs/agent/project-map.md` (build and verification commands).
+| Symptom | Look first at |
+|---|---|
+| 401 loop / logged out unexpectedly | `server/middleware/00.auth.ts` (session row missing/revoked), `app/composables/useApi.ts` refresh, cookie names in runtime config |
+| 403 on an action the user should have | Permission code string in handler vs seed `RESOURCES` vs role grants; client list is stale until refresh/`/api/auth/me` |
+| Button/menu missing | `crudName` → `pascalToSnake` prefix, `v-rbac`, `useMenu.ts` `permissions` |
+| 404 on CRUD form/list call | `crudName` → `pascalToCamelCase` must equal the `server/api/<module>/` folder |
+| 500 with "Cannot convert ... to a BigInt" | Non-numeric ID passed to `BigInt()` |
+| "$dynamic" / `.where is not a function` in list | `paginate()` inputs missing `.$dynamic()` |
+| Sort/search ignored | column key missing in `paginate({ columns })` or different from client `accessorKey` |
+| Wrong total count | count query lacks the same joins/filters as data query |
+| Error toast shows a DB message | handler leaked `error.message`; use `serverException(error)` |
+| 404 turned into 500 | `try/catch` around code that throws `createError` without rethrowing `statusCode` errors |
+| Hydration mismatch / `window is not defined` | browser-only code outside `import.meta.client` or a `.client.ts` plugin |
+| Missing translation key shown | key missing in `en` or `th` JSON, or file not in `fileLangNames` (`nuxt.config.ts`) |
+| RAG answer ignores documents | embedding model mismatch, empty collection, `filterNames`, Qdrant URL/key (see `ai-rag`) |
 
-## Repository Evidence
+## 3. Manual checks worth doing (when services are available)
 
-- Gates: `package.json` scripts (`typecheck: nuxt typecheck`, `build: nuxt build`).
-- Zero test files: no `*.test.*` / `*.spec.*`, no vitest/jest/playwright/cypress config.
-- Dev aids: `app/composables/useApi.ts` dev-mode request logging; `server/utils/exception.ts`
-  (strips driver internals); Nitro `bigint`/`date` plugins; `docker-compose-postgres.yml` (local DB).
+- **Protected API:** success, missing permission (403), anonymous (401), wrong owner, bad body (400), missing row (404).
+- **CRUD UI:** list paging/sort/search/keyword, new → edit → copy → delete, IDs stay strings.
+- **UI quality:** both languages, dark mode, mobile width, SSR reload of the page.
+- **AI:** see `ai-rag` §6. Use local services and test data only.
 
-## Workflow
+## 4. Debug procedure
 
-1. Reproduce first: narrow the failing layer (client, API, DB, auth) and read the
-   involved files plus `docs/FOOTGUNS.md` before changing anything.
-2. Fix at the owning layer following that layer's skill; keep the change minimal.
-3. Verify narrowly: `pnpm typecheck` always;
-   `pnpm build` for runtime-affecting changes.
-4. Inspect the final diff: only relevant files changed, no secrets, no drive-by refactors.
-5. Report what was verified and what could not be executed (e.g. no live DB, no browser).
-
-## Implementation Rules
-
-- Never add `vitest`/`jest`/`playwright`/`cypress` config in a feature or fix task.
-- Never run migrations, seed against shared databases, or destructive DB commands to "test".
-- Never weaken intentional behavior to silence an error (login 403, create 201-header/200-body).
-- Preserve `.env` / `.env.example` hygiene: real secrets never enter code, logs, or the diff.
-
-## Anti-Patterns
-
-- Claiming verification that was not executed; hiding failing checks.
-- Mass-refactoring `any`s or reformatting unrelated files inside a fix.
-- "Fixing" documented intentional behavior instead of the actual defect.
-
-## Verification
-
-- `pnpm typecheck` (required for every change).
-- `pnpm build` when runtime behavior changed.
-- Targeted manual checks of the affected page/endpoint/flow where possible.
-
-## Completion Criteria
-
-- Root cause addressed at the owning layer; gates pass for the change's scope.
-- Diff reviewed and minimal; unverifiable checks explicitly reported with residual risks.
+1. Reproduce (or read the exact error/stack). Note the request URL, status, and payload.
+2. Locate the layer with the table above; read the file **and** its caller.
+3. Check `docs/FOOTGUNS.md` / `docs/OPEN_QUESTIONS.md` before "fixing" intentional behavior
+   (403 on wrong login, create returns HTTP 201 with body `status: 200`).
+4. Fix the cause in the owning layer with the smallest change.
+5. Re-run the checks from section 1 for what you touched.
+6. Review `git status --short` and `git diff`; leave unrelated user changes untouched.

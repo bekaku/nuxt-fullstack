@@ -1,11 +1,11 @@
 # Nuxt Fullstack Starter
 
-Production-ready fullstack starter built on **Nuxt 4 (SSR)** with a complete authentication and authorization layer: **JWT access tokens delivered via HTTP-Only cookies, opaque refresh tokens with rotation/revocation, and server-enforced RBAC**.
+Fullstack starter built on **Nuxt 4 (SSR)** with JWT access tokens delivered via HTTP-Only cookies, opaque refresh tokens with rotation/revocation, and server-side RBAC helpers.
 
-- **Stateless auth** — permissions and roles are embedded in the short-lived JWT payload; no per-request database lookup for authorization.
+- **Cookie-backed auth** — the short-lived JWT identifies the user; middleware checks the live session and permission helpers query current database grants.
 - **HTTP-Only cookies** — tokens are inaccessible to client-side JavaScript.
 - **Silent refresh** — the API client retries through `/api/auth/refresh` transparently on `401`.
-- **RBAC everywhere** — enforced on the server (`requirePermission`) and mirrored in the UI (`v-rbac` directive).
+- **Server RBAC helpers** — protected routes use `requirePermission` or a user-scoped ownership check; the UI mirrors access with `v-rbac`.
 - **22-table Drizzle schema** — fully typed, migrated, and seeded.
 
 ## Tech Stack
@@ -38,29 +38,29 @@ Production-ready fullstack starter built on **Nuxt 4 (SSR)** with a complete aut
 - **Server middleware** (`server/middleware/00.auth.ts`) — Intercepts all `/api/**` routes, verifies JWT, checks session in DB, attaches `event.context.user`
 - **Client middleware** — `app/middleware/01.auth.global.ts` (auth guard), `app/middleware/02.check-permit.global.ts` (permission guard)
 - **bcrypt password hashing** with salt
-- **Login rate limiting** (`server/utils/loginRateLimit.ts`) — In-memory rate limiter: 5 attempts per 15-minute window per email+IP
+- **Login rate limiting** (`server/utils/loginRateLimit.ts`) — Nitro memory storage: 5 attempts per 15-minute window per identifier+IP (not shared across instances by default)
 - **Session management** — `loginLog`, `userAgent`, `apiClient` tables for tracking login sources (web/mobile/API)
 - **Device detection** — `@nuxtjs/device` + `@capacitor/device` for device ID and platform detection
 
 ### RBAC (Role-Based Access Control)
 
 - **Database schema** — `appUser`, `appRole`, `permission`, `appUserRole`, `rolePermission` (many-to-many junction tables)
-- **Permission codes** — Convention: `<resource>_<action>` (e.g., `app_user_list`, `file_manager_manage`)
+- **Permission codes** — Convention: `<resource>_<action>` with `list|view|add|edit|delete` (e.g., `app_user_list`, `file_manager_list`)
 - **Permission types** — Enum: `CRUD`, `REPORT`, `OTHER`, `FEATURE`
 - **Seed script** (`server/database/seed.ts`) — Auto-generates 35 permissions (7 resources x 5 actions), creates Admin (all) + Viewer (read-only) roles, default admin user
 - **Server-side enforcement** — `requirePermission()`, `requireAnyPermission()`, `requireAllPermission()` helpers in `server/utils/permission.ts`
 - **Client-side enforcement** — `useRbac()` composable with `hasPermission()`, `isHavePermission()`, `isHaveAllPermission()` checks
 - **Dynamic menu filtering** — `useMenu().initialAppNav()` filters sidebar navigation items based on user permissions
 - **Page-level protection** — `meta.requiresPermission` in route definitions triggers `02.check-permit.global.ts` middleware
-- **JWT-embedded permissions** — Permissions loaded at login/refresh and embedded in JWT payload (no DB query per request)
+- **Current permissions** — Login returns roles/permissions to the client; server permission helpers query current role grants rather than trusting a JWT claim
 
 ### AI Chat (with RAG)
 
 - **Streaming chat** — `server/api/aiChat/stream.post.ts` using Vercel AI SDK's `streamText()` + `createUIMessageStream`
-- **Multi-model support** — Ollama (local `gemma4:31b` / cloud), OpenRouter (configurable)
+- **Provider integrations** — Ollama (local embeddings and cloud chat in the current stream handler) and OpenRouter configuration
 - **Conversation management** — Create / rename / delete / pin chats, paginated message history, stored in `aiChat` + `aiChatMessage` tables
 - **RAG pipeline** — Full document ingestion workflow:
-  1. **Parse** — `document-parser.ts` (PDF, DOCX, PPTX, XLSX, images, text, HTML)
+  1. **Parse** — `document-parser.ts` (PDF, DOCX, PPTX, XLSX, text, HTML; no OCR path)
   2. **Chunk** — `document-chunker.ts` (configurable chunk size 1000 / overlap 200)
   3. **Embed** — `embedding.ts` via Ollama `bge-m3` model
   4. **Store** — Qdrant vector DB + PostgreSQL metadata (`aiDocumentMeta`, `aiDocumentVectorIds`, `aiDocumentMetadata`)
@@ -228,11 +228,11 @@ public/                         Static assets (fonts, images, logos)
 
 ## Authentication Design
 
-1. **Access token** — stateless JWT with a 15-minute TTL. The payload embeds `permissions[]` and `roles[]`, so authorization requires no database round-trip.
+1. **Access token** — short-lived JWT with a 15-minute default TTL. The current payload contains the user ID (`sub`); middleware also checks the live refresh-token session.
 2. **Refresh token** — opaque random string (not a JWT), valid for 7 days by default. Persisted in the `access_token` table to support revocation and rotation.
 3. **Transport** — both tokens are set as HTTP-Only cookies (`_session_`, `_slid_`), invisible to browser JavaScript.
 4. **Silent refresh** — when an access token expires, the API responds `401`; `app/composables/useApi.ts` calls `/api/auth/refresh` once and retries the original request.
-5. **RBAC enforcement** — `server/middleware/00.auth.ts` verifies the JWT and attaches `event.context.user`. Each route then calls `requirePermission(event, 'app_user_add')`. Permissions follow the `<table>_<action>` convention (`list` / `view` / `add` / `edit` / `delete`). Unauthorized requests receive `403`.
+5. **RBAC enforcement** — `server/middleware/00.auth.ts` verifies the JWT and attaches `event.context.user`. Protected handlers call `requirePermission(event, 'app_user_add')` or use `getAuthUser()` with an ownership condition. Permission helpers query current grants; denied permission requests receive `403`.
 
 ## Database Schema
 
@@ -317,6 +317,7 @@ Creates an `Admin` role (all permissions) and a `Viewer` role (list/view only), 
 | Password | `Admin@12345` |
 
 > Change this password immediately before any real use.
+> The seed is idempotent: rerunning it only adds missing permission codes, the Admin/Viewer roles, their grants, and the admin user (an existing admin password is never changed).
 
 ### 6. Start the dev server
 
@@ -378,7 +379,7 @@ pnpm typecheck            # Run Nuxt type checking
 
 Permissions follow the `<table>_<action>` naming convention.
 
-1. Insert a row into the `permission` table — or extend `RESOURCES` / `ACTIONS` in `server/database/seed.ts` and re-run the seed (e.g. `files_directory_add`).
+1. Add the resource to `RESOURCES` in `server/database/seed.ts` and run `pnpm db:seed` against the intended database — it only inserts missing codes and grants them to Admin (and list/view to Viewer) (e.g. `files_directory_add`).
 2. Guard the new API route by calling `requirePermission(event, 'files_directory_add')` at the top of the handler.
 3. In the UI, hide gated elements with the `v-rbac` directive:
 

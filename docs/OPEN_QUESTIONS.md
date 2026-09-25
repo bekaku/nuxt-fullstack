@@ -2,14 +2,20 @@
 
 These are unresolved repository/team questions. They are references, not mandatory rules for every task.
 
-- `drizzle/` has duplicate migration numbers (`0001` x2, `0002` x2, `0003` x2) — squash or keep?
+- `pageName` meta values and i18n model keys are inconsistent (`model_user` flat vs `model.role.table` nested) — new modules use nested `model.<table>.*`; should the existing flat keys be migrated (breaks key compatibility)?
 
-- `fileManager/index.get.ts` imports `requirePermission` but never calls it — intentional (any authed user can list files) or missing `file_manager_list` check?
+- Server imports mix `#server/...`, `~~/server/...`, relative paths, and auto-imports — pick one style for new code?
 
-- `favoriteMenu/*.ts` import `requirePermission` but never call it (only `getAuthUser`) — remove dead imports or add checks?
+- WebSocket demo broadcasts from `/api/test-socket-send` now carry `senderId` from the session (string) instead of the client-sent number — adjust `app/pages/example/websocket.vue` if it compares sender IDs.
 
-- `server/api/test-socket-send.post.ts` and `server/api/meta.ts` have zero auth — intentional public endpoints or missing guards?
+## Resolved on 2026-09-25
 
-- `permission/index.get.ts` returns raw bigint without `mapTo*` transform — rely on `server/plugins/bigint.ts` or add explicit `.toString()`?
+Decisions applied in code (see `docs/agent/structure-review-2026-09-25.md`):
 
-- `pageName` meta values are inconsistent (`model_user` vs `model.role.table` vs `model.userProfile.table`) — which namespace is canonical?
+- Orphan duplicate migrations (`0000`–`0003` not in the journal) removed; the journal chain already contained their changes.
+- File access policy: login required; owners manage their own files; `file_manager_{list,view,delete}` grants the same action on all files (`server/utils/files.ts` → `assertFileAccess` / `canAccessAllFiles`). My-drive menu/page use `file_manager_list`.
+- `server/api/meta.ts` requires login and only fetches public http(s) URLs (`server/utils/safeFetch.ts`); `test-socket-send` requires login; `server/api/test/**` is dev-only + `app_user_add`.
+- Upsert handlers (`appUser`, `appRole`, `permission`) now also require the exact `_add` / `_edit` code for the mode.
+- `permission` handlers keep 404/409 errors and no longer leak driver messages; `permission/index.get.ts` returns string IDs.
+- Dead imports removed from `favoriteMenu/*.ts`; `/ai-document-meta` menu item gated by `ai_document_meta_list`.
+- Seed is idempotent.

@@ -64,9 +64,10 @@ write SKILLS.md with these properties:
   state, API/server, database, auth/RBAC, styling, TypeScript, testing, lint/format).
 - **Call out the exceptions you found**: if 90% of the codebase does X but a few files
   do Y, state which is correct and that Y should be migrated — don't silently pick one.
-- **Include a "Before you commit" checklist**: lint, typecheck, and any manual checks
-  an agent should run before considering a task done (map these to the actual npm
-  scripts: lint, typecheck, db:generate, etc.).
+- **Include a "Before you commit" checklist**: typecheck, build (for runtime changes),
+  and any manual checks an agent should run before considering a task done (map these
+  to the actual npm scripts: typecheck, build, db:generate, etc.). Agents do not run
+  `pnpm lint` unless the user explicitly asks.
 - **Include a section on what NOT to do**: known footguns specific to this stack
   (e.g. Nuxt UI slot gotchas, Drizzle migration pitfalls, auth/RBAC bypass risks).
 - Keep it as dense reference material — bullet points and short code blocks, not prose

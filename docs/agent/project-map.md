@@ -1,22 +1,23 @@
 # Project Map (verified)
 
-Source of architectural truth for agents. Claims below were read from the
-repository files cited; see `audit-report.md` for coverage and open questions.
+Orientation map for agents. Read the affected source before implementing; this
+map summarizes observed paths and contracts rather than replacing code. See
+`audit-report.md` for the original audit's coverage and open questions.
 
 ## Verified Technology Stack
 
 | Layer | Technology | Evidence |
 |---|---|---|
-| Framework | Nuxt 4.5 SSR, `compatibilityVersion: 5`, `app/` dir | `package.json` (`nuxt ^4.5.2`), `nuxt.config.ts:330` |
+| Framework | Nuxt 4.5 SSR, `compatibilityVersion: 5`, `app/` dir | `package.json` (`nuxt ^4.5.2`), `nuxt.config.ts` |
 | UI | Nuxt UI 4 + Tailwind CSS 4 | `package.json` (`@nuxt/ui ^4.11.0`, `tailwindcss ^4.3.3`) |
-| API | Nitro (`.ts` handlers, middleware, plugins, tasks, WebSocket) | `server/api/`, `server/middleware/00.auth.ts`, `nuxt.config.ts:304-319` |
+| API | Nitro (`.ts` handlers, middleware, plugins, tasks, WebSocket) | `server/api/`, `server/middleware/00.auth.ts`, `nuxt.config.ts` |
 | ORM / DB | Drizzle ORM 0.45 / drizzle-kit 0.31 + PostgreSQL 18 | `package.json`, `drizzle.config.ts`, `docker-compose-postgres.yml` |
 | Validation | Zod 4 | `package.json` (`zod ^4.4.3`), `server/api/auth/login.post.ts:12` |
 | Auth | `jsonwebtoken` 9 + `bcryptjs` 3, HTTP-only cookies | `package.json`, `server/api/auth/login.post.ts` |
 | i18n | `@nuxtjs/i18n`, `no_prefix`, default/fallback `th`, locales `en`/`th` | `nuxt.config.ts:85-110`, `i18n/locales/` |
 | Realtime/AI | Nitro WebSocket (`crossws`), Vercel AI SDK 7, Ollama, Qdrant | `server/routes/ws.ts`, `package.json` (`ai ^7.0.79`) |
-| Package manager | pnpm `11.13.1` (pinned) | `package.json:97` |
-| Node target | Node 22 (Nitro esbuild target; CI matrix node 22) | `nuxt.config.ts:306`, `.github/workflows/ci.yml` |
+| Package manager | pnpm `11.13.1` (pinned) | `package.json` |
+| Node target | Node 22 (Nitro esbuild target; CI matrix node 22) | `nuxt.config.ts`, `.github/workflows/ci.yml` |
 
 No Pinia (`defineStore` = 0 hits). No test files (`*.test.*` / `*.spec.*` = 0 hits).
 
@@ -48,6 +49,8 @@ server/               Nitro backend
   routes/             cdn/[...filename].ts, ws.ts
   tasks/              cleanup-temp.ts (nightly 3 AM cron)
   services/ai/        RAG pipeline (document-parser, document-chunker, embedding, ingestion)
+  utils/ai/           Qdrant collection, vector upsert/delete helpers
+  utils/tools/        Chat tools (chart, weather, web search)
 shared/types/         Effectively empty (index.d.ts) — canonical types live in app/types/
 drizzle/              Generated SQL migrations (+ meta journal)
 i18n/locales/{en,th}/  app, base, helper, model, error .json + index.ts
@@ -61,10 +64,11 @@ lowercase only `auth`, `permission`, `mock`, `test`. Pages kebab-case. DB snake_
 - Routing: file-based; list page `<module>/index.vue` + form page `<module>/[crud]/[id].vue`.
 - Data: `useCrudList<T>` (pagination/sort/search/delete/navigation) + `useCrudForm<T>`;
   `usePagefecth<T>` (sic — keep typo, never duplicate correctly-spelled) for query-synced fetch.
-- Transport: ALL protected calls via `useApi()` (`app/composables/useApi.ts`) — SSR cookie
+- Transport: protected calls via `useApi()` (`app/composables/useApi.ts`) — SSR cookie
   forward (`useRequestHeaders(['cookie'])`), shared `_responseCookies` map, single-flight
-  `_refreshPromise` → `POST /api/auth/refresh` on 401 → retry. Raw `$fetch`/`useFetch`/
-  `useAsyncData` allowed only for `/api/mock/**` and public GETs.
+  `_refreshPromise` → `POST /api/auth/refresh` on 401 → retry. AI SDK chat uses
+  `useApi().raw` in its custom stream transport. Raw `$fetch`/`useFetch`/
+  `useAsyncData` do not provide that protected-route behavior.
 - State: namespaced `useState` (`auth:user`, `auth:navigations`); `createSharedComposable`
   / module singletons for cross-component singletons; `provide` only in plugins (`$toast` etc.).
 - UI: Nuxt UI components; generics `BaseTable<T>`/`BaseForm<T>` with `#field-<key>` /
@@ -103,27 +107,30 @@ lowercase only `auth`, `permission`, `mock`, `test`. Pages kebab-case. DB snake_
 - PKs: app-generated Snowflake bigints (`bigint('id', { mode: 'bigint' })` + `nextId()`);
   never serial/uuid. Audit mixin `auditFieldsSoftDelete()` on new tables.
 - Boundary: `BigInt(stringId)` in, `.toString()` out; transport via `server/plugins/bigint.ts`.
-- Migrations: `pnpm db:generate && pnpm db:migrate`; `db:push` dev-only; custom SQL via
-  `drizzle-kit generate --custom`. Seed: `RESOURCES` (7) × `ACTIONS` (5) = 35 permissions;
-  Admin (all) + Viewer (list/view) + `admin@example.com` / `Admin@12345`.
+- Migrations: inspect journal → `pnpm db:generate` → review SQL → `pnpm db:migrate`
+  only for an intended schema change and database; `db:push` dev-only; custom SQL via
+  `drizzle-kit generate --custom`. Seed defines `RESOURCES` (7) × `ACTIONS` (5) = 35
+  permissions and is idempotent (adds only missing codes, Admin/Viewer roles, grants,
+  and the admin user); it still writes data, so never use it as a verification command.
 - Connection: `useDb()` singleton (`server/database/client.ts`, `postgres.js`); seed script
   uses its own connection (runs outside Nuxt via `tsx`).
 
 ## Authentication & Authorization
 
-Dual-token: 15-min stateless access JWT (embeds `permissions[]`/`roles[]`) in `_session_`
+Dual-token: 15-min stateless access JWT (currently contains `sub`, not permissions/roles) in `_session_`
 + 7-day opaque refresh in `_slid_` (`access_token` table, rotation on refresh, revoke on
 logout). `00.auth.ts` allows `/api/auth/login|refresh|logout` public; all other `/api/**`
 with a token require a live non-revoked session row (else 401 + cookie wipe); no token =
-anonymous, route decides. Login hardened: generic errors, dummy bcrypt compare,
+anonymous, route decides. Permission helpers query role/permission tables for current
+access. Login hardened: generic errors, dummy bcrypt compare,
 5 attempts / 15 min per identifier+IP (`useStorage('login-rate-limit')`).
 
 ## End-to-End Feature Flows (traced)
 
-1. **App User list** — `app/pages/app-user/index.vue:9-49`
+1. **App User list** — `app/pages/app-user/index.vue`
    (`requiresPermission: ['app_user_list']`, `useCrudList<AppUser>` `crudName: 'AppUser'`,
    `apiEndpoint: '/api/appUser'`) → `useApi()` (cookies, refresh) →
-   `server/api/appUser/index.get.ts:15` (`requirePermission 'app_user_list'`) →
+   `server/api/appUser/index.get.ts` (`requirePermission 'app_user_list'`) →
    Drizzle `select` + `aliasedTable` self-joins + `.$dynamic()` → `paginate()` →
    `mapToAppUser` (bigint→string, CDN URLs) → `{ status: 200, data: ApiResponse }`.
 2. **Login** — `app/pages/auth/login.vue` → `POST /api/auth/login` →
@@ -131,17 +138,21 @@ anonymous, route decides. Login hardened: generic errors, dummy bcrypt compare,
    `loadUserPermissions` → `user_agent`/`login_log`/`access_token` inserts → two cookies) →
    client `useAuth().setAuth()` → `useState('auth:user')`; guards + `v-rbac` activate.
 3. **AI chat stream (user-scoped)** — `app/pages/ai-chats/c/*.vue` → `useAiChat()` →
-   `POST /api/aiChat/stream.post.ts:24` (`getAuthUser`, no permission code) → RAG
-   (embed query → Qdrant top-4 → context) → `streamText()` SSE via Vercel AI SDK.
+   `POST /api/aiChat/stream` in `server/api/aiChat/stream.post.ts` (`getAuthUser`, no permission code) → RAG
+   (embed query → Qdrant top-4 → context) → `streamText()` UI message stream via AI SDK.
+4. **Document ingestion** — `POST /api/aiDocumentMeta/ingest/:id` → file from
+   `cdnDirectory` → parse/chunk/embed via `server/services/ai/` → Qdrant upsert →
+   PostgreSQL `ai_document_*` metadata → source file cleanup. PostgreSQL, Qdrant,
+   and files are separate failure domains; inspect retry/cleanup ordering for changes.
 
 ## Build and Verification Commands
 
 | Command | Purpose |
 |---|---|
 | `pnpm dev` | Dev server `0.0.0.0:3000` |
-| `pnpm typecheck` | Canonical gate (`nuxt typecheck` / vue-tsc) |
+| `pnpm typecheck` | Canonical gate (`nuxt typecheck` / vue-tsc; TypeScript pinned to 5.x — vue-tsc 3.x cannot run TS 7); must be 0 errors |
 | `pnpm build` / `pnpm preview` | Production build / preview |
-| `pnpm lint` | ESLint (CI runs install → lint → typecheck) |
+| `pnpm lint` | ESLint — not part of agent verification; run only when the user asks (manual CI `workflow_dispatch` still runs it) |
 | `pnpm db:generate` / `pnpm db:migrate` | Generate / apply migrations |
 | `pnpm db:push` | Local-dev only schema push |
 | `pnpm db:seed` | Permissions + roles + admin user (`tsx server/database/seed.ts`) |

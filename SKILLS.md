@@ -19,6 +19,9 @@ Canonical skills: `.agents/skills/` (Agent Skills spec). Load only what the task
 - Complete CRUD module / cross-layer change:
   - `.agents/skills/fullstack-feature/SKILL.md`
 
+- AI chat streaming / document ingestion / embeddings / Qdrant:
+  - `.agents/skills/ai-rag/SKILL.md`
+
 - Verification / debugging (no test framework):
   - `.agents/skills/testing-debugging/SKILL.md`
 
@@ -27,6 +30,7 @@ Canonical skills: `.agents/skills/` (Agent Skills spec). Load only what the task
 - `AGENTS.md` (canonical rules)
 - `docs/agent/skills-index.md` (task-to-skill mapping)
 - `docs/agent/project-map.md` (architecture)
+- `docs/agent/structure-review-2026-09-25.md` (review findings to check when changing affected areas)
 - `docs/OPEN_QUESTIONS.md`
 - `docs/FOOTGUNS.md`
 
