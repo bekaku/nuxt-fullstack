@@ -1,0 +1,25 @@
+# Build context for Dockerfile. Dependencies and build outputs are recreated inside the image;
+# a host node_modules (other OS/CPU) must never overwrite the one installed there.
+node_modules
+.nuxt
+.output
+.data
+.nitro
+.cache
+dist
+build
+
+# Secrets: NUXT_* are runtime values (docker-compose.prod.yml env_file), not build inputs.
+.env
+.env.*
+!.env.example
+
+# Local / editor
+*.log
+logs
+.DS_Store
+.idea
+.fleet
+.vscode
+.history
+.claude

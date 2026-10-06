@@ -12,10 +12,11 @@ if docker image inspect "$IMAGE_NAME:$TAG" >/dev/null 2>&1; then
   docker rmi "$IMAGE_NAME:$TAG"
 fi
 
-docker image build --platform linux/amd64 --no-cache --load -t "$IMAGE_NAME:$TAG" -f Dockerfile .
+# docker image build --platform linux/amd64 --no-cache --load -t "$IMAGE_NAME:$TAG" -f Dockerfile .
+docker image build --no-cache --load -t "$IMAGE_NAME:$TAG" -f Dockerfile .
 
 # Save Docker image to a tar file
-# docker save -o ".\${BUILD_DIR}\${IMAGE_NAME}.tar" "${IMAGE_NAME}:latest"
+# docker save -o "${BUILD_DIR}/${IMAGE_NAME}.tar" "${IMAGE_NAME}:${TAG}"
 
 # Prune Docker builder cache
 docker builder prune -f
