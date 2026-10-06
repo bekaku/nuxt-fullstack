@@ -32,7 +32,7 @@ app/                  Nuxt client (SSR)
   api/use*Api.ts      Client API helpers (only useFavoriteMenuApi.ts — template for new ones)
   middleware/         00.seo.global.ts, 01.auth.global.ts, 02.check-permit.global.ts
   layouts/            default, empty, feed, ai, chat
-  plugins/            00.auth.client/server, rbac (v-rbac), toast, datefns, apexchart, ...
+  plugins/            00.auth.client/server, rbac (v-rbac), toast, datefns, echarts, ...
   types/              common.ts (ResponseEntity, ApiResponse, pagination), models.ts, props.ts
   libs/               constants.ts (AuthNoFilterPage), snowflake re-export
   utils/              Client utilities

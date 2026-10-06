@@ -27,7 +27,8 @@ useSeoMeta({
   ogTitle: title,
   ogDescription: description,
   ogImage: "https://ui.nuxt.com/assets/templates/nuxt/dashboard-light.png",
-  twitterCard: "summary_large_image",
+  ogImageWidth: 1200,
+  ogImageHeight: 630,
 });
 </script>
 

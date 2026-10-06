@@ -1,5 +1,16 @@
 <script setup lang="ts">
-import type { ChartMode, ChartPosition, ChartThemePalete, GridPadding } from '~/types/chart';
+import VChart from 'vue-echarts'
+import type { EChartsCoreOption } from 'echarts/core'
+import type { ChartMode, ChartPosition, ChartThemePalete, GridPadding } from '~/types/chart'
+import {
+  echartSplitColor,
+  echartTextColor,
+  echartTooltipBg,
+  normalizeCssSize,
+  resolveDarkMode,
+  resolvePalette,
+  toLegendConfig
+} from './echartTheme'
 
 const {
   chartId = 'chart-radial-id',
@@ -10,17 +21,7 @@ const {
   series,
   colors,
   categories,
-  gridPadding = {
-    top: 0,
-    right: 0,
-    bottom: 0,
-    left: 0
-  },
   showLegend = true,
-  legendUseSeriesColors = true,
-  legendFloating = false,
-  legendOffsetX = 0,
-  legendOffsetY = 0,
   legendPosition = 'bottom',
   showDataLabels = true,
   dataLabelsSize = '14px',
@@ -32,11 +33,8 @@ const {
   endAngle = 360,
   stokeLineCap = 'round',
   semi = false,
-  hollowBg = true,
-  hollowSize = '55%',
   trackBackgroud = '#f0f0f0',
   trackBackgroudDark = '#383a42',
-  fillType = 'gradient',
   valUnit,
   dark = false
 } = defineProps<{
@@ -74,215 +72,115 @@ const {
   trackBackgroudDark?: string
   dark?: boolean
 }>()
-const chartSeries = ref(series)
-const options = ref<any>()
+
 const { isDark } = useTheme()
-const watchTimeout = ref<any>()
-const chartRadialRef = useTemplateRef<any>('chartRadialRef')
-// watchEffect(() => {
-//   if (series && series.length > 0) {
-//     chartSeries.value = series;
-//   }
-// });
-onUnmounted(() => {
-  options.value = undefined
-  chartSeries.value = []
-  if (watchTimeout.value) {
-    clearTimeout(watchTimeout.value)
-    watchTimeout.value = undefined
-  }
-})
+const isDarkMode = computed(() => resolveDarkMode(dark, mode, isDark.value))
 
-onMounted(() => {
-  chartSetup()
-})
-const updateTheme = (darkMode: boolean) => {
-  if (chartRadialRef.value) {
-    chartRadialRef.value.updateOptions({
-      theme: {
-        mode: darkMode ? 'dark' : 'light'
-      },
-      plotOptions: {
-        radialBar: {
-          hollow: {
-            background: darkMode ? 'transparent' : '#fff',
-            dropShadow: {
-              enabled: !semi && !darkMode
-            }
-          },
-          track: {
-            background: !darkMode ? trackBackgroud : trackBackgroudDark
-          },
-          dataLabels: {
-            value: {
-              color: darkMode ? '#fff' : '#000'
-            }
-          }
-        }
-      }
-    })
-  }
-}
-watch(isDark, state => {
-  watchTimeout.value = setTimeout(() => {
-    updateTheme(state)
-  }, 50)
-})
-const chartSetup = () => {
-  if (series.length > 0) {
-    options.value = {
-      // series: series.value,
-      chart: {
-        id: chartId,
-        background: 'transparent',
-        width,
-        height,
-        type: 'radialBar',
-        toolbar: {
-          show: false
-        },
-        animations: {
-          enabled: true,
-          easing: 'easein', // linear, easeout, easein, easeinout, swing, bounce, elastic
-          speed: 800
-        }
-        // sparkline: {
-        //   enabled: sparkline || semi,
-        // },
-        // offsetY: semi ? -20 : 0,
-      },
-      theme: {
-        mode: dark ? 'dark' : mode,
-        palette
-      },
-      plotOptions: {
-        radialBar: {
-          offsetY: 0,
-          startAngle,
-          endAngle,
-          hollow: {
-            margin: 0,
-            size: hollowSize,
-            background: mode === 'dark' || !hollowBg || semi ? 'transparent' : '#fff',
-            position: 'front',
-            dropShadow: {
-              enabled: true,
-              top: 3,
-              left: 0,
-              blur: 3,
-              opacity: 0.15
-            }
-          },
-          track: {
-            background: dark ? trackBackgroudDark : trackBackgroud,
-            strokeWidth: '100%',
-            margin: 2, // margin is in pixels
-            dropShadow: {
-              enabled: false,
-              top: 2,
-              left: 0,
-              color: '#999',
-              opacity: 1,
-              blur: 2
-            }
-          },
+const option = computed<EChartsCoreOption>(() => {
+  const darkMode = isDarkMode.value
+  const textColor = echartTextColor(darkMode)
+  const paletteColors = resolvePalette(palette, colors)
+  const trackColor = darkMode ? trackBackgroudDark : trackBackgroud
+  const values = series ?? []
+  const count = values.length
 
-          dataLabels: {
-            show: showDataLabels,
-            name: {
-              offsetY: semi ? -30 : 0,
-              show: showDataLabelsName,
-              // color: dark ? '#fff' : '#000',
-              fontSize: dataLabelsSize,
-              fontWeight: 400
-            },
-            value: {
-              show: showDataLabelsValue,
-              offsetY: dataLabelsValueOfsetY > 0 ? dataLabelsValueOfsetY : semi ? -20 : 5,
-              formatter(val: any) {
-                return val + (valUnit || '')
-              },
-              // color: dark ? '#fff' : '#000',
-              fontSize: dataValueSize
-            }
-          }
+  const isDefaultAngles = startAngle === 0 && endAngle === 360
+  const effectiveStartAngle = semi && isDefaultAngles ? 180 : startAngle
+  const effectiveEndAngle = semi && isDefaultAngles ? 0 : endAngle
+
+  const ringWidth = count > 1 ? Math.max(8, Math.min(16, Math.floor(64 / count))) : 18
+  const ringGap = count > 1 ? 4 : 0
+  const sideLegend = showLegend && (legendPosition === 'left' || legendPosition === 'right')
+  const outerRadius = semi ? 95 : sideLegend ? 65 : 90
+  const center: [string, string] = [
+    legendPosition === 'left' && sideLegend ? '62%' : legendPosition === 'right' && sideLegend ? '38%' : '50%',
+    semi ? '72%' : '55%'
+  ]
+
+  const legend = toLegendConfig(legendPosition, showLegend)
+
+  const echartSeries = values.map((value, index) => {
+    const color = paletteColors?.[index % paletteColors.length]
+    const showCenterLabel = showDataLabels && count === 1
+    return {
+      name: categories[index] ?? `${index + 1}`,
+      type: 'gauge',
+      startAngle: effectiveStartAngle,
+      endAngle: effectiveEndAngle,
+      min: 0,
+      max: 100,
+      radius: `${outerRadius - index * (ringWidth + ringGap)}%`,
+      center,
+      progress: {
+        show: true,
+        width: ringWidth,
+        roundCap: stokeLineCap === 'round',
+        itemStyle: color ? { color } : undefined
+      },
+      axisLine: {
+        roundCap: stokeLineCap === 'round',
+        lineStyle: {
+          width: ringWidth,
+          color: [[1, trackColor ?? (darkMode ? '#383a42' : '#f0f0f0')]]
         }
       },
-      colors: colors && colors.length > 0 ? colors : undefined,
-      stroke: {
-        // lineCap: semi ? 'butt' : stokeLineCap,
-        lineCap: stokeLineCap
+      axisTick: { show: false },
+      splitLine: { show: false },
+      axisLabel: { show: false },
+      pointer: { show: false },
+      anchor: { show: false },
+      title: {
+        show: showCenterLabel && showDataLabelsName,
+        offsetCenter: [0, semi ? '-5%' : '-10%'],
+        color: textColor,
+        fontSize: Number.parseInt(dataLabelsSize, 10) || 14
       },
-      fill: {
-        type: fillType, // fill, gradient
-        gradient: {
-          shade: 'light',
-          type: 'horizontal',
-          shadeIntensity: 0.5,
-          inverseColors: true,
-          opacityFrom: 1,
-          opacityTo: 1,
-          stops: [0, 100]
-        }
+      detail: {
+        show: showCenterLabel && showDataLabelsValue,
+        valueAnimation: true,
+        offsetCenter: [0, dataLabelsValueOfsetY > 0 ? `${dataLabelsValueOfsetY}%` : semi ? '25%' : '15%'],
+        formatter: `{value}${valUnit ?? ''}`,
+        color: color ?? textColor,
+        fontSize: Number.parseInt(dataValueSize, 10) || 18,
+        fontWeight: 'bold'
       },
-      labels: categories,
-      legend: {
-        show: showLegend,
-        floating: legendFloating,
-        fontSize: '16px',
-        offsetX: legendOffsetX,
-        offsetY: legendOffsetY,
-        position: legendPosition, // whether to position legends in 1 of 4
-        // direction - top, bottom, left, right
-        horizontalAlign: 'center', // when position top/bottom, you can
-        // specify whether to align legends
-        // left, right or center
-        verticalAlign: 'middle',
-        labels: {
-          colors: '#8E8E93',
-          useSeriesColors: legendUseSeriesColors
-        }
-      },
-      grid: {
-        padding: gridPadding
-      },
-      tooltip: {
-        y: {
-          formatter(val: any) {
-            return val
-          }
-        }
-      },
-      responsive: [
-        // {
-        //   breakpoint: 480,
-        //   options: {
-        //     chart: {
-        //       width: 200,
-        //     },
-        //     legend: {
-        //       position: 'bottom',
-        //     },
-        //   },
-        // },
-      ]
+      data: [{ value, name: categories[index] ?? `${index + 1}` }]
     }
-    // chart.value = new ApexCharts(
-    //   document.querySelector('#' + chartId),
-    //   options
-    // );
-    // chart.value.render();
+  })
+
+  return {
+    color: paletteColors,
+    backgroundColor: 'transparent',
+    animationDuration: 800,
+    tooltip: {
+      trigger: 'item',
+      backgroundColor: echartTooltipBg(darkMode),
+      borderColor: echartSplitColor(darkMode),
+      textStyle: { color: textColor },
+      formatter: (params: unknown): string => {
+        const entry = params as { name?: string, value?: unknown }
+        return `${entry.name ?? ''}: ${entry.value ?? ''}${valUnit ?? ''}`
+      }
+    },
+    legend: {
+      ...legend,
+      data: categories.slice(0, count),
+      textStyle: { color: textColor }
+    },
+    series: echartSeries
   }
-}
+})
+
+const chartStyle = computed(() => ({
+  width: normalizeCssSize(width, '100%'),
+  height: normalizeCssSize(height, semi ? '280px' : '350px')
+}))
 </script>
 <template>
-    <apexchart
-      v-if="options"
-      v-bind="$attrs"
-      ref="chartRadialRef"
-      :height="height"
-      type="radialBar"
-      :options="options"
-      :series="chartSeries"
-    />
+  <VChart
+    :id="chartId"
+    :option="option"
+    :style="chartStyle"
+    autoresize
+  />
 </template>

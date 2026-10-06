@@ -1,5 +1,8 @@
 <script setup lang="ts">
-import type { ChartMode, ChartThemePalete, GridPadding, IChartSeries, Strokestyle } from '~/types/chart';
+import VChart from 'vue-echarts'
+import type { EChartsCoreOption } from 'echarts/core'
+import type { ChartMode, ChartThemePalete, GridPadding, IChartSeries, Strokestyle } from '~/types/chart'
+import { echartTextColor, echartTooltipBg, normalizeCssSize, resolveDarkMode, resolvePalette } from './echartTheme'
 
 const {
   chartId = 'chart-radar-id',
@@ -40,147 +43,103 @@ const {
   dark?: boolean
   type?: 'area' | 'line' | 'bar'
 }>()
-const chartSeries = ref(series)
-const options = ref<any>()
+
 const { isDark } = useTheme()
-const watchTimeout = ref<any>()
-const chartSparkLinesRef = useTemplateRef<any>('chartSparkLinesRef')
+const isDarkMode = computed(() => resolveDarkMode(dark, mode, isDark.value))
 
-// watchEffect(() => {
-//   if (series && series.length > 0) {
-//     chartSeries.value = series;
-//   }
-// });
-onUnmounted(() => {
-  options.value = undefined
-  chartSeries.value = []
-  if (watchTimeout.value) {
-    clearTimeout(watchTimeout.value)
-    watchTimeout.value = undefined
-  }
-})
+const option = computed<EChartsCoreOption>(() => {
+  const darkMode = isDarkMode.value
+  const textColor = echartTextColor(darkMode)
+  const paletteColors = resolvePalette(palette, colors)
+  const pointCount = Math.max(categories.length, ...(series ?? []).map((item) => item.data.length))
+  const pointCategories = categories.length === pointCount
+    ? categories
+    : Array.from({ length: pointCount }, (_, index) => `${index + 1}`)
 
-onMounted(() => {
-  chartSetup()
-})
-
-const updateTheme = (darkMode: boolean) => {
-  if (chartSparkLinesRef.value) {
-    chartSparkLinesRef.value.updateOptions({
-      theme: {
-        mode: darkMode ? 'dark' : 'light'
+  const echartSeries = (series ?? []).map((s, index) => {
+    const color = paletteColors?.[index % paletteColors.length]
+    if (type === 'bar') {
+      return {
+        name: s.name,
+        type: 'bar',
+        data: s.data,
+        barMaxWidth: 12,
+        itemStyle: color ? { color } : undefined
       }
-    })
-  }
-}
-watch(isDark, state => {
-  watchTimeout.value = setTimeout(() => {
-    updateTheme(state)
-  }, 50)
-})
-const getCateByIndex = (index: number) => (categories?.length > 0 ? categories[index] : '-')
-const chartSetup = () => {
-  if (series && series.length > 0) {
-    options.value = {
-      // series: series.value,
-      // series: series,
-      chart: {
-        background: 'transparent',
-        id: chartId,
-        width,
-        height,
-        type,
-        toolbar: {
-          show: false
-        },
-        animations: {
-          enabled: true,
-          easing: 'easein', // linear, easeout, easein, easeinout, swing, bounce, elastic
-          speed: 800
-        },
-        sparkline: {
-          enabled: true
-        }
-      },
-      theme: {
-        mode: dark ? 'dark' : mode,
-        palette
-      },
-      plotOptions: {},
-      colors: colors && colors.length > 0 ? colors : undefined,
-      stroke: {
-        width: type == 'bar' ? 0 : strokeWidth,
-        curve: strokestyle
-      },
-      fill: {
-        // opacity: type == "bar" ? 1 : 0.3,
-        opacity
-      },
-      xaxis: {
-        crosshairs: {
-          width: 1
-        }
-      },
-      yaxis: {
-        min: 0
-      },
-      grid: {
-        padding: gridPadding
-      },
-      tooltip: {
-        enabled: tooltipEnable,
-        fixed: {
-          enabled: false
-        },
-        x: {
-          show: false,
-          formatter(value: any, options: any) {
-            return getCateByIndex(options.dataPointIndex) || '-'
-          }
-        },
-        // y: {
-        //   title: {
-        //     formatter(seriesName: any) {
-        //       return seriesName || '-';
-        //     },
-        //   },
-        // },
-        marker: {
-          show: false
-        }
-      },
-      responsive: [
-        // {
-        //   breakpoint: 480,
-        //   options: {
-        //     chart: {
-        //       width: 200,
-        //     },
-        //     legend: {
-        //       position: 'bottom',
-        //     },
-        //   },
-        // },
-      ]
     }
-    // chart.value = new ApexCharts(
-    //   document.querySelector('#' + chartId),
-    //   options
-    // );
-    // chart.value.render();
+    return {
+      name: s.name,
+      type: 'line',
+      data: s.data,
+      smooth: strokestyle === 'smooth',
+      step: strokestyle === 'stepline' ? 'middle' : false,
+      showSymbol: false,
+      symbolSize: 4,
+      lineStyle: {
+        width: strokeWidth,
+        ...(color ? { color } : {})
+      },
+      itemStyle: color ? { color } : undefined,
+      areaStyle: type === 'area' ? { opacity } : undefined
+    }
+  })
+
+  return {
+    color: paletteColors,
+    backgroundColor: 'transparent',
+    animationDuration: 800,
+    tooltip: {
+      show: tooltipEnable,
+      trigger: 'axis',
+      backgroundColor: echartTooltipBg(darkMode),
+      textStyle: { color: textColor },
+      axisPointer: { lineStyle: { width: 1 } },
+      formatter: (params: unknown): string => {
+        const list = Array.isArray(params) ? params : [params]
+        const point = list[0] as { dataIndex?: number } | undefined
+        const dataIndex = typeof point?.dataIndex === 'number' ? point.dataIndex : 0
+        const category = pointCategories[dataIndex] ?? '-'
+        const values = list
+          .map((item) => {
+            const entry = item as { seriesName?: string, value?: unknown }
+            const value = Array.isArray(entry.value) ? entry.value.join(', ') : `${entry.value ?? ''}`
+            return entry.seriesName ? `${entry.seriesName}: ${value}` : value
+          })
+          .join('<br/>')
+        return `${category}<br/>${values}`
+      }
+    },
+    grid: {
+      left: gridPadding?.left ?? 0,
+      right: gridPadding?.right ?? 0,
+      top: gridPadding?.top ?? 5,
+      bottom: gridPadding?.bottom ?? 5
+    },
+    xAxis: {
+      type: 'category',
+      show: false,
+      boundaryGap: type === 'bar',
+      data: pointCategories
+    },
+    yAxis: {
+      type: 'value',
+      show: false,
+      min: 0
+    },
+    series: echartSeries
   }
-}
+})
+
+const chartStyle = computed(() => ({
+  width: normalizeCssSize(width, '100%'),
+  height: normalizeCssSize(height, '160px')
+}))
 </script>
 <template>
-  <ClientOnly>
-    <apexchart
-      v-if="options"
-      v-bind="$attrs"
-      ref="chartSparkLinesRef"
-      :height="height"
-      :type="type"
-      :options="options"
-      :series="chartSeries"
-    />
-  </ClientOnly>
+  <VChart
+    :id="chartId"
+    :option="option"
+    :style="chartStyle"
+    autoresize
+  />
 </template>

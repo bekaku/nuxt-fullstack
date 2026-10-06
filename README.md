@@ -25,7 +25,7 @@ Fullstack starter built on **Nuxt 4 (SSR)** with JWT access tokens delivered via
 | File Storage | Local filesystem (`/data/cdn/`), chunked upload |
 | WebSocket | Nitro built-in WebSocket (crossws) |
 | i18n | @nuxtjs/i18n (Thai `th` default, English `en`) |
-| Charts | ApexCharts 5 |
+| Charts | Apache ECharts 6 (vue-echarts) |
 | Deployment | Docker + PM2 cluster mode |
 
 ## Features
@@ -104,7 +104,7 @@ Fullstack starter built on **Nuxt 4 (SSR)** with JWT access tokens delivered via
 
 - **Hero cards** — Summary statistics with avatars/icons
 - **Statistic cards** — Numeric KPIs with trend descriptions
-- **Sparkline charts** — Area charts per metric (ApexCharts)
+- **Sparkline charts** — Area charts per metric (ECharts)
 - **Bar chart overview** — Multi-series bar chart with date range filter (14-day default)
 - **Recent sales list** — User avatars + amounts
 - **Keyboard shortcuts** — `g-h` (home), `g-i` (inbox), `g-c` (customers), `g-s` (settings), `n` (notifications)
@@ -136,7 +136,7 @@ Fullstack starter built on **Nuxt 4 (SSR)** with JWT access tokens delivered via
 
 ### Example Pages (22 demos)
 
-Blank, Chats, Charts (ApexCharts), Content text, Customers, Drag & Drop, Download files, Forms, Image cropper, Inbox, Infinite scroll (2 variants), File viewer, Modal, Markdown editor, RBAC demo, Social feed, Transitions, Upload files, WebSocket
+Blank, Chats, Charts (ECharts), Content text, Customers, Drag & Drop, Download files, Forms, Image cropper, Inbox, Infinite scroll (2 variants), File viewer, Modal, Markdown editor, RBAC demo, Social feed, Transitions, Upload files, WebSocket
 
 ### Settings Pages
 
