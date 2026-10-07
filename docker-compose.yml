@@ -1,15 +1,3 @@
-# PRODUCTION ONLY. Admin console behind the host's nginx (admin.<domain>). Dev keeps using
-# docker-compose.yml, unchanged.
-#
-#   cp .env.example .env                                  # then set production values
-#   docker compose -f docker-compose.prod.yml build
-#   docker compose -f docker-compose.prod.yml up -d
-#
-# Nuxt reads NUXT_* at RUNTIME (`nuxt build` does not bake .env into .output), so .env is passed
-# to the container here. All URLs (NUXT_PUBLIC_API_BASE, _CDN_BASE, ...) are the admin domain:
-# nginx sends /api/ and /cdn/ to the backend on that same domain, because the backend's login
-# cookies have no Domain attribute and SSR forwards the browser's cookies.
-# Runbook (Thai): backend/docs/PRODUCTION_DOCKER_DEPLOYMENT.md §7.3
 name: admin-web
 
 services:
@@ -22,8 +10,6 @@ services:
     restart: unless-stopped
     env_file:
       - .env
-    # SSR calls https://<admin host>/api/... ; resolve that host to this machine's nginx so the
-    # request never has to leave and re-enter through the public IP.
     extra_hosts:
       - "${WEB_PUBLIC_HOST:?set WEB_PUBLIC_HOST in .env}:host-gateway"
     # nginx on this host only.
