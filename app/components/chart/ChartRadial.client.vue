@@ -84,17 +84,22 @@ const option = computed<EChartsCoreOption>(() => {
   const values = series ?? []
   const count = values.length
 
+  // Props use ApexCharts angles (clockwise, 0 = 12 o'clock); ECharts gauge angles are counter-clockwise from 3 o'clock
   const isDefaultAngles = startAngle === 0 && endAngle === 360
-  const effectiveStartAngle = semi && isDefaultAngles ? 180 : startAngle
-  const effectiveEndAngle = semi && isDefaultAngles ? 0 : endAngle
+  const apexStart = semi && isDefaultAngles ? -90 : startAngle
+  const apexEnd = semi && isDefaultAngles ? 90 : Math.min(endAngle, apexStart + 360)
+  const effectiveStartAngle = 90 - apexStart
+  const effectiveEndAngle = 90 - apexEnd
 
   const ringWidth = count > 1 ? Math.max(8, Math.min(16, Math.floor(64 / count))) : 18
   const ringGap = count > 1 ? 4 : 0
   const sideLegend = showLegend && (legendPosition === 'left' || legendPosition === 'right')
-  const outerRadius = semi ? 95 : sideLegend ? 65 : 90
+  const verticalLegend = showLegend && !sideLegend
+  const outerRadius = semi ? 95 : sideLegend ? 65 : verticalLegend ? 75 : 90
+  const centerY = semi ? '72%' : !verticalLegend ? '50%' : legendPosition === 'top' ? '57%' : '46%'
   const center: [string, string] = [
     legendPosition === 'left' && sideLegend ? '62%' : legendPosition === 'right' && sideLegend ? '38%' : '50%',
-    semi ? '72%' : '55%'
+    centerY
   ]
 
   const legend = toLegendConfig(legendPosition, showLegend)

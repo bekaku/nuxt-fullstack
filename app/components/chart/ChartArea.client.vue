@@ -198,8 +198,9 @@ const option = computed<EChartsCoreOption>(() => {
       textStyle: { color: textColor }
     },
     grid: {
-      containLabel: true,
-      borderColor: splitColor
+      outerBoundsMode: 'same',
+      outerBoundsContain: 'axisLabel',
+      ...(zoom ? { bottom: 90 } : {})
     },
     toolbox: showToolbar
       ? {
@@ -212,7 +213,9 @@ const option = computed<EChartsCoreOption>(() => {
           }
         }
       : undefined,
-    dataZoom: zoom ? [{ type: 'inside' }, { type: 'slider' }] : undefined,
+    dataZoom: zoom
+      ? [{ type: 'inside' }, { type: 'slider', bottom: legend.show && legendPosition === 'bottom' ? 32 : 8 }]
+      : undefined,
     xAxis: horizontal ? valueAxis : categoryAxis,
     yAxis: horizontal ? categoryAxis : valueAxis,
     series: echartSeries
