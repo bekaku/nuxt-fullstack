@@ -71,5 +71,6 @@ Contract that must line up across steps 5–10:
 - [ ] New permissions → `RESOURCES` updated; say whether `pnpm db:seed` (idempotent) was run and against which database.
 - [ ] Both locales updated.
 - [ ] `pnpm typecheck` and `pnpm build` pass. Do **not** run `pnpm lint`.
+- [ ] Commit only when the user asks, on the branch currently checked out — see `git-workflow`.
 - [ ] If services are available: list, search, sort, paging, create, edit, copy, delete, and a
       user without permission. Report any flow not exercised.

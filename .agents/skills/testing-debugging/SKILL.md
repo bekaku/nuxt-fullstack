@@ -62,3 +62,5 @@ Report every check honestly: command, pass/fail, and anything you could not run 
 4. Fix the cause in the owning layer with the smallest change.
 5. Re-run the checks from section 1 for what you touched.
 6. Review `git status --short` and `git diff`; leave unrelated user changes untouched.
+7. If the user asks for a commit or a push, follow `git-workflow` — commit and
+   push to the branch that is currently checked out.

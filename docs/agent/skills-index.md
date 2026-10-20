@@ -17,6 +17,7 @@ copy-ready template → done checklist**. Verification is always `pnpm typecheck
 | `fullstack-feature` | Naming table + ordered 12-step checklist for a new module; cross-layer changes | ≥2 layers (schema + API + page), new CRUD module |
 | `ai-rag` | Ingestion and chat-stream flows, provider config, failure domains | `server/services/ai/`, `server/utils/ai/`, `server/utils/tools/`, `server/api/aiChat/`, `server/api/aiDocumentMeta/`, `useAiChat.ts` |
 | `testing-debugging` | Which check to run, symptom → layer table, manual flows | Verifying code, debugging, reviewing a diff |
+| `git-workflow` | Which branch to work on, commit hygiene, push target = the checked-out branch | Committing or pushing a change |
 
 Related skills: `fullstack-feature` points to the layer skills for templates.
 `ai-rag` pairs with `nitro-backend` for its endpoints, and with database/frontend
@@ -35,3 +36,4 @@ skill for code changes.
 - "Slow user search" → `nitro-backend` + `drizzle-database` + `testing-debugging`.
 - "Embedding batches fail on large documents" → `ai-rag` + `testing-debugging`.
 - "Change chat stream and its UI" → `ai-rag` + `nitro-backend` + `nuxt-frontend`.
+- "Commit and push my change" → `git-workflow` (+ `testing-debugging` for the checks).

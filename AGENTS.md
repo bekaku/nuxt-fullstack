@@ -171,13 +171,19 @@ No Pinia. No test framework.
 ### Git rules
 
 - Commit only when the user asks.
-- Commit directly on the **current branch**, including `main`. Do NOT create a
-  new branch (or worktree) unless the user explicitly asks for one.
+- Work on the branch the project is already on. Do NOT create a new branch (or
+  worktree) unless the user explicitly asks for one.
+- Commit and push to the **branch that is currently checked out, and to no
+  other**. Check `git branch --show-current` before committing: on `main` push
+  `origin main`; on any other branch `xxx`, commit and push to `origin xxx`.
+  Never push one branch from another — while on `xxx` do not commit or push to
+  `main`, and while on `main` do not push a feature branch.
 - Split unrelated work into separate, focused commits (e.g. docs / code / deps);
   write a conventional message (`fix:`, `feat:`, `docs:`, `chore(deps):`).
 - Before committing, check `git status` and the diff for secrets; never commit
   `.env`, `.output/`, or `data/`.
 - Do not push, open a PR, rewrite history, or force-push unless the user asks.
+- Details and exact commands: `.agents/skills/git-workflow/SKILL.md`.
 
 ## 14. Skill Discovery and Selection
 

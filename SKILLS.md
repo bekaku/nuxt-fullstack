@@ -25,6 +25,9 @@ Canonical skills: `.agents/skills/` (Agent Skills spec). Load only what the task
 - Verification / debugging (no test framework):
   - `.agents/skills/testing-debugging/SKILL.md`
 
+- Git (branch choice, commit, push target):
+  - `.agents/skills/git-workflow/SKILL.md`
+
 ## References
 
 - `AGENTS.md` (canonical rules)
