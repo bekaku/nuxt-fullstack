@@ -1,0 +1,15 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "frontend",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "cd frontend && ./node_modules/.bin/nuxt dev --port 3003 --dotenv .env"
+      ],
+      "port": 3003,
+      "url": "http://localhost:3003"
+    }
+  ]
+}
