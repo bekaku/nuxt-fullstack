@@ -28,7 +28,7 @@ export const useBase = () => {
       return undefined;
     }
     const route = useRoute();
-    return route.params ? (route.params[field] as T) : undefined;
+    return route.params ? ((route.params as Record<string, unknown>)[field] as T) : undefined;
   };
   const getParamNumber = (att: string): number => {
     const val = getParam(att);

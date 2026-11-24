@@ -16,6 +16,9 @@ const dateRange = shallowRef({
 });
 
 const { isDesktop, isMobileOrTablet } = useDevice();
+// Ternaries live here: vue-tsc 3.3.14 mistypes device booleans in template conditions.
+const calendarMonths = isDesktop ? 2 : 1;
+const chartLabelRotate = isMobileOrTablet ? -45 : 0;
 const { isDark } = useTheme();
 const tabsItems = [
   {
@@ -110,7 +113,7 @@ const { data: dashBaordRecentSalseItems } = await useFetch<
             <UCalendar
               v-model="dateRange"
               class="p-2"
-              :number-of-months="isDesktop ? 2 : 1"
+              :number-of-months="calendarMonths"
               range
             />
           </template>
@@ -245,7 +248,7 @@ const { data: dashBaordRecentSalseItems } = await useFetch<
               :series="dashboardChartData.series.slice(3, 6)"
               :categories="dashboardChartData.categories"
               strokestyle="smooth"
-              :label-rotate="!isMobileOrTablet ? 0 : -45"
+              :label-rotate="chartLabelRotate"
               :xaxis-tickamount="4"
               :dark="isDark"
             />

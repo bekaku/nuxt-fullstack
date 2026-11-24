@@ -14,7 +14,8 @@ const DEFAULT_MAX_FILE_SIZE_BYTES = 52428800
 export default defineEventHandler(async (event): Promise<ResponseEntity<FileManager | void>> => {
   const auth = getAuthUser(event)
 
-  const formData = await readMultipartFormData(event)
+  // formData() throws on a non-multipart body; keep the 400 below.
+  const formData = await event.req.formData().catch(() => undefined)
   if (!formData) {
     throw createError({ statusCode: 400, message: 'Invalid form data' })
   }
@@ -24,7 +25,7 @@ export default defineEventHandler(async (event): Promise<ResponseEntity<FileMana
   const cdnDirectory = config.cdnDirectory
   const cdnBase = config.public.cdnBase
 
-  let fileChunk: Buffer | undefined
+  let fileChunk: Uint8Array | undefined
   let uniqueId = ''
   let originalFilename = ''
   let chunkIndex = 0
@@ -35,17 +36,20 @@ export default defineEventHandler(async (event): Promise<ResponseEntity<FileMana
   let thumbnailFileId: bigint | null = null
   let hidden: boolean = false
 
-  for (const field of formData) {
-    if (field.name === 'chunk') fileChunk = field.data
-    if (field.name === 'filename') originalFilename = field.data.toString()
-    if (field.name === 'uniqueId') uniqueId = field.data.toString()
-    if (field.name === 'title') title = field.data.toString()
-    if (field.name === 'description') description = field.data.toString()
-    if (field.name === 'thumbnailFileId') thumbnailFileId = BigInt(field.data.toString())
-    if (field.name === 'chunkIndex') chunkIndex = parseInt(field.data.toString())
-    if (field.name === 'totalChunks') totalChunks = parseInt(field.data.toString())
-    if (field.name === 'duration') duration = parseInt(field.data.toString())
-    if (field.name === 'hidden') hidden = field.data.toString() == 'true'
+  for (const [name, value] of formData) {
+    if (typeof value !== 'string') {
+      if (name === 'chunk') fileChunk = new Uint8Array(await value.arrayBuffer())
+      continue
+    }
+    if (name === 'filename') originalFilename = value
+    if (name === 'uniqueId') uniqueId = value
+    if (name === 'title') title = value
+    if (name === 'description') description = value
+    if (name === 'thumbnailFileId') thumbnailFileId = BigInt(value)
+    if (name === 'chunkIndex') chunkIndex = parseInt(value)
+    if (name === 'totalChunks') totalChunks = parseInt(value)
+    if (name === 'duration') duration = parseInt(value)
+    if (name === 'hidden') hidden = value == 'true'
   }
 
   if (!fileChunk || !originalFilename || !uniqueId) {

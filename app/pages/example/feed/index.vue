@@ -254,7 +254,7 @@ const onLoadData = async (): Promise<void> => {
     const response = await api<FeedItem[]>(`/${currentFeed.value}`, {
       method: "GET",
       baseURL: "https://api.hackerwebapp.com",
-      params: {
+      query: {
         page: page.value,
       },
       credentials: "omit",

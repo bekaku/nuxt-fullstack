@@ -203,7 +203,7 @@ export default defineEventHandler(async (event) => {
   });
 
   const abortController = new AbortController()
-  event.node.req.on('close', () => abortController.abort())
+  event.req.signal.addEventListener('abort', () => abortController.abort())
 
   const stream = createUIMessageStream({
     execute: async ({ writer }) => {

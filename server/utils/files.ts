@@ -1,4 +1,4 @@
-import type { H3Event } from "h3";
+import type { RequestEvent } from 'nuxt/server'
 import type { FileManager } from "~/types/models";
 import { schema, useDb } from "../database/client"
 import { aliasedTable, eq, getTableColumns, sql } from 'drizzle-orm'
@@ -146,13 +146,13 @@ export type FileAccessAction = 'list' | 'view' | 'delete'
 * File access policy: users always manage the files they own; the
 * `file_manager_<action>` permission grants the same action on everyone's files.
 */
-export const canAccessAllFiles = async (event: H3Event, action: FileAccessAction): Promise<boolean> => {
+export const canAccessAllFiles = async (event: RequestEvent, action: FileAccessAction): Promise<boolean> => {
   const auth = getAuthUser(event)
   return isHasPermission(BigInt(auth.sub), `file_manager_${action}`)
 }
 
 /** Load a file's owner and throw 404/403 unless the current user may perform `action` on it. */
-export const assertFileAccess = async (event: H3Event, fileId: bigint, action: FileAccessAction) => {
+export const assertFileAccess = async (event: RequestEvent, fileId: bigint, action: FileAccessAction) => {
   const auth = getAuthUser(event)
   const [file] = await useDb()
     .select({ id: schema.fileManager.id, owner: schema.fileManager.owner })

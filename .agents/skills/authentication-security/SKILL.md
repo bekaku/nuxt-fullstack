@@ -83,7 +83,7 @@ only hide UI. They are never a substitute for the server guard.
 
 Still open (by design, not bugs): `server/api/mock/**` returns static demo data without a guard.
 Login rate limiting uses per-process memory storage mounted in `nuxt.config.ts`
-(`nitro.storage['login-rate-limit']`); `ecosystem.config.cjs` runs one instance — switch that mount to
+(`nitro.kv['login-rate-limit']`); `ecosystem.config.cjs` runs one instance — switch that mount to
 a shared driver (Redis) before scaling out.
 
 ## 6. Done checklist

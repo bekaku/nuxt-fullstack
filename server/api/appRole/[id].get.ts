@@ -1,4 +1,4 @@
-import { getRouterParam, createError } from 'h3'
+import { getRouterParam, createError } from 'nuxt/server'
 import { eq } from 'drizzle-orm'
 import { schema, useDb } from '~~/server/database/client'
 import type { ResponseEntity } from '~/types/common'

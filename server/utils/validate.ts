@@ -1,4 +1,4 @@
-import type { H3Event } from 'h3'
+import type { RequestEvent } from 'nuxt/server'
 
 const NUMERIC_ID = /^\d{1,20}$/
 
@@ -17,6 +17,6 @@ export const assertNumericId = (value: unknown, name = 'ID'): string => {
   return value
 }
 
-export const validateID = (event: H3Event): string => {
+export const validateID = (event: RequestEvent): string => {
   return assertNumericId(getRouterParam(event, 'id'))
 }

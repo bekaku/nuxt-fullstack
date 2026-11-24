@@ -10,9 +10,9 @@ No Pinia. No test framework.
 
 | Layer | Technology (verified in `package.json`, `nuxt.config.ts`) |
 |---|---|
-| Framework | Nuxt 4.5 SSR (`app/`, `compatibilityVersion: 5`) |
+| Framework | Nuxt 4.7 SSR (`app/`, `compatibilityVersion: 5`) |
 | UI | Nuxt UI 4 + Tailwind CSS 4 |
-| API | Nitro server routes (`server/api/`) |
+| API | Nitro 3 server routes (`server/api/`), h3 v2 |
 | ORM / DB | Drizzle ORM 0.45 + PostgreSQL 18 |
 | Validation | Zod 4 (`readValidatedBody(event, schema.parse)`) |
 | Auth | `jsonwebtoken` 9 + `bcryptjs` 3, HTTP-only cookies |
@@ -95,6 +95,8 @@ No Pinia. No test framework.
   `requirePermission` (single code), `requireAnyPermission` (upsert POST; new
   handlers then check the exact `_add`/`_edit` code after parsing the body),
   or `getAuthUser` (user-scoped only, plus an owner filter in every query).
+- Nitro 3 / h3 v2: type events as `RequestEvent` from `nuxt/server`; read `event.req`
+  (web `Request`), `event.url`, `event.res.headers`. Never `event.node` or `from 'h3'`.
 - Validate untrusted bodies with `readValidatedBody(event, bodySchema.parse)`
   (Zod 4); `:id` params via `validateID(event)`; filters via `paginate()`.
 - Response shape is `ResponseEntity<T>` (`{ status: 200, data? }`); lists wrap in

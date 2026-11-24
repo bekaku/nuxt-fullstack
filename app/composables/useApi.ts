@@ -1,5 +1,5 @@
 import { parse, parseSetCookie } from 'cookie-es';
-import type { FetchResponse } from 'ofetch';
+import type { FetchOptions, FetchRequest, FetchResponse } from 'ofetch';
 import type { ResponseEntity } from '~/types/common';
 import type { AppUser } from '~/types/models';
 
@@ -140,8 +140,8 @@ export const useApi = () => {
 
   // A central function for handling both normal and raw requests.
   const executeFetch = async <T = any, R extends boolean = false>(
-    request: Parameters<typeof $fetch>[0],
-    options: Parameters<typeof $fetch>[1] | undefined,
+    request: FetchRequest,
+    options: FetchOptions | undefined,
     isRaw: R
   ): Promise<R extends true ? FetchResponse<T> : T> => {
 
@@ -185,7 +185,8 @@ export const useApi = () => {
                   : []);
 
               if (cookies.length) {
-                event.node.res.setHeader('set-cookie', cookies);
+                event.res.headers.delete('set-cookie');
+                for (const cookie of cookies) event.res.headers.append('set-cookie', cookie);
 
                 for (const cookie of cookies) {
                   const parsed = parseSetCookie(cookie);
@@ -245,16 +246,16 @@ export const useApi = () => {
 
   // Calling the normal pattern.
   const customApiFetch = async <T = any>(
-    request: Parameters<typeof $fetch>[0],
-    options?: Parameters<typeof $fetch>[1]
+    request: FetchRequest,
+    options?: FetchOptions
   ) => {
     return executeFetch<T, false>(request, options, false);
   }
 
   // Using the raw format to extract the full response data.
   customApiFetch.raw = async <T = any>(
-    request: Parameters<typeof $fetch>[0],
-    options?: Parameters<typeof $fetch>[1]
+    request: FetchRequest,
+    options?: FetchOptions
   ): Promise<FetchResponse<T>> => {
     return executeFetch<T, true>(request, options, true);
   }

@@ -1,7 +1,7 @@
 import fs from 'node:fs'
 import mammoth from 'mammoth'
 import * as XLSX from 'xlsx'
-import officeParser from 'officeparser'
+import { parseOffice } from 'officeparser'
 import { PDFParse } from 'pdf-parse'
 
 export async function parseDocument(
@@ -64,7 +64,7 @@ export async function parseDocument(
     mimeType.includes('presentationml') ||
     mimeType === 'application/vnd.ms-powerpoint'
   ) {
-    extractedText = await (officeParser as any).parseOfficeAsync(fileBuffer)
+    extractedText = (await (await parseOffice(fileBuffer)).to('text')).value
   }
 
   else if (

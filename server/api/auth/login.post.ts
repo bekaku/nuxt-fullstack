@@ -42,7 +42,7 @@ export default defineEventHandler(async (event): Promise<ResponseEntity<AppUser>
   const rateLimitKey = getLoginRateLimitKey(body.emailOrUsername, ip)
   const blockedForSeconds = await isLoginBlocked(rateLimitKey)
   if (blockedForSeconds > 0) {
-    setResponseHeader(event, 'retry-after', blockedForSeconds)
+    event.res.headers.set('retry-after', String(blockedForSeconds))
     throw createError({ statusCode: 429, statusMessage: 'Too many failed login attempts. Please try again later.' })
   }
 
@@ -64,7 +64,7 @@ export default defineEventHandler(async (event): Promise<ResponseEntity<AppUser>
   const { roles, permissions } = await loadUserPermissions(user.id)
 
   // Record device/IP addresses to user_agent and login_log.
-  const uaString = getHeader(event, 'user-agent') ?? 'unknown'
+  const uaString = getRequestHeader(event, 'user-agent') ?? 'unknown'
 
   let [userAgentRow] = await db
     .select()
@@ -84,7 +84,7 @@ export default defineEventHandler(async (event): Promise<ResponseEntity<AppUser>
     .values({
       id: nextId(),
       createdAt: new Date(),
-      hostName: getHeader(event, 'host') ?? null,
+      hostName: getRequestHeader(event, 'host') ?? null,
       ip,
       loginFrom: 0, // 0 = web
       appUser: user.id,

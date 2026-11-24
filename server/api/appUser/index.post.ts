@@ -7,6 +7,7 @@ import type { ResponseEntity } from '~/types/common'
 import type { AppUser } from '~/types/models'
 import { deleteFileManager } from '~~/server/utils/files'
 import { findUserById } from '~~/server/utils/user'
+import { setResponseStatus } from 'nuxt/server'
 
 const bodySchema = z.object({
   id: z.string().regex(/^\d+$/).nullish(),

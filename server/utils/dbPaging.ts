@@ -1,4 +1,4 @@
-import { getQuery, type H3Event } from 'h3'
+import { getQuery, type RequestEvent } from 'nuxt/server'
 import { asc, desc, ilike, eq, ne, gt, gte, lt, lte, and, type AnyColumn, type SQL, or, inArray } from 'drizzle-orm'
 import type { SearchOperation } from '~/types/common';
 
@@ -17,7 +17,7 @@ interface PaginateConfig<T> {
 }
 
 export async function paginate<T>(
-  event: H3Event,
+  event: RequestEvent,
   config: PaginateConfig<T>
 ) {
   const query = getQuery(event)

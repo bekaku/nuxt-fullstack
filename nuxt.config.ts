@@ -305,12 +305,16 @@ export default defineNuxtConfig({
     },
   },
   nitro: {
-    esbuild: {
-      options: { target: 'node22' },
+    oxc: {
+      transform: { target: 'node22' },
+    },
+    // Nitro 3 bundles node_modules; these load files next to their own code (jsdom, OCR and PDF workers), so keep them external.
+    traceDeps: ['isomorphic-dompurify', 'officeparser', 'pdf-parse'],
+    features: {
+      websocket: true
     },
     experimental: {
       openAPI: true,
-      websocket: true,
       tasks: true
     },
     scheduledTasks: {
@@ -319,7 +323,7 @@ export default defineNuxtConfig({
       // Change it to run every 2 minutes for testing.
       // '*/2 * * * *': ['cleanup-temp']
     },
-    storage: {
+    kv: {
       // Login rate-limit counters (server/utils/loginRateLimit.ts).
       // 'memory' is per process: correct while ecosystem.config.cjs runs ONE instance.
       // Before scaling to more instances, switch to a shared driver, e.g.

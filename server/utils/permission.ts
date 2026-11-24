@@ -1,6 +1,6 @@
 import { eq, and } from 'drizzle-orm'
 import { useDb, schema } from '#server/database/client'
-import type { H3Event } from 'h3'
+import type { RequestEvent } from 'nuxt/server'
 import type { AccessTokenPayload } from '~/types/common'
 /**
 * Retrieve all user permissions from app_user -> app_user_role -> role_permission -> permission
@@ -34,7 +34,7 @@ export async function loadUserPermissions(userId: bigint) {
 }
 
 /** Read the current user's information pasted into the event.context file at server/middleware/00.auth.ts */
-export function getAuthUser(event: H3Event): AccessTokenPayload {
+export function getAuthUser(event: RequestEvent): AccessTokenPayload {
   const user = event.context.user as AccessTokenPayload | undefined
   if (!user) {
     throw createError({ statusCode: 401, statusMessage: 'Unauthorized' })
@@ -71,7 +71,7 @@ export async function isHasPermission(userId: bigint, code: string): Promise<boo
 * Throws a 403 if the current user does not have the required permission code.
 * Used in all API routes that require permission restrictions, e.g., requirePermission(event, 'app_user_add')
 */
-export async function requirePermission(event: H3Event, code: string): Promise<AccessTokenPayload> {
+export async function requirePermission(event: RequestEvent, code: string): Promise<AccessTokenPayload> {
   const user = getAuthUser(event)
   const hasPermission = await isHasPermission(user.sub as any, code)
   if (!hasPermission) {
@@ -86,7 +86,7 @@ export async function requirePermission(event: H3Event, code: string): Promise<A
 
 
 /** Similar to requirePermission, but it works if you have one of the permissions on the list */
-export async function requireAnyPermission(event: H3Event, codes: string[]): Promise<AccessTokenPayload> {
+export async function requireAnyPermission(event: RequestEvent, codes: string[]): Promise<AccessTokenPayload> {
   const user = getAuthUser(event)
   let ok = false;
   for (const code of codes) {
@@ -105,7 +105,7 @@ export async function requireAnyPermission(event: H3Event, codes: string[]): Pro
   }
   return user
 }
-export async function requireAllPermission(event: H3Event, codes: string[]): Promise<AccessTokenPayload> {
+export async function requireAllPermission(event: RequestEvent, codes: string[]): Promise<AccessTokenPayload> {
   const user = getAuthUser(event)
   let ok = true;
   for (const code of codes) {

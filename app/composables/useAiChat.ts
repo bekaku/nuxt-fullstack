@@ -144,7 +144,7 @@ export const useAiChat = (options: AiChatOptions = {}) => {
       const data = response.data;
       if (conversationId.value !== requestedConversationId) return
 
-      isLastPage.value = data.last;
+      isLastPage.value = data?.last ?? true;
       if (data && data?.dataList?.length) {
         const mapped = [...data.dataList].reverse().map(mapDbMessage)
         console.log('mapped', mapped)
@@ -185,7 +185,7 @@ export const useAiChat = (options: AiChatOptions = {}) => {
       const data = response.data;
       if (conversationId.value !== requestedConversationId) return
 
-      isLastPage.value = data.last;
+      isLastPage.value = data?.last ?? true;
 
       if (data && data?.dataList?.length) {
         const olderMessages = [...data.dataList].reverse().map(mapDbMessage);

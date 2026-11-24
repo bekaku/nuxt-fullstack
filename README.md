@@ -12,7 +12,7 @@ Fullstack starter built on **Nuxt 4 (SSR)** with JWT access tokens delivered via
 
 | Layer | Technology |
 |---|---|
-| Framework | Nuxt 4.5 (SSR) |
+| Framework | Nuxt 4.7 (SSR) + Nitro 3 |
 | UI | Nuxt UI 4 + Tailwind CSS 4 |
 | ORM | Drizzle ORM 0.45 / drizzle-kit 0.31 |
 | Database | PostgreSQL 18 (Docker) |

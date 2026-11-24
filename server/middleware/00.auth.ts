@@ -11,7 +11,7 @@ import { eq, and } from 'drizzle-orm'
 * To allow the client to continue calling /api/auth/refresh (see app/composables/useApi.ts).
 */
 export default defineEventHandler(async (event) => {
-  const path = (event.path || event.node.req.url || '').split('?')[0]
+  const path = event.url.pathname
 
   if (!path) {
     return;

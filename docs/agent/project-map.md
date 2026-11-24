@@ -8,16 +8,16 @@ map summarizes observed paths and contracts rather than replacing code. See
 
 | Layer | Technology | Evidence |
 |---|---|---|
-| Framework | Nuxt 4.5 SSR, `compatibilityVersion: 5`, `app/` dir | `package.json` (`nuxt ^4.5.2`), `nuxt.config.ts` |
-| UI | Nuxt UI 4 + Tailwind CSS 4 | `package.json` (`@nuxt/ui ^4.11.0`, `tailwindcss ^4.3.3`) |
-| API | Nitro (`.ts` handlers, middleware, plugins, tasks, WebSocket) | `server/api/`, `server/middleware/00.auth.ts`, `nuxt.config.ts` |
+| Framework | Nuxt 4.7 SSR, `compatibilityVersion: 5`, `app/` dir | `package.json` (`nuxt ^4.7.0`), `nuxt.config.ts` |
+| UI | Nuxt UI 4 + Tailwind CSS 4 | `package.json` (`@nuxt/ui ^4.13.0`, `tailwindcss ^4.3.5`) |
+| API | Nitro 3 + h3 v2 (`.ts` handlers, middleware, plugins, tasks, WebSocket) | `server/api/`, `server/middleware/00.auth.ts`, `nuxt.config.ts` |
 | ORM / DB | Drizzle ORM 0.45 / drizzle-kit 0.31 + PostgreSQL 18 | `package.json`, `drizzle.config.ts`, `docker-compose-postgres.yml` |
-| Validation | Zod 4 | `package.json` (`zod ^4.4.3`), `server/api/auth/login.post.ts:12` |
+| Validation | Zod 4 | `package.json` (`zod ^4.6.7`), `server/api/auth/login.post.ts:12` |
 | Auth | `jsonwebtoken` 9 + `bcryptjs` 3, HTTP-only cookies | `package.json`, `server/api/auth/login.post.ts` |
 | i18n | `@nuxtjs/i18n`, `no_prefix`, default/fallback `th`, locales `en`/`th` | `nuxt.config.ts:85-110`, `i18n/locales/` |
-| Realtime/AI | Nitro WebSocket (`crossws`), Vercel AI SDK 7, Ollama, Qdrant | `server/routes/ws.ts`, `package.json` (`ai ^7.0.79`) |
+| Realtime/AI | Nitro WebSocket (`crossws`), Vercel AI SDK 7, Ollama, Qdrant | `server/routes/ws.ts`, `package.json` (`ai ^7.0.179`) |
 | Package manager | pnpm `11.13.1` (pinned) | `package.json` |
-| Node target | Node 22 (Nitro esbuild target; CI matrix node 22) | `nuxt.config.ts`, `.github/workflows/ci.yml` |
+| Node target | Node 22 (Nitro `oxc` target; CI matrix node 22) | `nuxt.config.ts`, `.github/workflows/ci.yml` |
 
 No Pinia (`defineStore` = 0 hits). No test files (`*.test.*` / `*.spec.*` = 0 hits).
 
@@ -123,7 +123,7 @@ logout). `00.auth.ts` allows `/api/auth/login|refresh|logout` public; all other 
 with a token require a live non-revoked session row (else 401 + cookie wipe); no token =
 anonymous, route decides. Permission helpers query role/permission tables for current
 access. Login hardened: generic errors, dummy bcrypt compare,
-5 attempts / 15 min per identifier+IP (`useStorage('login-rate-limit')`).
+5 attempts / 15 min per identifier+IP (`useKV('login-rate-limit')`).
 
 ## End-to-End Feature Flows (traced)
 

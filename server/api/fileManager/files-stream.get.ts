@@ -6,7 +6,6 @@ import path from 'node:path'
 import fs from 'node:fs'
 import { stat } from 'node:fs/promises'
 import { createReadStream } from 'node:fs'
-import { sendStream } from 'h3' // Utility ของ H3 สำหรับส่ง Stream
 
 export default defineEventHandler(async (event) => {
   // Streaming requires login; only the owner or a user with file_manager_view may read the file.
@@ -55,13 +54,13 @@ export default defineEventHandler(async (event) => {
   const fileStats = await stat(fullFilePath)
   // 3. Set HTTP Headers for downloading
   // Content-Type can be retrieved from the database if stored (e.g., application/pdf)
-  setResponseHeader(event, 'Content-Length', fileStats.size)
-  setResponseHeader(event, 'Content-Type', 'application/octet-stream')
+  event.res.headers.set('Content-Length', String(fileStats.size))
+  event.res.headers.set('Content-Type', 'application/octet-stream')
 
   // Add a header to force download and name the file.
   // encodeURIComponent to support Thai filenames.
   const encodedFileName = encodeURIComponent(record.fileName || 'downloaded_file')
-  setResponseHeader(event, 'Content-Disposition', `attachment; filename="${encodedFileName}"; filename*=UTF-8''${encodedFileName}`)
+  event.res.headers.set('Content-Disposition', `attachment; filename="${encodedFileName}"; filename*=UTF-8''${encodedFileName}`)
 
 // 4. Create a Readable Stream from the file
 // highWaterMark is the size of the chunk to read from Disk into Memory in each iteration.
@@ -70,5 +69,5 @@ export default defineEventHandler(async (event) => {
   })
 
 // 5. Send the stream back to the client.
-  return sendStream(event, stream)
+  return stream
 })

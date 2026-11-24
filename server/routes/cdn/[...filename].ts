@@ -1,6 +1,5 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import { sendStream } from 'h3'
 
 export default defineEventHandler(async (event) => {
   const filename = getRouterParam(event, 'filename')
@@ -38,6 +37,6 @@ export default defineEventHandler(async (event) => {
 
   const stream = fs.createReadStream(filePath)
   // Prevent browsers from MIME-sniffing responses into executable content (XSS)
-  setResponseHeader(event, 'x-content-type-options', 'nosniff')
-  return sendStream(event, stream)
+  event.res.headers.set('x-content-type-options', 'nosniff')
+  return stream
 })

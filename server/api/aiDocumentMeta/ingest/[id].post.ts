@@ -1,6 +1,6 @@
 import fs from 'node:fs'
 import path from 'node:path'
-import { createError, defineEventHandler } from 'h3'
+import { createError, defineEventHandler } from 'nuxt/server'
 import { eq } from 'drizzle-orm'
 import { schema, useDb } from '~~/server/database/client'
 import { ingestDocument } from '~~/server/services/ai/document-ingestion'

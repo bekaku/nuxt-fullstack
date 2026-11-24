@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { type ButtonProps } from "@nuxt/ui";
+import type { ButtonProps } from "@nuxt/ui";
 interface ConfirmDialogProps {
   title?: string;
   description?: string;

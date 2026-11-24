@@ -5,7 +5,7 @@
  * After MAX_ATTEMPTS failures within WINDOW_MS, further attempts are blocked
  * until the window expires. Counters are cleared on successful login.
  *
- * Uses Nitro's useStorage('login-rate-limit'), mounted in nuxt.config.ts (nitro.storage).
+ * Uses Nitro's useKV('login-rate-limit'), mounted in nuxt.config.ts (nitro.kv).
  * The memory driver is per process — switch that mount to a shared driver (Redis)
  * before running more than one instance (ecosystem.config.cjs). This API stays the same.
  */
@@ -18,7 +18,7 @@ interface AttemptRecord {
   windowStart: number
 }
 
-const storage = () => useStorage('login-rate-limit')
+const storage = () => useKV('login-rate-limit')
 
 export const getLoginRateLimitKey = (identifier: string, ip: string): string =>
   `${identifier.toLowerCase()}|${ip}`

@@ -1,4 +1,4 @@
-import { createError } from 'h3'
+import { createError } from 'nuxt/server'
 import type { ResponseEntity } from '~/types/common'
 import type { AppUser } from '~/types/models'
 import { validateID } from '~~/server/utils/validate'
